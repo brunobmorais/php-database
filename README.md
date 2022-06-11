@@ -1,4 +1,4 @@
-# Database @BMorais
+# Database @BMoraisCode
 
 [![Maintainer](http://img.shields.io/badge/maintainer-@brunomoraisti-blue.svg?style=flat-square)](https://twitter.com/brunomoraisti)
 [![Source Code](http://img.shields.io/badge/source-bmorais/database-blue.svg?style=flat-square)](https://github.com/brunomoraisti/database)
@@ -13,12 +13,11 @@
 O database é um componente para abstração de persistência no seu banco de dados que usa PDO com prepared statements
 para executar rotinas comuns como cadastrar, ler, editar e remover dados.
 
-## About BMorais
+## About BMoraisCode
 
 ###### BMorais is a set of small and optimized PHP components for common tasks. Held by Robson V. Leite and the UpInside team. With them you perform routine tasks with fewer lines, writing less and doing much more.
 
-BMorais é um conjunto de pequenos e otimizados componentes PHP para tarefas comuns. Mantido por Bruno Morais e a
-equipe UpInside. Com eles você executa tarefas rotineiras com poucas linhas, escrevendo menos e fazendo muito mais.
+BMoraisCode é um conjunto de pequenos e otimizados componentes PHP para tarefas comuns. Mantido por Bruno Morais. Com eles você executa tarefas rotineiras com poucas linhas, escrevendo menos e fazendo muito mais.
 
 ### Highlights
 
