@@ -79,7 +79,55 @@ const CONFIG_DATA_LAYER = [
 ###### The Database is based on an MVC structure with the Layer Super Type and Active Record design patterns. Soon to consume it is necessary to create the model of your table and inherit the Data Layer.
 
 O database é baseado em uma estrutura MVC com os padrões de projeto Layer Super Type e Active Record. Logo para
-consumir é necessário criar o modelo de sua tabela e herdar o Data Layer.
+consumir é necessário criar o modelo de sua tabela e herdar o CRUD.
+
+```php
+<?php
+
+class Usuario extends Crud
+{
+    public function __construct()
+    {
+        $this->database = "nomeBD";
+        $this->tableName = "USUARIO";
+        $this->classModel = "AutUserModel";
+    }
+
+    // BUSCAR E RETORNAR OBJ
+    public function buscarIdObj($codusuario):?array{
+        $result = $this->select("*","WHERE CODUSUARIO=?",[$codusuario]);
+        if ($result){
+            return $result;
+        } else {
+            return null;
+        }
+    }
+
+    // BUSCAR E RETORNAR UM MODEL
+    public function buscarIdModelExample($codusuario):?AutUserModel{
+        $result = $this->select("*","WHERE CODUSUARIO=?",[$codusuario], true);
+        if ($result){
+            return $result;
+        } else {
+            return null;
+        }
+    }
+
+    // BUSCAR E RETORNAR UM MODEL ATRAVES DE SQL
+    public function buscarIdModelExample2($codusuario): ?AutUserModel{
+
+        $sql = "SELECT * FROM AUT_USER AS U WHERE U.CODUSUARIO=?";
+        $params = array($codusuario);
+        $result = $this->executeSQL($sql,$params);
+        if (!empty($result)){
+            return $this->getObjModel($result,$this->classModel);
+        } else {
+            return null;
+        }
+
+    }
+}
+```
 
 ## Contributing
 

@@ -14,8 +14,6 @@ namespace BMorais\Database;
  */
 
 
-use App\Controllers\ErroController;
-use App\Lib\EmailClass;
 use PDO;
 use PDOException;
 
@@ -69,20 +67,27 @@ class Connect
 
     public static function setError(PDOException $e, string $sql=''){
         self::$error = $e;
-        $message = "<h4>Erro! Problema ao tentar conectar com o banco de dados</h5><hr>";
-        $message .= "<p><b>Arquivo:</b>  " . $e->getFile() . "<br/>";
-        $message .= "<b>SQL:</b>  " . $sql . "<br/>";
-        $message .= "<b>Linha:</b>  " . $e->getLine() . "<br/>";
-        $message .= "<b>Mensagem:</b>  " . $e->getMessage() . "<br/>";
-        $message .= "<b>Informações adicionais:</b>  " . $e->getMessage() . "<br/>" . $e->getCode() . "<br/>" . $e->getPrevious() . "<br/>" . $e->getTraceAsString() . "<br/></p>";
+        $message["ARQUIVO"] =  $e->getFile();
+        $message["SQL"] = $sql;
+        $message["LINHA"] = $e->getLine();
+        $message["MENSAGEM"]= $e->getMessage();
+        $message["INFORMACOES"]= $e->getMessage() . " / " . $e->getCode() . " / " . $e->getPrevious() . " / " . $e->getTraceAsString();
 
-        if (CONFIG_DATA_LAYER["display_errors_details"]) {
-            echo $message;
+        if (CONFIG_DATA_LAYER_INTRANET["display_errors_details"]) {
+            $obj = [
+                "error" => true,
+                "message" => "Ops, tivemos um erro na base de dados, tente mais tarde",
+                "code" => "500",
+                "exception" => $message
+            ];
         } else {
-            //echo "<h4>Ooops! Aconteceu algo inesperado, tente mais tarde! Nossa equipe já foi informada</h5><hr>";
-            EmailClass::sendEmail("Erro no servidor | ".date('d/m/Y H:i'),$message,array(CONFIG_DEVELOPER['email']));
-            (new ErroController())->database();
+            $obj = [
+                "error" => true,
+                "message" => "Ops, tivemos um erro na base de dados, tente mais tarde",
+                "code" => "500",
+            ];
         }
+        echo json_encode($obj);
         die;
     }
 }

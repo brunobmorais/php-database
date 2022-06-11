@@ -203,7 +203,6 @@ trait DatalayerTrait
     {
         try {
             $this->getInstance($this->database);
-            ;
             $this->prepare = $this->instance->prepare($sql);
             $this->prepare->execute($params);
 
@@ -224,7 +223,6 @@ trait DatalayerTrait
     {
         try {
             $this->getInstance($this->database);
-            ;
             $this->prepare = $this->instance->prepare($sql);
             $rs = $this->prepare->execute($params);
         } catch (PDOException $e) {
@@ -239,7 +237,6 @@ trait DatalayerTrait
     {
         try {
             $this->getInstance($this->database);
-            ;
             $query = $this->instance->prepare($sql);
             $rs = $query->execute($params);
         } catch (PDOException $e) {
@@ -261,6 +258,11 @@ trait DatalayerTrait
             return false;
         }
         return $rs;
+    }
+
+    protected function printErrorInfo()
+    {
+        return $this->getInstance()->errorInfo();
     }
 }
 

@@ -44,7 +44,7 @@ abstract class Crud {
      * @param $debug
      * @return bool|void
      */
-    public function insert(String $fields, array $values=null, $debug=false){
+    public function insert(string $fields, array $values=null, $debug=false){
         $numparams="";
         for($i=0; $i<count($values); $i++)
             $numparams.=",?";
