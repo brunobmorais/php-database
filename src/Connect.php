@@ -67,6 +67,9 @@ class Connect
 
     public static function setError(PDOException $e, string $sql=''){
         self::$error = $e;
+        $message = array();
+        $obj = array();
+
         $message["ARQUIVO"] =  $e->getFile();
         $message["SQL"] = $sql;
         $message["LINHA"] = $e->getLine();
