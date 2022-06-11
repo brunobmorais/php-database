@@ -1,14 +1,14 @@
-# Data Layer @CoffeeCode
+# Database @BMorais
 
 [![Maintainer](http://img.shields.io/badge/maintainer-@brunomoraisti-blue.svg?style=flat-square)](https://twitter.com/brunomoraisti)
 [![Source Code](http://img.shields.io/badge/source-bmorais/database-blue.svg?style=flat-square)](https://github.com/brunomoraisti/database)
-[![PHP from Packagist](https://img.shields.io/packagist/php-v/coffeecode/datalayer.svg?style=flat-square)](https://packagist.org/packages/bmorais/database)
-[![Latest Version](https://img.shields.io/github/release/brunomoraisti/database.svg?style=flat-square)](https://github.com/brunomoraisti/database/releases)
+[![PHP from Packagist](https://img.shields.io/packagist/php-v/bmorais/database.svg?style=flat-square)](https://packagist.org/packages/bmorais/database)
+[![Latest Version](https://img.shields.io/github/release/brunomoraisti/php-database.svg?style=flat-square)](https://github.com/brunomoraisti/database/releases)
 [![Software License](https://img.shields.io/badge/license-MIT-brightgreen.svg?style=flat-square)](LICENSE)
-[![Quality Score](https://img.shields.io/scrutinizer/g/brunomoraisti/database.svg?style=flat-square)](https://scrutinizer-ci.com/g/brunomoraisti/database)
+[![Quality Score](https://img.shields.io/scrutinizer/g/brunomoraisti/php-database.svg?style=flat-square)](https://scrutinizer-ci.com/g/brunomoraisti/php-database)
 [![Total Downloads](https://img.shields.io/packagist/dt/bmorais/database.svg?style=flat-square)](https://packagist.org/packages/bmorais/database)
 
-###### The data layer is a persistent abstraction component of your database that PDO has prepared instructions for performing common routines such as registering, reading, editing, and removing data.
+###### The database is a persistent abstraction component of your database that PDO has prepared instructions for performing common routines such as registering, reading, editing, and removing data.
 
 O database é um componente para abstração de persistência no seu banco de dados que usa PDO com prepared statements
 para executar rotinas comuns como cadastrar, ler, editar e remover dados.
@@ -30,7 +30,7 @@ equipe UpInside. Com eles você executa tarefas rotineiras com poucas linhas, es
 
 ## Installation
 
-Data Layer is available via Composer:
+Database is available via Composer:
 
 ```bash
 "bmorais/database": "1.0.*"
@@ -46,7 +46,7 @@ composer require bmorais/database
 
 ###### For details on how to use the Data Layer, see the sample folder with details in the component directory
 
-Para mais detalhes sobre como usar o Data Layer, veja a pasta de exemplo com detalhes no diretório do componente
+Para mais detalhes sobre como usar o Database, veja a pasta de exemplo com detalhes no diretório do componente
 
 #### connection
 
@@ -76,7 +76,7 @@ const CONFIG_DATA_LAYER = [
 
 #### your model
 
-###### The Data Layer is based on an MVC structure with the Layer Super Type and Active Record design patterns. Soon to consume it is necessary to create the model of your table and inherit the Data Layer.
+###### The Database is based on an MVC structure with the Layer Super Type and Active Record design patterns. Soon to consume it is necessary to create the model of your table and inherit the Data Layer.
 
 O database é baseado em uma estrutura MVC com os padrões de projeto Layer Super Type e Active Record. Logo para
 consumir é necessário criar o modelo de sua tabela e herdar o Data Layer.
