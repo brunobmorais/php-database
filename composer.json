@@ -1,0 +1,34 @@
+{
+  "name": "bmorais/database",
+  "description": "The data layer is a persistent abstraction component of your database that PDO",
+  "keywords": [
+    "CoffeeCode",
+    "UpInside",
+    "Database",
+    "PDO",
+    "Save",
+    "Delete",
+    "Destroy",
+    "CRUD"
+  ],
+  "homepage": "https://www.bmorais.com",
+  "license": "MIT",
+  "version": "2.0.0",
+  "authors": [
+    {
+      "name": "Bruno Morais",
+      "email": "brunomoraisti@gmail.com",
+      "homepage": "https://github.com/brunomoraisti",
+      "role": "Developer"
+    }
+  ],
+  "autoload": {
+    "psr-4": {
+      "BMorais\\Database\\": "src"
+    }
+  },
+  "require": {
+    "ext-pdo": "*",
+    "php": ">=7.4"
+  }
+}
