@@ -73,7 +73,7 @@ class Connect
         $message["MENSAGEM"]= $e->getMessage();
         $message["INFORMACOES"]= $e->getMessage() . " / " . $e->getCode() . " / " . $e->getPrevious() . " / " . $e->getTraceAsString();
 
-        if (CONFIG_DATA_LAYER_INTRANET["display_errors_details"]) {
+        if (CONFIG_DATA_LAYER["display_errors_details"]) {
             $obj = [
                 "error" => true,
                 "message" => "Ops, tivemos um erro na base de dados, tente mais tarde",
