@@ -65,18 +65,17 @@ class Connect
         return self::$error;
     }
 
-    public static function setError(PDOException $e, string $sql=''){
+    public static function setError(PDOException $e, string $sql = ''){
         self::$error = $e;
         $message = array();
         $obj = array();
-
         $message["ARQUIVO"] =  $e->getFile();
         $message["SQL"] = $sql;
         $message["LINHA"] = $e->getLine();
-        $message["MENSAGEM"]= $e->getMessage();
-        $message["INFORMACOES"]= $e->getMessage() . " / " . $e->getCode() . " / " . $e->getPrevious() . " / " . $e->getTraceAsString();
+        $message["MENSAGEM"] = $e->getMessage();
+        $message["INFORMACOES"] = $e->getMessage() . " / " . $e->getCode() . " / " . $e->getPrevious() . " / " . $e->getTraceAsString();
 
-        if (CONFIG_DATA_LAYER["display_errors_details"]) {
+        if (CONFIG_DATA_LAYER["display_errors_details"]??true) {
             $obj = [
                 "error" => true,
                 "message" => "Ops, tivemos um erro na base de dados, tente mais tarde",

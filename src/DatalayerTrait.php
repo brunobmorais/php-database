@@ -142,7 +142,7 @@ trait DatalayerTrait
     protected function getObjModel($prepare, String $class){
         try {
             $prepare = empty($prepare)?$this->prepare:$prepare;
-            $dados = $prepare->fetchObject("App\\Models\\".$class);
+            $dados = $prepare->fetchObject(CONFIG_DATA_LAYER["directory_models"].$class);
             return $dados;
         } catch (PDOException $e) {
             Connect::setError($e);

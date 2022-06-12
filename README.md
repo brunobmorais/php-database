@@ -69,6 +69,7 @@ const CONFIG_DATA_LAYER = [
         PDO::ATTR_CASE => PDO::CASE_NATURAL,
         PDO::MYSQL_ATTR_FOUND_ROWS => true
     ],
+    "directory_models" => "App\\Models\\",
     "display_errors_details" => true
 ];
 ```

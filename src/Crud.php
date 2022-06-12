@@ -26,7 +26,7 @@ abstract class Crud {
      * @param bool $debug
      * @return array|false|void|\stdClass
      */
-    public function select(string $fields="*", string $add="", array $values= null, bool $returnModel=false, bool $debug=false){
+    public function select(string $fields = "*", string $add = "", array $values = null, bool $returnModel = false, bool $debug = false){
         if(strlen($add)>0)
             $add = " ".$add;
         $sql = "SELECT {$fields} FROM {$this->tableName}{$add}";
@@ -44,7 +44,7 @@ abstract class Crud {
      * @param $debug
      * @return bool|void
      */
-    public function insert(string $fields, array $values=null, $debug=false){
+    public function insert(string $fields, array $values = null, $debug = false){
         $numparams="";
         for($i=0; $i<count($values); $i++)
             $numparams.=",?";
