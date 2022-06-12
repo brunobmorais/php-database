@@ -69,6 +69,7 @@ class Connect
             ];
 
             if (CONFIG_DATA_LAYER["display_errors_details"] ?? true) {
+                $obj["sql"] = $sql;
                 $obj["exception"] = $e;
             }
 
