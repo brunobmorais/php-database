@@ -7,10 +7,8 @@ namespace BMorais\Database;
  * Classe abastrada para fazer ligação entre o banco e aplicação
  *
  * @author Bruno Morais <brunomoraisti@gmail.com>
- * @version 5
- * @date 2022-06-11
  * @copyright GPL © 2022, bmorais.com
- * @package php
+ * @package bmorais\database
  * @subpackage class
  * @access private
  */

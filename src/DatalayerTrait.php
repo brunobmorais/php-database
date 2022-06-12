@@ -5,10 +5,8 @@ namespace BMorais\Database;
  *  Esta classe de métodos de execução no banco
  *
  * @author Bruno Morais <brunomoraisti@gmail.com>
- * @version 9
- * @date 2022-06-11
- * @copyright GPL © 2021, bmorais.com
- * @package php
+ * @copyright GPL © 2022, bmorais.com
+ * @package bmorais\database
  * @subpackage class
  * @access private
  */
@@ -27,6 +25,10 @@ trait DatalayerTrait
     protected $classModel;
     protected $tableName;
 
+    /**
+     * @param $database
+     * @return PDO|null
+     */
     private function getInstance($database){
         if (strpos($_SERVER['SERVER_NAME'],"homologacao") && !strpos($database,"homologacao") )
             $database .= "Homologacao";
@@ -40,7 +42,9 @@ trait DatalayerTrait
     }
 
     /**
-     * FUNÇÃOO PARA EXECUTAR SQL
+     * @param String $query
+     * @param array|null $params
+     * @return false|\PDOStatement|null
      */
     protected function executeSQL(String $query, ?array $params = null){
         try {
@@ -55,8 +59,12 @@ trait DatalayerTrait
         return $this->prepare;
     }
 
-    /*$sql = "SELECT * FROM event WHERE eventdate >= :from AND eventdate <= :until AND ( user_name LIKE :st OR site_name LIKE :st )ORDER BY eventdate, start_time LIMIT 100";
-    $values = array( 'st'    => '%'.$searchterm.'%','from'  => $fromdate, 'until' => $untildate, );*/
+    /**
+     * @param $sql
+     * @param $values
+     * @param $types
+     * @return false|\PDOStatement
+     */
     protected function executaSQLBindValue($sql, $values, $types = false)
     {
         try {
@@ -95,7 +103,8 @@ trait DatalayerTrait
     }
 
     /**
-     * FUN��O PARA RETORNAR A QUANTIDADE DE ELEMENTOS DE UM OBJETO SQL
+     * @param $prepare
+     * @return int
      */
     protected function count($prepare): int
     {
@@ -112,7 +121,8 @@ trait DatalayerTrait
     }
 
     /**
-     * FUN��O CONSULTA FEITA E RETORNA UM ARRAY DE OBJETOS
+     * @param $prepare
+     * @return false
      */
     protected function getObjAssoc($prepare){
         try {
@@ -126,7 +136,8 @@ trait DatalayerTrait
     }
 
     /**
-     * FUN��O CONSULTA FEITA E RETORNA UM ARRAY DE OBJETOS
+     * @param $prepare
+     * @return false
      */
     protected function getObj($prepare){
         try {
@@ -139,6 +150,11 @@ trait DatalayerTrait
         }
     }
 
+    /**
+     * @param $prepare
+     * @param String $class
+     * @return false
+     */
     protected function getObjModel($prepare, String $class){
         try {
             $prepare = empty($prepare)?$this->prepare:$prepare;
@@ -150,6 +166,9 @@ trait DatalayerTrait
         }
     }
 
+    /**
+     * @return bool
+     */
     protected function startTransaction()
     {
         try {
@@ -163,6 +182,9 @@ trait DatalayerTrait
 
     }
 
+    /**
+     * @return bool
+     */
     protected function commitTransaction(){
         try {
             $this->getInstance($this->database);
@@ -174,6 +196,9 @@ trait DatalayerTrait
         }
     }
 
+    /**
+     * @return bool
+     */
     protected function cancelTransaction(){
 
         try {
@@ -197,8 +222,12 @@ trait DatalayerTrait
 
     }
 
-    //METODOS ORIENTADO A OBJETO
-    /*Método select que retorna um VO ou um array de objetos*/
+    /**
+     * @param $sql
+     * @param $params
+     * @param $class
+     * @return false
+     */
     protected function selectDB($sql, $params = null, $class = null)
     {
         try {
@@ -218,7 +247,11 @@ trait DatalayerTrait
         return $rs;
     }
 
-    /*Método insert que insere valores no banco de dados e retorna o último id inserido*/
+    /**
+     * @param $sql
+     * @param $params
+     * @return bool
+     */
     protected function insertDB($sql, $params = null)
     {
         try {
@@ -232,7 +265,11 @@ trait DatalayerTrait
         return $rs;
     }
 
-    /*Método update que altera valores do banco de dados e retorna o número de linhas afetadas*/
+    /**
+     * @param $sql
+     * @param $params
+     * @return bool
+     */
     protected function updateDB($sql, $params = null)
     {
         try {
@@ -246,7 +283,11 @@ trait DatalayerTrait
         return $rs;
     }
 
-    /*Método delete que excluí valores do banco de dados retorna o número de linhas afetadas*/
+    /**
+     * @param $sql
+     * @param $params
+     * @return bool
+     */
     protected function deleteDB($sql, $params = null)
     {
         try {
@@ -260,9 +301,12 @@ trait DatalayerTrait
         return $rs;
     }
 
+    /**
+     * @return array
+     */
     protected function printErrorInfo()
     {
-        return $this->getInstance()->errorInfo();
+        return $this->getInstance($this->database)->errorInfo();
     }
 }
 

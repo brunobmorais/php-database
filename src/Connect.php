@@ -5,10 +5,8 @@ namespace BMorais\Database;
  *  Esta classe faz conexão com o banco de dados mysql utilizando o pdo
  *
  * @author Bruno Morais <brunomoraisti@gmail.com>
- * @version 2
- * @copyright GPL © 2021, bmorais.com
- * @date 2022-05-18
- * @package php
+ * @copyright GPL © 2022, bmorais.com
+ * @package bmorais\database
  * @subpackage class
  * @access private
  */
@@ -17,12 +15,11 @@ namespace BMorais\Database;
 use PDO;
 use PDOException;
 
-
 class Connect
 {
 
-    /** @var PDOException */
-    private static $error;
+    /** @var PDOException|null */
+    private static ?PDOException $error = null;
 
     /** @var PDO */
     private static $instance;
@@ -33,6 +30,7 @@ class Connect
     final private function __construct()
     {
     }
+
     /**
      * Connect clone.
      */
@@ -40,7 +38,11 @@ class Connect
     {
     }
 
-    public static function getInstance($database=CONFIG_DATA_LAYER["dbname"]):?PDO
+    /**
+     * @param array|null $database
+     * @return PDO|null
+     */
+    public static function getInstance($database=CONFIG_DATA_LAYER["dbname"]): ?PDO
     {
         if (!isset (self::$instance)) {
 
@@ -57,30 +59,15 @@ class Connect
         return self::$instance;
     }
 
-    /**
-     * @return PDOException|null
-     */
-    public static function getError(): ?PDOException
-    {
-        return self::$error;
-    }
-
     public static function setError(PDOException $e, string $sql = ''){
         self::$error = $e;
-        $message = array();
         $obj = array();
-        $message["ARQUIVO"] =  $e->getFile();
-        $message["SQL"] = $sql;
-        $message["LINHA"] = $e->getLine();
-        $message["MENSAGEM"] = $e->getMessage();
-        $message["INFORMACOES"] = $e->getMessage() . " / " . $e->getCode() . " / " . $e->getPrevious() . " / " . $e->getTraceAsString();
-
         if (CONFIG_DATA_LAYER["display_errors_details"]??true) {
             $obj = [
                 "error" => true,
                 "message" => "Ops, tivemos um erro na base de dados, tente mais tarde",
                 "code" => "500",
-                "exception" => $message
+                "exception" => $e
             ];
         } else {
             $obj = [
@@ -91,6 +78,14 @@ class Connect
         }
         echo json_encode($obj);
         die;
+    }
+
+    /**
+     * @return array|null
+     */
+    public static function getError(): ?array
+    {
+        return self::$error;
     }
 }
 
