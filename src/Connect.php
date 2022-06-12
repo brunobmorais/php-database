@@ -61,22 +61,32 @@ class Connect
 
     public static function setError(PDOException $e, string $sql = ''){
         self::$error = $e;
-        $obj = array();
-        if (CONFIG_DATA_LAYER["display_errors_details"]??true) {
+        if (CONFIG_DATA_LAYER["return_error_json"]) {
             $obj = [
                 "error" => true,
-                "message" => "Ops, tivemos um erro na base de dados, tente mais tarde",
+                "message" => "Ooops! Aconteceu algo inesperado, tente mais tarde! Nossa equipe já foi informada",
                 "code" => "500",
-                "exception" => $e
             ];
+
+            if (CONFIG_DATA_LAYER["display_errors_details"] ?? true) {
+                $obj["exception"] = $e;
+            }
+
+            echo json_encode($obj);
         } else {
-            $obj = [
-                "error" => true,
-                "message" => "Ops, tivemos um erro na base de dados, tente mais tarde",
-                "code" => "500",
-            ];
+            $message = "<h4>Ooops! Aconteceu algo inesperado, tente mais tarde! Nossa equipe já foi informada</h5><hr>";
+            $message .= "<p><b>File:</b>  " . $e->getFile() . "<br/>";
+            $message .= "<b>SQL:</b>  " . $sql . "<br/>";
+            $message .= "<b>Line:</b>  " . $e->getLine() . "<br/>";
+            $message .= "<b>Message:</b>  " . $e->getMessage() . "<br/>";
+            $message .= "<b>Exception:</b>" . $e->getCode() . "<br/>" . $e->getPrevious() . "<br/>" . $e->getTraceAsString() . "<br/></p>";
+
+            if (CONFIG_DATA_LAYER["display_errors_details"]) {
+                echo $message;
+            } else {
+                echo "<h4>Ooops! Aconteceu algo inesperado, tente mais tarde! Nossa equipe já foi informada</h5><hr>";
+            }
         }
-        echo json_encode($obj);
         die;
     }
 
