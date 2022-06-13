@@ -82,7 +82,7 @@ trait DatalayerTrait
      * @param $prepare
      * @return false
      */
-    protected function getObjAssoc($prepare=null){
+    protected function getDataArrayName($prepare=null){
         try {
             $prepare = empty($prepare)?$this->prepare:$prepare;
             $dados = $prepare->fetchAll(PDO::FETCH_ASSOC);
@@ -98,7 +98,7 @@ trait DatalayerTrait
      * @param $prepare
      * @return false
      */
-    protected function getObj($prepare=null){
+    protected function getDataArrayObj($prepare=null){
         try {
             $prepare = empty($prepare)?$this->prepare:$prepare;
             $dados = $prepare->fetchAll(PDO::FETCH_OBJ);
@@ -115,7 +115,7 @@ trait DatalayerTrait
      * @param String $class
      * @return false
      */
-    protected function getObjModel($prepare=null, String $class=null){
+    protected function getDataArrayClass($prepare=null, String $class=null){
         try {
             $prepare = empty($prepare)?$this->prepare:$prepare;
             $class = empty($class)?$this->classModel:$class;
@@ -133,7 +133,7 @@ trait DatalayerTrait
      * @param String|null $class
      * @return false
      */
-    protected function getObjModelID($prepare=null, String $class=null){
+    protected function getDataClass($prepare=null, String $class=null){
         try {
             $prepare = empty($prepare)?$this->prepare:$prepare;
             $class = empty($class)?$this->classModel:$class;
@@ -148,7 +148,7 @@ trait DatalayerTrait
     /**
      * @return bool
      */
-    protected function startTransaction()
+    protected function beginTrasaction()
     {
         try {
             $this->getInstance($this->database);
@@ -178,7 +178,7 @@ trait DatalayerTrait
     /**
      * @return bool
      */
-    protected function cancelTransaction(){
+    protected function rollBackTransaction(){
 
         try {
             $this->getInstance($this->database);
@@ -215,9 +215,9 @@ trait DatalayerTrait
             $this->prepare->execute($params);
 
             if (!empty($class)) {
-                $rs = $this->getObjModel($this->prepare,$class);
+                $rs = $this->getDataArrayClass($this->prepare,$class);
             } else {
-                $rs = $this->getObj($this->prepare);
+                $rs = $this->getDataArrayObj($this->prepare);
             }
         } catch (PDOException $e) {
             Connect::setError($e,$sql);
