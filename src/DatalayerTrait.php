@@ -130,7 +130,6 @@ trait DatalayerTrait
 
     /**
      * @param $prepare
-     * @param String|null $class
      * @return false
      */
     protected function fetchOneAssoc($prepare=null){
@@ -146,7 +145,6 @@ trait DatalayerTrait
 
     /**
      * @param $prepare
-     * @param String|null $class
      * @return false
      */
     protected function fetchOneObj($prepare=null){
@@ -162,7 +160,6 @@ trait DatalayerTrait
 
     /**
      * @param $prepare
-     * @param String|null $class
      * @return false
      */
     protected function fetchOneClass($prepare=null, String $class=null){
