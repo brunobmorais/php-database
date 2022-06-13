@@ -82,7 +82,7 @@ trait DatalayerTrait
      * @param $prepare
      * @return false
      */
-    protected function getDataArrayName($prepare=null){
+    protected function fetchArrayAssoc($prepare=null): array{
         try {
             $prepare = empty($prepare)?$this->prepare:$prepare;
             $dados = $prepare->fetchAll(PDO::FETCH_ASSOC);
@@ -98,7 +98,7 @@ trait DatalayerTrait
      * @param $prepare
      * @return false
      */
-    protected function getDataArrayObj($prepare=null){
+    protected function fetchArrayObj($prepare=null): array{
         try {
             $prepare = empty($prepare)?$this->prepare:$prepare;
             $dados = $prepare->fetchAll(PDO::FETCH_OBJ);
@@ -115,7 +115,7 @@ trait DatalayerTrait
      * @param String $class
      * @return false
      */
-    protected function getDataArrayClass($prepare=null, String $class=null){
+    protected function fetchArrayClass($prepare=null, String $class=null): array{
         try {
             $prepare = empty($prepare)?$this->prepare:$prepare;
             $class = empty($class)?$this->classModel:$class;
@@ -133,7 +133,39 @@ trait DatalayerTrait
      * @param String|null $class
      * @return false
      */
-    protected function getDataClass($prepare=null, String $class=null){
+    protected function fetchOneAssoc($prepare=null){
+        try {
+            $prepare = empty($prepare)?$this->prepare:$prepare;
+            $dados = $prepare->fetch(PDO::FETCH_ASSOC);
+            return $dados;
+        } catch (PDOException $e) {
+            Connect::setError($e);
+            return false;
+        }
+    }
+
+    /**
+     * @param $prepare
+     * @param String|null $class
+     * @return false
+     */
+    protected function fetchOneObj($prepare=null){
+        try {
+            $prepare = empty($prepare)?$this->prepare:$prepare;
+            $dados = $prepare->fetch(PDO::FETCH_OBJ);
+            return $dados;
+        } catch (PDOException $e) {
+            Connect::setError($e);
+            return false;
+        }
+    }
+
+    /**
+     * @param $prepare
+     * @param String|null $class
+     * @return false
+     */
+    protected function fetchOneClass($prepare=null, String $class=null){
         try {
             $prepare = empty($prepare)?$this->prepare:$prepare;
             $class = empty($class)?$this->classModel:$class;
@@ -215,9 +247,9 @@ trait DatalayerTrait
             $this->prepare->execute($params);
 
             if (!empty($class)) {
-                $rs = $this->getDataArrayClass($this->prepare,$class);
+                $rs = $this->fetchArrayClass($this->prepare,$class);
             } else {
-                $rs = $this->getDataArrayObj($this->prepare);
+                $rs = $this->fetchArrayObj($this->prepare);
             }
         } catch (PDOException $e) {
             Connect::setError($e,$sql);
