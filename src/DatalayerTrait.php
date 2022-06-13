@@ -118,7 +118,7 @@ trait DatalayerTrait
     protected function getObjModel($prepare=null, String $class=null){
         try {
             $prepare = empty($prepare)?$this->prepare:$prepare;
-            $class = empty($prepare)?$this->classModel:$prepare;
+            $class = empty($class)?$this->classModel:$class;
             $dados = $prepare->fetchAll(PDO::FETCH_CLASS, CONFIG_DATA_LAYER["directory_models"].$class);
             $this->resultArray = $dados;
             return $dados;
@@ -136,7 +136,7 @@ trait DatalayerTrait
     protected function getObjModelID($prepare=null, String $class=null){
         try {
             $prepare = empty($prepare)?$this->prepare:$prepare;
-            $class = empty($prepare)?$this->classModel:$prepare;
+            $class = empty($class)?$this->classModel:$class;
             $dados = $prepare->fetchObject(CONFIG_DATA_LAYER["directory_models"].$class);
             return $dados;
         } catch (PDOException $e) {
@@ -288,4 +288,3 @@ trait DatalayerTrait
         return $this->getInstance($this->database)->errorInfo();
     }
 }
-
