@@ -24,6 +24,7 @@ trait DatalayerTrait
     protected $database=CONFIG_DATA_LAYER["dbname"];
     protected $classModel;
     protected $tableName;
+    protected $resultArray = array();
 
     /**
      * @param $database
@@ -63,7 +64,7 @@ trait DatalayerTrait
      * @param $prepare
      * @return int
      */
-    protected function count($prepare): int
+    protected function count($prepare=null): int
     {
         try {
             $prepare = empty($prepare)?$this->prepare:$prepare;
@@ -81,10 +82,11 @@ trait DatalayerTrait
      * @param $prepare
      * @return false
      */
-    protected function getObjAssoc($prepare){
+    protected function getObjAssoc($prepare=null){
         try {
             $prepare = empty($prepare)?$this->prepare:$prepare;
             $dados = $prepare->fetchAll(PDO::FETCH_ASSOC);
+            $this->resultArray = $dados;
             return $dados;
         } catch (PDOException $e) {
             Connect::setError($e);
@@ -96,10 +98,11 @@ trait DatalayerTrait
      * @param $prepare
      * @return false
      */
-    protected function getObj($prepare){
+    protected function getObj($prepare=null){
         try {
             $prepare = empty($prepare)?$this->prepare:$prepare;
             $dados = $prepare->fetchAll(PDO::FETCH_OBJ);
+            $this->resultArray = $dados;
             return $dados;
         } catch (PDOException $e) {
             Connect::setError($e);
@@ -112,10 +115,29 @@ trait DatalayerTrait
      * @param String $class
      * @return false
      */
-    protected function getObjModel($prepare, String $class){
+    protected function getObjModel($prepare=null, String $class=null){
         try {
             $prepare = empty($prepare)?$this->prepare:$prepare;
+            $class = empty($prepare)?$this->classModel:$prepare;
             $dados = $prepare->fetchAll(PDO::FETCH_CLASS, CONFIG_DATA_LAYER["directory_models"].$class);
+            $this->resultArray = $dados;
+            return $dados;
+        } catch (PDOException $e) {
+            Connect::setError($e);
+            return false;
+        }
+    }
+
+    /**
+     * @param $prepare
+     * @param String|null $class
+     * @return false
+     */
+    protected function getObjModelID($prepare=null, String $class=null){
+        try {
+            $prepare = empty($prepare)?$this->prepare:$prepare;
+            $class = empty($prepare)?$this->classModel:$prepare;
+            $dados = $prepare->fetchObject(CONFIG_DATA_LAYER["directory_models"].$class);
             return $dados;
         } catch (PDOException $e) {
             Connect::setError($e);
