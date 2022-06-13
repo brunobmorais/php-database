@@ -60,49 +60,6 @@ trait DatalayerTrait
     }
 
     /**
-     * @param $sql
-     * @param $values
-     * @param $types
-     * @return false|\PDOStatement
-     */
-    protected function executaSQLBindValue($sql, $values, $types = false)
-    {
-        try {
-            $this->getInstance($this->database);
-            $stmt =  $this->instance->prepare($sql);
-
-            foreach ($values as $key => $value) {
-                if ($types) {
-                    $stmt->bindValue(":$key", $value, $types[$key]);
-                } else {
-                    if (is_int($value)) {
-                        $param = PDO::PARAM_INT;
-                    } elseif (is_bool($value)) {
-                        $param = PDO::PARAM_BOOL;
-                    } elseif (is_null($value)) {
-                        $param = PDO::PARAM_NULL;
-                    } elseif (is_string($value)) {
-                        $param = PDO::PARAM_STR;
-                    } else {
-                        $param = FALSE;
-                    }
-
-                    if ($param) $stmt->bindValue(":$key", $value, $param);
-                }
-            }
-
-            $stmt->execute();
-
-        } catch (PDOException $e) {
-            Connect::setError($e,$sql);
-            return false;
-        }
-
-        return $stmt;
-
-    }
-
-    /**
      * @param $prepare
      * @return int
      */
@@ -158,7 +115,7 @@ trait DatalayerTrait
     protected function getObjModel($prepare, String $class){
         try {
             $prepare = empty($prepare)?$this->prepare:$prepare;
-            $dados = $prepare->fetchObject(CONFIG_DATA_LAYER["directory_models"].$class);
+            $dados = $prepare->fetchAll(PDO::FETCH_CLASS, CONFIG_DATA_LAYER["directory_models"].$class);
             return $dados;
         } catch (PDOException $e) {
             Connect::setError($e);
