@@ -21,29 +21,10 @@ trait DatalayerTrait
     protected $instance;
     protected $params;
     protected $prepare = null;
-    protected $database = CONFIG_DATA_LAYER["dbname"];
+    protected $database=CONFIG_DATA_LAYER["dbname"];
     protected $classModel;
     protected $tableName;
     protected $resultArray = array();
-
-    /**
-     * @param String $query
-     * @param array|null $params
-     * @return false|\PDOStatement|null
-     */
-    protected function executeSQL(string $query, ?array $params = null)
-    {
-        try {
-            $this->getInstance($this->database);
-            $this->prepare = $this->instance->prepare($query);
-            $this->prepare->execute($params);
-        } catch (PDOException $e) {
-            Connect::setError($e, $query);
-            return false;
-        }
-
-        return $this->prepare;
-    }
 
     /**
      * @param $database
@@ -51,9 +32,8 @@ trait DatalayerTrait
      */
     private function getInstance($database)
     {
-        if (strpos($_SERVER['SERVER_NAME'], "homologacao") && !strpos($database, "homologacao")) {
+        if (strpos($_SERVER['SERVER_NAME'],"homologacao") && !strpos($database,"homologacao") )
             $database .= "Homologacao";
-        }
 
         if (!isset($this->instance)) {
             $this->instance = Connect::getInstance($database);
@@ -64,29 +44,50 @@ trait DatalayerTrait
     }
 
     /**
+     * @param String $query
+     * @param array|null $params
+     * @return false|\PDOStatement|null
+     */
+    protected function executeSQL(String $query, ?array $params = null)
+    {
+        try {
+            $this->getInstance($this->database);
+            $this->prepare =  $this->instance->prepare($query);
+            $this->prepare->execute($params);
+        } catch (PDOException $e) {
+            Connect::setError($e,$query);
+            return false;
+        }
+
+        return $this->prepare;
+    }
+
+    /**
      * @param $prepare
      * @return int
      */
-    protected function count($prepare = null): int
+    protected function count($prepare=null): int
     {
         try {
-            $prepare = empty($prepare) ? $this->prepare : $prepare;
+            $prepare = empty($prepare)?$this->prepare:$prepare;
             $qtd = $prepare->rowCount();
             return $qtd;
         } catch (PDOException $e) {
             Connect::setError($e);
             return false;
         }
+
+
     }
 
     /**
      * @param $prepare
      * @return false
      */
-    protected function fetchArrayAssoc($prepare = null): array
+    protected function fetchArrayAssoc($prepare=null): array
     {
         try {
-            $prepare = empty($prepare) ? $this->prepare : $prepare;
+            $prepare = empty($prepare)?$this->prepare:$prepare;
             $dados = $prepare->fetchAll(PDO::FETCH_ASSOC);
             $this->resultArray = $dados;
             return $dados;
@@ -100,10 +101,45 @@ trait DatalayerTrait
      * @param $prepare
      * @return false
      */
-    protected function fetchOneAssoc($prepare = null)
+    protected function fetchArrayObj($prepare=null): array{
+        try {
+            $prepare = empty($prepare)?$this->prepare:$prepare;
+            $dados = $prepare->fetchAll(PDO::FETCH_OBJ);
+            $this->resultArray = $dados;
+            return $dados;
+        } catch (PDOException $e) {
+            Connect::setError($e);
+            return false;
+        }
+    }
+
+    /**
+     * @param $prepare
+     * @param String $class
+     * @return false
+     */
+    protected function fetchArrayClass($prepare=null, String $class=null): array
     {
         try {
-            $prepare = empty($prepare) ? $this->prepare : $prepare;
+            $prepare = empty($prepare)?$this->prepare:$prepare;
+            $class = empty($class)?$this->classModel:$class;
+            $dados = $prepare->fetchAll(PDO::FETCH_CLASS | PDO::FETCH_PROPS_LATE, CONFIG_DATA_LAYER["directory_models"].$class);
+            $this->resultArray = $dados;
+            return $dados;
+        } catch (PDOException $e) {
+            Connect::setError($e);
+            return false;
+        }
+    }
+
+    /**
+     * @param $prepare
+     * @return false
+     */
+    protected function fetchOneAssoc($prepare=null)
+    {
+        try {
+            $prepare = empty($prepare)?$this->prepare:$prepare;
             $dados = $prepare->fetch(PDO::FETCH_ASSOC);
             return $dados;
         } catch (PDOException $e) {
@@ -116,10 +152,10 @@ trait DatalayerTrait
      * @param $prepare
      * @return false
      */
-    protected function fetchOneObj($prepare = null)
+    protected function fetchOneObj($prepare=null)
     {
         try {
-            $prepare = empty($prepare) ? $this->prepare : $prepare;
+            $prepare = empty($prepare)?$this->prepare:$prepare;
             $dados = $prepare->fetch(PDO::FETCH_OBJ);
             return $dados;
         } catch (PDOException $e) {
@@ -132,12 +168,12 @@ trait DatalayerTrait
      * @param $prepare
      * @return false
      */
-    protected function fetchOneClass($prepare = null, string $class = null)
+    protected function fetchOneClass($prepare=null, String $class=null)
     {
         try {
-            $prepare = empty($prepare) ? $this->prepare : $prepare;
-            $class = empty($class) ? $this->classModel : $class;
-            $dados = $prepare->fetchObject(CONFIG_DATA_LAYER["directory_models"] . $class);
+            $prepare = empty($prepare)?$this->prepare:$prepare;
+            $class = empty($class)?$this->classModel:$class;
+            $dados = $prepare->fetchObject(CONFIG_DATA_LAYER["directory_models"].$class);
             return $dados;
         } catch (PDOException $e) {
             Connect::setError($e);
@@ -158,13 +194,13 @@ trait DatalayerTrait
             Connect::setError($e);
             return false;
         }
+
     }
 
     /**
      * @return bool
      */
-    protected function commitTransaction()
-    {
+    protected function commitTransaction(){
         try {
             $this->getInstance($this->database);
             $this->instance->commit();
@@ -178,8 +214,8 @@ trait DatalayerTrait
     /**
      * @return bool
      */
-    protected function rollBackTransaction()
-    {
+    protected function rollBackTransaction(){
+
         try {
             $this->getInstance($this->database);
             $this->instance->rollBack();
@@ -188,6 +224,17 @@ trait DatalayerTrait
             Connect::setError($e);
             return false;
         }
+    }
+
+    /**
+     * RETORNAR O ULTIMO ID INSERIDO
+     */
+    private function lastId()
+    {
+        $this->getInstance($this->database);
+        $ultimo = $this->instance->lastInsertId();
+        return $ultimo;
+
     }
 
     /**
@@ -204,54 +251,15 @@ trait DatalayerTrait
             $this->prepare->execute($params);
 
             if (!empty($class)) {
-                $rs = $this->fetchArrayClass($this->prepare, $class);
+                $rs = $this->fetchArrayClass($this->prepare,$class);
             } else {
                 $rs = $this->fetchArrayObj($this->prepare);
             }
         } catch (PDOException $e) {
-            Connect::setError($e, $sql);
+            Connect::setError($e,$sql);
             return false;
         }
         return $rs;
-    }
-
-    /**
-     * @param $prepare
-     * @param String $class
-     * @return false
-     */
-    protected function fetchArrayClass($prepare = null, string $class = null): array
-    {
-        try {
-            $prepare = empty($prepare) ? $this->prepare : $prepare;
-            $class = empty($class) ? $this->classModel : $class;
-            $dados = $prepare->fetchAll(
-                PDO::FETCH_CLASS | PDO::FETCH_PROPS_LATE,
-                CONFIG_DATA_LAYER["directory_models"] . '\\' . $class
-            );
-            $this->resultArray = $dados;
-            return $dados;
-        } catch (PDOException $e) {
-            Connect::setError($e);
-            return false;
-        }
-    }
-
-    /**
-     * @param $prepare
-     * @return false
-     */
-    protected function fetchArrayObj($prepare = null): array
-    {
-        try {
-            $prepare = empty($prepare) ? $this->prepare : $prepare;
-            $dados = $prepare->fetchAll(PDO::FETCH_OBJ);
-            $this->resultArray = $dados;
-            return $dados;
-        } catch (PDOException $e) {
-            Connect::setError($e);
-            return false;
-        }
     }
 
     /**
@@ -266,7 +274,7 @@ trait DatalayerTrait
             $this->prepare = $this->instance->prepare($sql);
             $rs = $this->prepare->execute($params);
         } catch (PDOException $e) {
-            Connect::setError($e, $sql);
+            Connect::setError($e,$sql);
             return false;
         }
         return $rs;
@@ -284,7 +292,7 @@ trait DatalayerTrait
             $query = $this->instance->prepare($sql);
             $rs = $query->execute($params);
         } catch (PDOException $e) {
-            Connect::setError($e, $sql);
+            Connect::setError($e,$sql);
             return false;
         }
         return $rs;
@@ -302,7 +310,7 @@ trait DatalayerTrait
             $this->prepare = $this->instance->prepare($sql);
             $rs = $this->prepare->execute($params);
         } catch (PDOException $e) {
-            Connect::setError($e, $sql);
+            Connect::setError($e,$sql);
             return false;
         }
         return $rs;
@@ -315,15 +323,4 @@ trait DatalayerTrait
     {
         return $this->getInstance($this->database)->errorInfo();
     }
-
-    /**
-     * RETORNAR O ULTIMO ID INSERIDO
-     */
-    private function lastId()
-    {
-        $this->getInstance($this->database);
-        $ultimo = $this->instance->lastInsertId();
-        return $ultimo;
-    }
 }
-
