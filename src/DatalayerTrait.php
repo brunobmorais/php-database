@@ -30,13 +30,13 @@ trait DatalayerTrait
      * @param $database
      * @return PDO|null
      */
-    private function getInstance($database)
+    private function getInstance()
     {
-        if (strpos($_SERVER['SERVER_NAME'],"homologacao") && !strpos($database,"homologacao") )
-            $database .= "Homologacao";
+        if (strpos($_SERVER['SERVER_NAME'],"homologacao") && !strpos($this->database,"homologacao") )
+            $this->database .= "Homologacao";
 
         if (!isset($this->instance)) {
-            $this->instance = Connect::getInstance($database);
+            $this->instance = Connect::getInstance($this->database);
             return $this->instance;
         } else {
             return $this->instance;
@@ -51,7 +51,7 @@ trait DatalayerTrait
     protected function executeSQL(String $query, ?array $params = null)
     {
         try {
-            $this->getInstance($this->database);
+            $this->getInstance();
             $this->prepare =  $this->instance->prepare($query);
             $this->prepare->execute($params);
         } catch (PDOException $e) {
@@ -187,7 +187,7 @@ trait DatalayerTrait
     protected function beginTrasaction()
     {
         try {
-            $this->getInstance($this->database);
+            $this->getInstance();
             $this->instance->beginTransaction();
             return true;
         } catch (PDOException $e) {
@@ -202,7 +202,7 @@ trait DatalayerTrait
      */
     protected function commitTransaction(){
         try {
-            $this->getInstance($this->database);
+            $this->getInstance();
             $this->instance->commit();
             return true;
         } catch (PDOException $e) {
@@ -217,7 +217,7 @@ trait DatalayerTrait
     protected function rollBackTransaction(){
 
         try {
-            $this->getInstance($this->database);
+            $this->getInstance();
             $this->instance->rollBack();
             return true;
         } catch (PDOException $e) {
@@ -231,7 +231,7 @@ trait DatalayerTrait
      */
     private function lastId()
     {
-        $this->getInstance($this->database);
+        $this->getInstance();
         $ultimo = $this->instance->lastInsertId();
         return $ultimo;
 
@@ -246,7 +246,7 @@ trait DatalayerTrait
     protected function selectDB($sql, $params = null, $class = null)
     {
         try {
-            $this->getInstance($this->database);
+            $this->getInstance();
             $this->prepare = $this->instance->prepare($sql);
             $this->prepare->execute($params);
 
@@ -270,7 +270,7 @@ trait DatalayerTrait
     protected function insertDB($sql, $params = null)
     {
         try {
-            $this->getInstance($this->database);
+            $this->getInstance();
             $this->prepare = $this->instance->prepare($sql);
             $rs = $this->prepare->execute($params);
         } catch (PDOException $e) {
@@ -288,7 +288,7 @@ trait DatalayerTrait
     protected function updateDB($sql, $params = null)
     {
         try {
-            $this->getInstance($this->database);
+            $this->getInstance();
             $query = $this->instance->prepare($sql);
             $rs = $query->execute($params);
         } catch (PDOException $e) {
@@ -306,7 +306,7 @@ trait DatalayerTrait
     protected function deleteDB($sql, $params = null)
     {
         try {
-            $this->getInstance($this->database);;
+            $this->getInstance();;
             $this->prepare = $this->instance->prepare($sql);
             $rs = $this->prepare->execute($params);
         } catch (PDOException $e) {
