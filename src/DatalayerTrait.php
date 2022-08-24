@@ -32,7 +32,7 @@ trait DatalayerTrait
      */
     private function getInstance()
     {
-        if (strpos($_SERVER['SERVER_NAME'],"homologacao") && !strpos($this->database,"homologacao") )
+        if (strpos($_SERVER['SERVER_NAME'],"homologacao") && !strpos($this->database,"Homologacao") )
             $this->database .= "Homologacao";
 
         if (!isset($this->instance)) {
