@@ -21,8 +21,6 @@ class Connect
     /** @var PDOException|null */
     private static ?PDOException $error = null;
 
-    /** @var PDO */
-    private static $instance;
 
     /**
      * Connect constructor.
@@ -42,21 +40,19 @@ class Connect
      * @param array|null $database
      * @return PDO|null
      */
-    public static function getInstance($database=CONFIG_DATA_LAYER["dbname"]): ?PDO
+    public static function getInstance($database): ?PDO
     {
-        if (!isset (self::$instance)) {
 
-            try {
-                self::$instance = new PDO(CONFIG_DATA_LAYER["driver"] . ":host=" . CONFIG_DATA_LAYER["host"] . ";dbname=" . $database . ";port=" . CONFIG_DATA_LAYER["port"],
-                    CONFIG_DATA_LAYER["username"],
-                    CONFIG_DATA_LAYER["passwd"],
-                    CONFIG_DATA_LAYER["options"]);
-            } catch (PDOException $e) {
-                self::setError($e);
-            }
+        try {
+            $instance = new PDO(CONFIG_DATA_LAYER["driver"] . ":host=" . CONFIG_DATA_LAYER["host"] . ";dbname=" . $database . ";port=" . CONFIG_DATA_LAYER["port"],
+                CONFIG_DATA_LAYER["username"],
+                CONFIG_DATA_LAYER["passwd"],
+                CONFIG_DATA_LAYER["options"]);
+        } catch (PDOException $e) {
+            self::setError($e);
         }
 
-        return self::$instance;
+        return $instance;
     }
 
     public static function setError(PDOException $e, string $sql = ''){
