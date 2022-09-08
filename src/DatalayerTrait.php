@@ -29,7 +29,7 @@ trait DatalayerTrait
     /**
      * @return PDO|null
      */
-    private function getInstance()
+    private function getInstance(): ?PDO
     {
         if (strpos($_SERVER['SERVER_NAME'],"homologacao") && !strpos($this->database,"Homologacao") )
             $this->database .= "Homologacao";
@@ -118,7 +118,7 @@ trait DatalayerTrait
      * @param String|null $class
      * @return array|false
      */
-    protected function fetchArrayClass($prepare=null, String $class=null): array
+    protected function fetchArrayClass($prepare=null, String $class=null)
     {
         try {
             $prepare = empty($prepare)?$this->prepare:$prepare;
@@ -136,7 +136,7 @@ trait DatalayerTrait
      * @param $prepare
      * @return array|false
      */
-    protected function fetchOneAssoc($prepare=null): array
+    protected function fetchOneAssoc($prepare=null)
     {
         try {
             $prepare = empty($prepare)?$this->prepare:$prepare;
@@ -152,7 +152,7 @@ trait DatalayerTrait
      * @param $prepare
      * @return array|false
      */
-    protected function fetchOneObj($prepare=null): array
+    protected function fetchOneObj($prepare=null)
     {
         try {
             $prepare = empty($prepare)?$this->prepare:$prepare;
@@ -169,7 +169,7 @@ trait DatalayerTrait
      * @param String|null $class
      * @return array|false
      */
-    protected function fetchOneClass($prepare=null, String $class=null): array
+    protected function fetchOneClass($prepare=null, String $class=null)
     {
         try {
             $prepare = empty($prepare)?$this->prepare:$prepare;
@@ -185,7 +185,7 @@ trait DatalayerTrait
     /**
      * @return bool
      */
-    protected function beginTrasaction()
+    protected function beginTrasaction(): bool
     {
         try {
             $this->getInstance();
@@ -201,7 +201,8 @@ trait DatalayerTrait
     /**
      * @return bool
      */
-    protected function commitTransaction(){
+    protected function commitTransaction(): bool
+    {
         try {
             $this->getInstance();
             $this->instance->commit();
@@ -215,7 +216,8 @@ trait DatalayerTrait
     /**
      * @return bool
      */
-    protected function rollBackTransaction(){
+    protected function rollBackTransaction(): bool
+    {
 
         try {
             $this->getInstance();
@@ -268,7 +270,7 @@ trait DatalayerTrait
      * @param $params
      * @return bool
      */
-    protected function insertDB($sql, $params = null)
+    protected function insertDB($sql, $params = null): bool
     {
         try {
             $this->getInstance();
@@ -286,7 +288,7 @@ trait DatalayerTrait
      * @param $params
      * @return bool
      */
-    protected function updateDB($sql, $params = null)
+    protected function updateDB($sql, $params = null): bool
     {
         try {
             $this->getInstance();
@@ -304,7 +306,7 @@ trait DatalayerTrait
      * @param $params
      * @return bool
      */
-    protected function deleteDB($sql, $params = null)
+    protected function deleteDB($sql, $params = null): bool
     {
         try {
             $this->getInstance();;
@@ -320,7 +322,7 @@ trait DatalayerTrait
     /**
      * @return array
      */
-    protected function printErrorInfo()
+    protected function printErrorInfo(): array
     {
         return $this->getInstance($this->database)->errorInfo();
     }
