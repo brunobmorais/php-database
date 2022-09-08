@@ -16,5 +16,5 @@ const CONFIG_DATA_LAYER = [
     ],
     "directory_models" => "App\\Models\\",
     "return_error_json" => true,
-    "display_errors_details" => true
+    "display_errors_details" => true,
 ];

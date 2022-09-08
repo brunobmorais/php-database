@@ -55,7 +55,13 @@ class Connect
         return $instance;
     }
 
-    public static function setError(PDOException $e, string $sql = ''){
+    /**
+     * @param PDOException $e
+     * @param string $sql
+     * @return void
+     */
+    public static function setError(PDOException $e, string $sql = '')
+    {
         self::$error = $e;
         if (CONFIG_DATA_LAYER["return_error_json"]) {
             $obj = [
@@ -85,14 +91,6 @@ class Connect
             }
         }
         die;
-    }
-
-    /**
-     * @return array|null
-     */
-    public static function getError(): ?array
-    {
-        return self::$error;
     }
 }
 
