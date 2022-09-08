@@ -1,7 +1,6 @@
 <?php
 namespace BMorais\Database;
 
-
 /**
  * CLASSE CRUD
  * Classe abastrada para fazer ligação entre o banco e aplicação
@@ -12,6 +11,7 @@ namespace BMorais\Database;
  * @subpackage class
  * @access private
  */
+
 abstract class Crud {
 
     use DatalayerTrait;
@@ -24,7 +24,8 @@ abstract class Crud {
      * @param bool $debug
      * @return array|false|void|\stdClass
      */
-    public function select(string $fields = "*", string $add = "", array $values = null, bool $returnModel = false, bool $debug = false){
+    public function select(string $fields = "*", string $add = "", array $values = null, bool $returnModel = false, bool $debug = false)
+    {
         if(strlen($add)>0)
             $add = " ".$add;
         $sql = "SELECT {$fields} FROM {$this->tableName}{$add}";
@@ -42,9 +43,10 @@ abstract class Crud {
      * @param $debug
      * @return bool|void
      */
-    public function insert(string $fields, array $values = null, $debug = false){
+    public function insert(string $fields, array $values = null, $debug = false)
+    {
         $numparams="";
-        for($i=0; $i<count($values); $i++)
+        foreach($values as $item)
             $numparams.=",?";
         $numparams = substr($numparams,1);
         $sql = "INSERT INTO ".$this->tableName." ($fields) VALUES ($numparams)";
@@ -60,11 +62,14 @@ abstract class Crud {
      * @param bool $debug
      * @return bool|void
      */
-    public function update(string $fields, array $values=null, string $where=null, bool $debug=false){
+    public function update(string $fields, array $values=null, string $where=null, bool $debug=false)
+    {
         $fields_T="";
         $atributos = explode(",", $fields);
 
-        for($i=0; $i<count($atributos); $i++) $fields_T.=", $atributos[$i] = ?";
+        foreach($atributos as $item)
+            $fields_T.=", $item = ?";
+
         $fields_T = substr($fields_T,2);
         $sql = "UPDATE ".$this->tableName." SET $fields_T";
         if(isset($where)) $sql .= " WHERE $where";
@@ -79,7 +84,8 @@ abstract class Crud {
      * @param bool $debug
      * @return bool|void
      */
-    public function delete(array $values=null, string $where=null, bool $debug=false){
+    public function delete(array $values=null, string $where=null, bool $debug=false)
+    {
         $sql = "DELETE FROM ".$this->tableName;
         if(isset($where)) $sql .= " WHERE $where";
         if ($debug){echo $sql; exit;}
