@@ -27,7 +27,6 @@ trait DatalayerTrait
     protected $resultArray = array();
 
     /**
-     * @param $database
      * @return PDO|null
      */
     private function getInstance()
@@ -46,7 +45,7 @@ trait DatalayerTrait
     /**
      * @param String $query
      * @param array|null $params
-     * @return false|\PDOStatement|null
+     * @return false|mixed|\PDOStatement|null
      */
     protected function executeSQL(String $query, ?array $params = null)
     {
@@ -82,7 +81,7 @@ trait DatalayerTrait
 
     /**
      * @param $prepare
-     * @return false
+     * @return array|false
      */
     protected function fetchArrayAssoc($prepare=null): array
     {
@@ -99,9 +98,10 @@ trait DatalayerTrait
 
     /**
      * @param $prepare
-     * @return false
+     * @return array|false
      */
-    protected function fetchArrayObj($prepare=null): array{
+    protected function fetchArrayObj($prepare=null): array
+    {
         try {
             $prepare = empty($prepare)?$this->prepare:$prepare;
             $dados = $prepare->fetchAll(PDO::FETCH_OBJ);
@@ -115,8 +115,8 @@ trait DatalayerTrait
 
     /**
      * @param $prepare
-     * @param String $class
-     * @return false
+     * @param String|null $class
+     * @return array|false
      */
     protected function fetchArrayClass($prepare=null, String $class=null): array
     {
@@ -134,9 +134,9 @@ trait DatalayerTrait
 
     /**
      * @param $prepare
-     * @return false
+     * @return array|false
      */
-    protected function fetchOneAssoc($prepare=null)
+    protected function fetchOneAssoc($prepare=null): array
     {
         try {
             $prepare = empty($prepare)?$this->prepare:$prepare;
@@ -150,9 +150,9 @@ trait DatalayerTrait
 
     /**
      * @param $prepare
-     * @return false
+     * @return array|false
      */
-    protected function fetchOneObj($prepare=null)
+    protected function fetchOneObj($prepare=null): array
     {
         try {
             $prepare = empty($prepare)?$this->prepare:$prepare;
@@ -166,9 +166,10 @@ trait DatalayerTrait
 
     /**
      * @param $prepare
-     * @return false
+     * @param String|null $class
+     * @return array|false
      */
-    protected function fetchOneClass($prepare=null, String $class=null)
+    protected function fetchOneClass($prepare=null, String $class=null): array
     {
         try {
             $prepare = empty($prepare)?$this->prepare:$prepare;
@@ -241,7 +242,7 @@ trait DatalayerTrait
      * @param $sql
      * @param $params
      * @param $class
-     * @return false
+     * @return array|false
      */
     protected function selectDB($sql, $params = null, $class = null)
     {
