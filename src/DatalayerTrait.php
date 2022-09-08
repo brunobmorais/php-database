@@ -13,6 +13,7 @@ namespace BMorais\Database;
 
 use PDO;
 use PDOException;
+use stdClass;
 
 
 trait DatalayerTrait
@@ -118,7 +119,7 @@ trait DatalayerTrait
      * @param String|null $class
      * @return array|false
      */
-    protected function fetchArrayClass($prepare=null, String $class=null)
+    protected function fetchArrayClass($prepare=null, String $class=null): array
     {
         try {
             $prepare = empty($prepare)?$this->prepare:$prepare;
@@ -136,7 +137,7 @@ trait DatalayerTrait
      * @param $prepare
      * @return array|false
      */
-    protected function fetchOneAssoc($prepare=null)
+    protected function fetchOneAssoc($prepare=null): array
     {
         try {
             $prepare = empty($prepare)?$this->prepare:$prepare;
@@ -150,9 +151,9 @@ trait DatalayerTrait
 
     /**
      * @param $prepare
-     * @return array|false
+     * @return stdClass|false
      */
-    protected function fetchOneObj($prepare=null)
+    protected function fetchOneObj($prepare=null): stdClass
     {
         try {
             $prepare = empty($prepare)?$this->prepare:$prepare;
@@ -169,7 +170,7 @@ trait DatalayerTrait
      * @param String|null $class
      * @return array|false
      */
-    protected function fetchOneClass($prepare=null, String $class=null)
+    protected function fetchOneClass($prepare=null, String $class=null): object
     {
         try {
             $prepare = empty($prepare)?$this->prepare:$prepare;
