@@ -26,10 +26,10 @@ abstract class Crud {
      */
     public function select(string $fields = "*", string $add = "", array $values = null, bool $returnModel = false, bool $debug = false)
     {
-        if(strlen($add)>0)
+        if (strlen($add) > 0)
             $add = " " . $add;
         $sql = "SELECT {$fields} FROM {$this->tableName}{$add}";
-        if ($debug){echo $sql; die();}
+        if ($debug) { echo $sql; die(); }
         if ($returnModel)
             return $this->selectDB($sql, $values, $this->classModel);
         else
@@ -45,9 +45,9 @@ abstract class Crud {
     public function insert(string $fields, array $values = null, $debug = false)
     {
         $numparams = "";
-        foreach($values as $item)
+        foreach ($values as $item)
             $numparams .= ",?";
-        $numparams = substr($numparams,1);
+        $numparams = substr($numparams, 1);
         $sql = "INSERT INTO {$this->tableName} ({$fields}) VALUES ({$numparams})";
         if ($debug) { echo $sql; echo "<pre>"; print_r($values); echo "</pre>"; die(); }
         return $this->insertDB($sql, $values);
@@ -68,9 +68,9 @@ abstract class Crud {
         foreach($atributos as $item)
             $fields_T .= ", {$item} = ?";
 
-        $fields_T = substr($fields_T,2);
+        $fields_T = substr($fields_T, 2);
         $sql = "UPDATE {$this->tableName} SET {$fields_T}";
-        if(isset($where)) $sql .= " WHERE $where";
+        if (isset($where)) $sql .= " WHERE $where";
         if ($debug) { echo $sql; echo "<pre>"; print_r($values); echo "</pre>"; die(); }
         return $this->updateDB($sql, $values);
     }
@@ -84,7 +84,7 @@ abstract class Crud {
     public function delete(array $values = null, string $where = null, bool $debug = false)
     {
         $sql = "DELETE FROM {$this->tableName}";
-        if(isset($where)) $sql .= " WHERE $where";
+        if (isset($where)) $sql .= " WHERE $where";
         if ($debug) { echo $sql; echo "<pre>"; print_r($values); echo "</pre>"; die(); }
         return $this->deleteDB($sql, $values);
     }
