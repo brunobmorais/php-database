@@ -15,7 +15,7 @@ para executar rotinas comuns como cadastrar, ler, editar e remover dados.
 
 ## About BMoraisCode
 
-###### BMorais is a set of small and optimized PHP components for common tasks. Held by Robson V. Leite and the UpInside team. With them you perform routine tasks with fewer lines, writing less and doing much more.
+###### BMoraisCode is a set of small and optimized PHP components for common tasks. Held by Bruno Morais. With them you perform routine tasks with fewer lines, writing less and doing much more.
 
 BMoraisCode é um conjunto de pequenos e otimizados componentes PHP para tarefas comuns. Mantido por Bruno Morais. Com eles você executa tarefas rotineiras com poucas linhas, escrevendo menos e fazendo muito mais.
 
@@ -93,8 +93,12 @@ class Usuario extends Crud
         $this->classModel = "AutUserModel";
     }
 
-    // BUSCAR E RETORNAR OBJ
-    public function buscarIdObj($codusuario):?array{
+    /**
+    * @param $codusuario
+    * @return array|null
+    */
+    public function buscarIdObj($codusuario)
+    {
         $result = $this->select("*","WHERE CODUSUARIO=?",[$codusuario]);
         if ($result){
             return $result;
@@ -103,8 +107,12 @@ class Usuario extends Crud
         }
     }
 
-    // BUSCAR E RETORNAR UM MODEL
-    public function buscarIdModelExample($codusuario):?AutUserModel{
+    /**
+    * @param $codusuario
+    * @return AutUserModel[] | null
+     */
+    public function buscarIdModelExample($codusuario)
+    {
         $result = $this->select("*","WHERE CODUSUARIO=?",[$codusuario], true);
         if ($result){
             return $result;
@@ -113,9 +121,12 @@ class Usuario extends Crud
         }
     }
 
-    // BUSCAR E RETORNAR UM MODEL ATRAVES DE SQL
-    public function buscarIdModelExample2($codusuario): ?AutUserModel{
-
+    /**
+    * @param $codusuario
+    * @return AutUserModel[] | null
+    */
+    public function buscarIdModelExample2($codusuario)
+    {
         $sql = "SELECT * FROM AUT_USER AS U WHERE U.CODUSUARIO=?";
         $params = array($codusuario);
         $result = $this->executeSQL($sql,$params);
@@ -124,8 +135,37 @@ class Usuario extends Crud
         } else {
             return null;
         }
-
     }
+    
+    /**
+    * @param $codusuario
+    * @return bool
+     */
+    public function atualizar($codusuario)
+    {
+        $result = $this->update("NOME, DATANASCIMENTO, EMAIL, TELEFONE, OBS", array($nome, $datanascimento, $email, $telefone, $obs, $codAluno), "CODALUNO=?");
+        if ($result){
+            return true;
+        } else {
+            return false;
+        }
+    }
+    
+    /**
+    * @param $codusuario
+    * @return bool
+    */
+    public function inserir($codusuario)
+    {
+        $result = $this->insert("NOME, DATANASCIMENTO, EMAIL, TELEFONE, OBS", array($nome, $datanascimento, $email, $telefone, $obs));
+        if ($result){
+            return true;
+        } else {
+            return false;
+        }
+    }
+    
+    
 }
 ```
 
@@ -135,7 +175,7 @@ Please see [CONTRIBUTING](https://github.com/brunomoraisti/database/blob/master/
 
 ## Support
 
-###### Security: If you discover any security related issues, please email cursos@upinside.com.br instead of using the issue tracker.
+###### Security: If you discover any security related issues, please email contato@bmorais.com instead of using the issue tracker.
 
 Se você descobrir algum problema relacionado à segurança, envie um e-mail para contato@bmorais.com em vez de usar o
 rastreador de problemas.

@@ -49,10 +49,9 @@ abstract class Crud {
         foreach($values as $item)
             $numparams.=",?";
         $numparams = substr($numparams,1);
-        $sql = "INSERT INTO ".$this->tableName." ($fields) VALUES ($numparams)";
-        if ($debug){echo $sql; var_dump($values);exit;}
-        $t=$this->insertDB($sql,$values);
-        return $t;
+        $sql = "INSERT INTO {$this->tableName} ({$fields}) VALUES ({$numparams})";
+        if ($debug){echo $sql; echo "<pre>" . print_r($values) . "</pre>"; die();}
+        return $this->insertDB($sql,$values);
     }
 
     /**
@@ -73,9 +72,8 @@ abstract class Crud {
         $fields_T = substr($fields_T,2);
         $sql = "UPDATE ".$this->tableName." SET $fields_T";
         if(isset($where)) $sql .= " WHERE $where";
-        if ($debug){echo $sql; var_dump($values); exit;}
-        $t=$this->updateDB($sql,$values);
-        return $t;
+        if ($debug){echo $sql; echo "<pre>" . print_r($values) . "</pre>"; die();}
+        return $this->updateDB($sql,$values);
     }
 
     /**
@@ -86,11 +84,10 @@ abstract class Crud {
      */
     public function delete(array $values=null, string $where=null, bool $debug=false)
     {
-        $sql = "DELETE FROM ".$this->tableName;
+        $sql = "DELETE FROM {$this->tableName}";
         if(isset($where)) $sql .= " WHERE $where";
-        if ($debug){echo $sql; exit;}
-        $t=$this->deleteDB($sql,$values);
-        return $t;
+        if ($debug){echo $sql; echo "<pre>" . print_r($values) . "</pre>"; die();}
+        return $this->deleteDB($sql,$values);
     }
 
     /**
