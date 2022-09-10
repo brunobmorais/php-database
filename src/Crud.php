@@ -26,7 +26,7 @@ abstract class Crud {
      */
     public function select(string $fields = "*", string $add = "", array $values = null, bool $returnModel = false, bool $debug = false)
     {
-        if (strlen($add) > 0) { $add = " " . $add; }
+        if (strlen($add)>0) { $add = " " . $add; }
         $sql = "SELECT {$fields} FROM {$this->tableName}{$add}";
         if ($debug) { echo $sql; die(); }
         if ($returnModel) {
@@ -64,7 +64,7 @@ abstract class Crud {
         $fields_T = "";
         $atributos = explode(",", $fields);
 
-        foreach($atributos as $item) { $fields_T .= ", {$item} = ?"; }
+        foreach ($atributos as $item) { $fields_T .= ", {$item} = ?"; }
         $fields_T = substr($fields_T, 2);
         $sql = "UPDATE {$this->tableName} SET {$fields_T}";
         if (isset($where)) { $sql .= " WHERE $where"; }
@@ -89,7 +89,8 @@ abstract class Crud {
     /**
      * @return false|string
      */
-    public function lastInsertId(){
+    public function lastInsertId()
+    {
         return $this->lastId();
     }
 
