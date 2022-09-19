@@ -1,6 +1,6 @@
 # Database @BMoraisCode
 
-[![Maintainer](http://img.shields.io/badge/maintainer-@brunomoraisti-blue.svg?style=flat-square)](https://twitter.com/brunomoraisti)
+[![Maintainer](http://img.shields.io/badge/maintainer-@brunobmorais-blue.svg?style=flat-square)](https://linkedin.com/in/brunobmorais)
 [![Source Code](http://img.shields.io/badge/source-bmorais/database-blue.svg?style=flat-square)](https://github.com/brunobmorais/database)
 [![PHP from Packagist](https://img.shields.io/packagist/php-v/bmorais/database.svg?style=flat-square)](https://packagist.org/packages/bmorais/database)
 [![Latest Version](https://img.shields.io/github/release/brunobmorais/php-database.svg?style=flat-square)](https://github.com/brunobmorais/database/releases)
