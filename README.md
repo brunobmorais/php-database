@@ -1,11 +1,11 @@
 # Database @BMoraisCode
 
 [![Maintainer](http://img.shields.io/badge/maintainer-@brunomoraisti-blue.svg?style=flat-square)](https://twitter.com/brunomoraisti)
-[![Source Code](http://img.shields.io/badge/source-bmorais/database-blue.svg?style=flat-square)](https://github.com/brunomoraisti/database)
+[![Source Code](http://img.shields.io/badge/source-bmorais/database-blue.svg?style=flat-square)](https://github.com/brunobmorais/database)
 [![PHP from Packagist](https://img.shields.io/packagist/php-v/bmorais/database.svg?style=flat-square)](https://packagist.org/packages/bmorais/database)
-[![Latest Version](https://img.shields.io/github/release/brunomoraisti/php-database.svg?style=flat-square)](https://github.com/brunomoraisti/database/releases)
+[![Latest Version](https://img.shields.io/github/release/brunobmorais/php-database.svg?style=flat-square)](https://github.com/brunobmorais/database/releases)
 [![Software License](https://img.shields.io/badge/license-MIT-brightgreen.svg?style=flat-square)](LICENSE)
-[![Quality Score](https://img.shields.io/scrutinizer/g/brunomoraisti/php-database.svg?style=flat-square)](https://scrutinizer-ci.com/g/brunomoraisti/php-database)
+[![Quality Score](https://img.shields.io/scrutinizer/g/brunobmorais/php-database.svg?style=flat-square)](https://scrutinizer-ci.com/g/brunobmorais/php-database)
 [![Total Downloads](https://img.shields.io/packagist/dt/bmorais/database.svg?style=flat-square)](https://packagist.org/packages/bmorais/database)
 
 ###### The database is a persistent abstraction component of your database that PDO has prepared instructions for performing common routines such as registering, reading, editing, and removing data.
@@ -171,7 +171,7 @@ class Usuario extends Crud
 
 ## Contributing
 
-Please see [CONTRIBUTING](https://github.com/brunomoraisti/database/blob/master/CONTRIBUTING.md) for details.
+Please see [CONTRIBUTING](https://github.com/brunobmorais/database/blob/master/CONTRIBUTING.md) for details.
 
 ## Support
 
@@ -184,9 +184,9 @@ Thank you
 
 ## Credits
 
-- [Bruno Morais](https://github.com/brunomoraisti) (Developer)
+- [Bruno Morais](https://github.com/brunobmorais) (Developer)
 
 ## License
 
-The MIT License (MIT). Please see [License File](https://github.com/brunomoraisti/database/blob/master/LICENSE) for more
+The MIT License (MIT). Please see [License File](https://github.com/brunobmorais/database/blob/master/LICENSE) for more
 information.
