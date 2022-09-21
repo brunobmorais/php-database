@@ -2,8 +2,6 @@
   "name": "bmorais/database",
   "description": "The data layer is a persistent abstraction component of your database that PDO",
   "keywords": [
-    "CoffeeCode",
-    "UpInside",
     "Database",
     "PDO",
     "Save",

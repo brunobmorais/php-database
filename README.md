@@ -1,9 +1,9 @@
 # Database @BMoraisCode
 
 [![Maintainer](http://img.shields.io/badge/maintainer-@brunobmorais-blue.svg?style=flat-square)](https://linkedin.com/in/brunobmorais)
-[![Source Code](http://img.shields.io/badge/source-bmorais/database-blue.svg?style=flat-square)](https://github.com/brunobmorais/database)
+[![Source Code](http://img.shields.io/badge/source-bmorais/database-blue.svg?style=flat-square)](https://github.com/brunobmorais/php-database)
 [![PHP from Packagist](https://img.shields.io/packagist/php-v/bmorais/database.svg?style=flat-square)](https://packagist.org/packages/bmorais/database)
-[![Latest Version](https://img.shields.io/github/release/brunobmorais/php-database.svg?style=flat-square)](https://github.com/brunobmorais/database/releases)
+[![Latest Version](https://img.shields.io/github/release/brunobmorais/php-database.svg?style=flat-square)](https://github.com/brunobmorais/php-database/releases)
 [![Software License](https://img.shields.io/badge/license-MIT-brightgreen.svg?style=flat-square)](LICENSE)
 [![Quality Score](https://img.shields.io/scrutinizer/g/brunobmorais/php-database.svg?style=flat-square)](https://scrutinizer-ci.com/g/brunobmorais/php-database)
 [![Total Downloads](https://img.shields.io/packagist/dt/bmorais/database.svg?style=flat-square)](https://packagist.org/packages/bmorais/database)
