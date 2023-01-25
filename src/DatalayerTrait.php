@@ -337,7 +337,7 @@ trait DatalayerTrait
 
     private function setLogSQL($sql, $placeholders){
         foreach($placeholders as $k => $v){
-            $sql = preg_replace('/:'.$k.'/',"'".$v."'",$sql);
+            $sql = preg_replace('?',"'".$v."'",$sql);
         }
         $this->logSQL = $sql;
     }
