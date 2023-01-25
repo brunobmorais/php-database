@@ -94,4 +94,11 @@ abstract class Crud {
         return $this->lastId();
     }
 
+    /**
+     * @return mixed
+     */
+    public function getLogSQL(){
+        return $this->logSQL;
+    }
+
 }

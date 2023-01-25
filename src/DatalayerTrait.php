@@ -27,6 +27,8 @@ trait DatalayerTrait
     protected $tableName;
     protected $resultArray = array();
 
+    private $logSQL;
+
     /**
      * @return PDO|null
      */
@@ -54,6 +56,7 @@ trait DatalayerTrait
             $this->getInstance();
             $this->prepare = $this->instance->prepare($query);
             $this->prepare->execute($params);
+            $this->logSQL = $this->prepare->queryString;
         } catch (PDOException $e) {
             Connect::setError($e,$query);
             return false;
@@ -242,6 +245,7 @@ trait DatalayerTrait
             $this->getInstance();
             $this->prepare = $this->instance->prepare($sql);
             $this->prepare->execute($params);
+            $this->logSQL = $this->prepare->queryString;
 
             if (!empty($class)) {
                 $rs = $this->fetchArrayClass($this->prepare,$class);
@@ -266,6 +270,7 @@ trait DatalayerTrait
             $this->getInstance();
             $this->prepare = $this->instance->prepare($sql);
             $rs = $this->prepare->execute($params);
+            $this->logSQL = $this->prepare->queryString;
         } catch (PDOException $e) {
             Connect::setError($e,$sql);
             return false;
@@ -284,6 +289,7 @@ trait DatalayerTrait
             $this->getInstance();
             $query = $this->instance->prepare($sql);
             $rs = $query->execute($params);
+            $this->logSQL = $this->prepare->queryString;
         } catch (PDOException $e) {
             Connect::setError($e,$sql);
             return false;
@@ -302,6 +308,7 @@ trait DatalayerTrait
             $this->getInstance();;
             $this->prepare = $this->instance->prepare($sql);
             $rs = $this->prepare->execute($params);
+            $this->logSQL = $this->prepare->queryString;
         } catch (PDOException $e) {
             Connect::setError($e,$sql);
             return false;
