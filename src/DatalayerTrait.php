@@ -335,10 +335,27 @@ trait DatalayerTrait
         return $this->getInstance($this->database)->errorInfo();
     }
 
-    private function setLogSQL($sql, $placeholders){
-        foreach($placeholders as $k => $v){
-            $sql = preg_replace('/?/',"'".$v."'",$sql);
+    function setLogSQL($sql_string, array $params = null) {
+        if (!empty($params)) {
+            $indexed = $params == array_values($params);
+            foreach($params as $k=>$v) {
+                if (is_object($v)) {
+                    if ($v instanceof \DateTime) $v = $v->format('Y-m-d H:i:s');
+                    else continue;
+                }
+                elseif (is_string($v)) $v="'$v'";
+                elseif ($v === null) $v='NULL';
+                elseif (is_array($v)) $v = implode(',', $v);
+
+                if ($indexed) {
+                    $sql_string = preg_replace('/\?/', $v, $sql_string, 1);
+                }
+                else {
+                    if ($k[0] != ':') $k = ':'.$k; //add leading colon if it was left out
+                    $sql_string = str_replace($k,$v,$sql_string);
+                }
+            }
         }
-        $this->logSQL = $sql;
+        $this->logSQL = $sql_string;
     }
 }
