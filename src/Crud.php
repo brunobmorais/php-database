@@ -95,9 +95,10 @@ abstract class Crud {
     }
 
     /**
-     * @return mixed
+     * @return string|null
      */
-    public function getLogSQL(){
+    public function getLogSQL():?string
+    {
         return $this->logSQL;
     }
 

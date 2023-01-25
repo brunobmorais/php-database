@@ -56,7 +56,7 @@ trait DatalayerTrait
             $this->getInstance();
             $this->prepare = $this->instance->prepare($query);
             $this->prepare->execute($params);
-            $this->logSQL = $this->prepare->queryString;
+            $this->setLogSQL($query, $params);
         } catch (PDOException $e) {
             Connect::setError($e,$query);
             return false;
@@ -245,7 +245,7 @@ trait DatalayerTrait
             $this->getInstance();
             $this->prepare = $this->instance->prepare($sql);
             $this->prepare->execute($params);
-            $this->logSQL = $this->prepare->queryString;
+            $this->setLogSQL($sql, $params);
 
             if (!empty($class)) {
                 $rs = $this->fetchArrayClass($this->prepare,$class);
@@ -289,7 +289,7 @@ trait DatalayerTrait
             $this->getInstance();
             $query = $this->instance->prepare($sql);
             $rs = $query->execute($params);
-            $this->logSQL = $this->prepare->queryString;
+            $this->setLogSQL($sql, $params);
         } catch (PDOException $e) {
             Connect::setError($e,$sql);
             return false;
@@ -308,7 +308,7 @@ trait DatalayerTrait
             $this->getInstance();;
             $this->prepare = $this->instance->prepare($sql);
             $rs = $this->prepare->execute($params);
-            $this->logSQL = $this->prepare->queryString;
+            $this->setLogSQL($sql, $params);
         } catch (PDOException $e) {
             Connect::setError($e,$sql);
             return false;
@@ -333,5 +333,12 @@ trait DatalayerTrait
     protected function printErrorInfo(): array
     {
         return $this->getInstance($this->database)->errorInfo();
+    }
+
+    private function setLogSQL($sql, $placeholders){
+        foreach($placeholders as $k => $v){
+            $sql = preg_replace('/:'.$k.'/',"'".$v."'",$sql);
+        }
+        $this->logSQL = $sql;
     }
 }
