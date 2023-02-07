@@ -67,7 +67,8 @@ const CONFIG_DATA_LAYER = [
         PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION,
         PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_OBJ,
         PDO::ATTR_CASE => PDO::CASE_NATURAL,
-        PDO::MYSQL_ATTR_FOUND_ROWS => true
+        PDO::MYSQL_ATTR_FOUND_ROWS => true,
+        PDO::ATTR_STRINGIFY_FETCHES => true
     ],
     "directory_models" => "App\\Models\\",
     "display_errors_details" => true
