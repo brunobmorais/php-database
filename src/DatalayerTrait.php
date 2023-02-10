@@ -178,7 +178,7 @@ trait DatalayerTrait
         try {
             $prepare = empty($prepare) ? $this->prepare : $prepare;
             $class = empty($class) ? $this->classModel : $class;
-            $dados = $prepare->fetchObject(CONFIG_DATA_LAYER["directory_models"] . $class);
+            $dados = $prepare->fetchObject(CONFIG_DATA_LAYER["directory_models"].(CONFIG_DATA_LAYER["database_model"]?$this->database."//":""). $class);
             return $dados;
         } catch (PDOException $e) {
             Connect::setError($e);
