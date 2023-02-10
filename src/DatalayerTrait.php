@@ -260,63 +260,6 @@ trait DatalayerTrait
     }
 
     /**
-     * @param $sql
-     * @param $params
-     * @return bool
-     */
-    protected function insertDB($sql, $params = null): bool
-    {
-        try {
-            $this->getInstance();
-            $this->prepare = $this->instance->prepare($sql);
-            $rs = $this->prepare->execute($params);
-            $this->logSQL = $this->prepare->queryString;
-        } catch (PDOException $e) {
-            Connect::setError($e,$sql);
-            return false;
-        }
-        return $rs;
-    }
-
-    /**
-     * @param $sql
-     * @param $params
-     * @return bool
-     */
-    protected function updateDB($sql, $params = null): bool
-    {
-        try {
-            $this->getInstance();
-            $query = $this->instance->prepare($sql);
-            $rs = $query->execute($params);
-            $this->setLogSQL($sql, $params);
-        } catch (PDOException $e) {
-            Connect::setError($e,$sql);
-            return false;
-        }
-        return $rs;
-    }
-
-    /**
-     * @param $sql
-     * @param $params
-     * @return bool
-     */
-    protected function deleteDB($sql, $params = null): bool
-    {
-        try {
-            $this->getInstance();;
-            $this->prepare = $this->instance->prepare($sql);
-            $rs = $this->prepare->execute($params);
-            $this->setLogSQL($sql, $params);
-        } catch (PDOException $e) {
-            Connect::setError($e,$sql);
-            return false;
-        }
-        return $rs;
-    }
-
-    /**
     * RETORNAR O ULTIMO ID INSERIDO
     */
     private function lastId()

@@ -49,7 +49,34 @@ abstract class Crud {
         $numparams = substr($numparams, 1);
         $sql = "INSERT INTO {$this->tableName} ({$fields}) VALUES ({$numparams})";
         if ($debug) { echo $sql; echo "<pre>"; print_r($values); echo "</pre>"; die(); }
-        return $this->insertDB($sql, $values);
+        return $this->executeSQL($sql, $values);
+    }
+
+    /**
+     * @param array $params
+     * @return bool
+     */
+    public function insertArray(array $params): bool
+    {
+        if (!empty($params)) {
+            $query = "INSERT INTO $this->tableName";
+            $values = [];
+            $dataColumns = array_keys($params);
+            if (isset ($dataColumns[0]))
+                $query .= ' (`' . implode('`, `', $dataColumns) . '`) ';
+            $query .= ' VALUES (';
+
+            foreach ($dataColumns as $index => $column) {
+                $values[] = $params[$column];
+                $query .= "?, ";
+            }
+            $query = rtrim($query, ', ');
+            $query .= ')';
+
+            return $this->executeSQL($query, $values);
+        } else {
+            return false;
+        }
     }
 
     /**
@@ -69,7 +96,7 @@ abstract class Crud {
         $sql = "UPDATE {$this->tableName} SET {$fields_T}";
         if (isset($where)) { $sql .= " WHERE $where"; }
         if ($debug) { echo $sql; echo "<pre>"; print_r($values); echo "</pre>"; die(); }
-        return $this->updateDB($sql, $values);
+        return $this->executeSQL($sql, $values);
     }
 
     /**
@@ -83,8 +110,10 @@ abstract class Crud {
         $sql = "DELETE FROM {$this->tableName}";
         if (isset($where)) { $sql .= " WHERE $where"; }
         if ($debug) { echo $sql; echo "<pre>"; print_r($values); echo "</pre>"; die(); }
-        return $this->deleteDB($sql, $values);
+        return $this->executeSQL($sql, $values);
     }
+
+
 
     /**
      * @return false|string
