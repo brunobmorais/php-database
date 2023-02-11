@@ -127,7 +127,7 @@ trait DatalayerTrait
         try {
             $prepare = empty($prepare) ? $this->prepare : $prepare;
             $class = empty($class) ? $this->classModel : $class;
-            $dados = $prepare->fetchAll(PDO::FETCH_CLASS | PDO::FETCH_PROPS_LATE, CONFIG_DATA_LAYER["directory_models"].(!empty(CONFIG_DATA_LAYER["database_model"])?$this->database."//":"").$class);
+            $dados = $prepare->fetchAll(PDO::FETCH_CLASS | PDO::FETCH_PROPS_LATE, CONFIG_DATA_LAYER["directory_models"] . $class);
             $this->resultArray = $dados;
             return $dados;
         } catch (PDOException $e) {
@@ -178,7 +178,7 @@ trait DatalayerTrait
         try {
             $prepare = empty($prepare) ? $this->prepare : $prepare;
             $class = empty($class) ? $this->classModel : $class;
-            $dados = $prepare->fetchObject(CONFIG_DATA_LAYER["directory_models"].(!empty(CONFIG_DATA_LAYER["database_model"])?$this->database."//":""). $class);
+            $dados = $prepare->fetchObject(CONFIG_DATA_LAYER["directory_models"] . $class);
             return $dados;
         } catch (PDOException $e) {
             Connect::setError($e);
