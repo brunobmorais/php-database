@@ -16,7 +16,6 @@ const CONFIG_DATA_LAYER = [
         PDO::ATTR_STRINGIFY_FETCHES => true
     ],
     "directory_models" => "App\\Models\\",
-    "database_model" => false,
     "return_error_json" => true,
     "display_errors_details" => true,
 ];
