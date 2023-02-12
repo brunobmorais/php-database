@@ -82,12 +82,4 @@ abstract class ModelAbstract
                 }, $re_2->getProperties())) .'}';
 
     }
-
-    /**
-     * @return $this
-     */
-    public function copyWith():self
-    {
-        return $this;
-    }
 }
