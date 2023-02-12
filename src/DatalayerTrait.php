@@ -256,7 +256,7 @@ trait DatalayerTrait
      * @param array|null $params
      * @return void
      */
-    function setLogSQL($sql_string, array $params = null) {
+    private function setLogSQL($sql_string, array $params = null) {
         if (!empty($params)) {
             $indexed = $params == array_values($params);
             foreach($params as $k=>$v) {
