@@ -236,12 +236,11 @@ trait DatalayerTrait
     /**
      * @return int
      */
-    private function lastId(): int
+    private function lastId(): ?string
     {
         $this->getInstance();
         $ultimo = $this->instance->lastInsertId();
         return $ultimo;
-
     }
 
     /**

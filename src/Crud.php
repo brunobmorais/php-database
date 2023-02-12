@@ -158,7 +158,7 @@ abstract class Crud {
     /**
      * @return false|string
      */
-    public function lastInsertId()
+    public function lastInsertId(): ?string
     {
         return $this->lastId();
     }
