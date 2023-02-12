@@ -234,7 +234,7 @@ trait DatalayerTrait
     }
 
     /**
-     * @return int
+     * @return string|null
      */
     private function lastId(): ?string
     {
