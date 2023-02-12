@@ -234,32 +234,6 @@ trait DatalayerTrait
     }
 
     /**
-     * @param $sql
-     * @param $params
-     * @param $class
-     * @return array|false
-     */
-    protected function selectDB($sql, $params = null, $class = null)
-    {
-        try {
-            $this->getInstance();
-            $this->prepare = $this->instance->prepare($sql);
-            $this->prepare->execute($params);
-            $this->setLogSQL($sql, $params);
-
-            if (!empty($class)) {
-                $rs = $this->fetchArrayClass($this->prepare,$class);
-            } else {
-                $rs = $this->fetchArrayObj($this->prepare);
-            }
-        } catch (PDOException $e) {
-            Connect::setError($e,$sql);
-            return false;
-        }
-        return $rs;
-    }
-
-    /**
     * RETORNAR O ULTIMO ID INSERIDO
     */
     private function lastId()
@@ -278,6 +252,11 @@ trait DatalayerTrait
         return $this->getInstance($this->database)->errorInfo();
     }
 
+    /**
+     * @param $sql_string
+     * @param array|null $params
+     * @return void
+     */
     function setLogSQL($sql_string, array $params = null) {
         if (!empty($params)) {
             $indexed = $params == array_values($params);

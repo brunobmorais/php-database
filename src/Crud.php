@@ -29,10 +29,11 @@ abstract class Crud {
         if (strlen($add)>0) { $add = " " . $add; }
         $sql = "SELECT {$fields} FROM {$this->tableName}{$add}";
         if ($debug) { echo $sql; die(); }
+        $this->executeSQL($sql, $values);
         if ($returnModel) {
-            return $this->selectDB($sql, $values, $this->classModel);
+            return $this->fetchArrayClass($this->prepare);
         } else {
-            return $this->selectDB($sql, $values, null);
+            return $this->fetchArrayObj($this->prepare);
         }
     }
 
@@ -100,6 +101,32 @@ abstract class Crud {
     }
 
     /**
+     * @param array $params
+     * @param string $where
+     * @return bool
+     */
+    public function updateArray(array $params, string $where = ""): bool
+    {
+        if (!empty($params)) {
+            $query = "UPDATE {$this->tableName} SET";
+            $values = [];
+
+            foreach ($params as $index => $column) {
+                $query .= " {$index} = ?, ";
+                $values[] = $params[$index];
+            }
+            $query = rtrim($query, ", ");
+
+            if (!empty($where))
+                $query .= " WHERE {$where}";
+
+            return $this->executeSQL($query, $values);
+        } else {
+            return false;
+        }
+    }
+
+    /**
      * @param array|null $values
      * @param string|null $where
      * @param bool $debug
@@ -112,8 +139,6 @@ abstract class Crud {
         if ($debug) { echo $sql; echo "<pre>"; print_r($values); echo "</pre>"; die(); }
         return $this->executeSQL($sql, $values);
     }
-
-
 
     /**
      * @return false|string
