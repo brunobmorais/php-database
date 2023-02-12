@@ -69,7 +69,7 @@ trait DatalayerTrait
      * @param $prepare
      * @return int
      */
-    protected function count($prepare=null): int
+    protected function count($prepare=null): ?int
     {
         try {
             $prepare = empty($prepare) ? $this->prepare : $prepare;
@@ -77,7 +77,7 @@ trait DatalayerTrait
             return $qtd;
         } catch (PDOException $e) {
             Connect::setError($e);
-            return false;
+            return null;
         }
 
 
@@ -87,7 +87,7 @@ trait DatalayerTrait
      * @param $prepare
      * @return array|false
      */
-    protected function fetchArrayAssoc($prepare=null): array
+    protected function fetchArrayAssoc($prepare=null): ?array
     {
         try {
             $prepare = empty($prepare) ? $this->prepare : $prepare;
@@ -96,7 +96,7 @@ trait DatalayerTrait
             return $dados;
         } catch (PDOException $e) {
             Connect::setError($e);
-            return false;
+            return null;
         }
     }
 
@@ -104,7 +104,7 @@ trait DatalayerTrait
      * @param $prepare
      * @return array|false
      */
-    protected function fetchArrayObj($prepare=null): array
+    protected function fetchArrayObj($prepare=null): ?array
     {
         try {
             $prepare = empty($prepare) ? $this->prepare : $prepare;
@@ -113,7 +113,7 @@ trait DatalayerTrait
             return $dados;
         } catch (PDOException $e) {
             Connect::setError($e);
-            return false;
+            return null;
         }
     }
 
@@ -122,7 +122,7 @@ trait DatalayerTrait
      * @param String|null $class
      * @return array|false
      */
-    protected function fetchArrayClass($prepare=null, String $class=null): array
+    protected function fetchArrayClass($prepare=null, String $class=null): ?array
     {
         try {
             $prepare = empty($prepare) ? $this->prepare : $prepare;
@@ -132,7 +132,7 @@ trait DatalayerTrait
             return $dados;
         } catch (PDOException $e) {
             Connect::setError($e);
-            return false;
+            return null;
         }
     }
 
@@ -140,7 +140,7 @@ trait DatalayerTrait
      * @param $prepare
      * @return array|false
      */
-    protected function fetchOneAssoc($prepare=null): array
+    protected function fetchOneAssoc($prepare=null): ?array
     {
         try {
             $prepare = empty($prepare) ? $this->prepare : $prepare;
@@ -148,7 +148,7 @@ trait DatalayerTrait
             return $dados;
         } catch (PDOException $e) {
             Connect::setError($e);
-            return false;
+            return null;
         }
     }
 
@@ -156,7 +156,7 @@ trait DatalayerTrait
      * @param $prepare
      * @return stdClass|false
      */
-    protected function fetchOneObj($prepare=null): stdClass
+    protected function fetchOneObj($prepare=null): ?stdClass
     {
         try {
             $prepare = empty($prepare) ? $this->prepare : $prepare;
@@ -164,7 +164,7 @@ trait DatalayerTrait
             return $dados;
         } catch (PDOException $e) {
             Connect::setError($e);
-            return false;
+            return null;
         }
     }
 
@@ -173,7 +173,7 @@ trait DatalayerTrait
      * @param String|null $class
      * @return array|false
      */
-    protected function fetchOneClass($prepare=null, String $class=null): object
+    protected function fetchOneClass($prepare=null, String $class=null): ?object
     {
         try {
             $prepare = empty($prepare) ? $this->prepare : $prepare;
@@ -182,14 +182,14 @@ trait DatalayerTrait
             return $dados;
         } catch (PDOException $e) {
             Connect::setError($e);
-            return false;
+            return null;
         }
     }
 
     /**
      * @return bool
      */
-    protected function beginTrasaction(): bool
+    protected function beginTrasaction(): ?bool
     {
         try {
             $this->getInstance();
@@ -197,7 +197,7 @@ trait DatalayerTrait
             return true;
         } catch (PDOException $e) {
             Connect::setError($e);
-            return false;
+            return null;
         }
 
     }
@@ -205,7 +205,7 @@ trait DatalayerTrait
     /**
      * @return bool
      */
-    protected function commitTransaction(): bool
+    protected function commitTransaction(): ?bool
     {
         try {
             $this->getInstance();
@@ -213,14 +213,14 @@ trait DatalayerTrait
             return true;
         } catch (PDOException $e) {
             Connect::setError($e);
-            return false;
+            return null;
         }
     }
 
     /**
      * @return bool
      */
-    protected function rollBackTransaction(): bool
+    protected function rollBackTransaction(): ?bool
     {
 
         try {
@@ -229,14 +229,14 @@ trait DatalayerTrait
             return true;
         } catch (PDOException $e) {
             Connect::setError($e);
-            return false;
+            return null;
         }
     }
 
     /**
-    * RETORNAR O ULTIMO ID INSERIDO
-    */
-    private function lastId()
+     * @return int
+     */
+    private function lastId(): int
     {
         $this->getInstance();
         $ultimo = $this->instance->lastInsertId();

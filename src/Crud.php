@@ -50,7 +50,10 @@ abstract class Crud {
         $numparams = substr($numparams, 1);
         $sql = "INSERT INTO {$this->tableName} ({$fields}) VALUES ({$numparams})";
         if ($debug) { echo $sql; echo "<pre>"; print_r($values); echo "</pre>"; die(); }
-        return $this->executeSQL($sql, $values);
+        $result = $this->executeSQL($sql, $values);
+        if (empty($result))
+            return false;
+        return true;
     }
 
     /**
@@ -74,7 +77,10 @@ abstract class Crud {
             $query = rtrim($query, ', ');
             $query .= ')';
 
-            return $this->executeSQL($query, $values);
+            $result = $this->executeSQL($query, $values);
+            if (empty($result))
+                return false;
+            return true;
         } else {
             return false;
         }
@@ -97,7 +103,10 @@ abstract class Crud {
         $sql = "UPDATE {$this->tableName} SET {$fields_T}";
         if (isset($where)) { $sql .= " WHERE $where"; }
         if ($debug) { echo $sql; echo "<pre>"; print_r($values); echo "</pre>"; die(); }
-        return $this->executeSQL($sql, $values);
+        $result = $this->executeSQL($sql, $values);
+        if (empty($result))
+            return false;
+        return true;
     }
 
     /**
@@ -120,7 +129,10 @@ abstract class Crud {
             if (!empty($where))
                 $query .= " WHERE {$where}";
 
-            return $this->executeSQL($query, $values);
+            $result = $this->executeSQL($query, $values);
+            if (empty($result))
+                return false;
+            return true;
         } else {
             return false;
         }
@@ -135,9 +147,12 @@ abstract class Crud {
     public function delete(array $values = null, string $where = null, bool $debug = false)
     {
         $sql = "DELETE FROM {$this->tableName}";
-        if (isset($where)) { $sql .= " WHERE $where"; }
+        if (!empty($where)) { $sql .= " WHERE $where"; }
         if ($debug) { echo $sql; echo "<pre>"; print_r($values); echo "</pre>"; die(); }
-        return $this->executeSQL($sql, $values);
+        $result = $this->executeSQL($sql, $values);
+        if (empty($result))
+            return false;
+        return true;
     }
 
     /**
