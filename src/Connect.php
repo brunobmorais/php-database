@@ -37,7 +37,7 @@ class Connect
     }
 
     /**
-     * @param array|null $database
+     * @param string $database
      * @return PDO|null
      */
     public static function getInstance($database): ?PDO
@@ -90,7 +90,6 @@ class Connect
                 echo "<h4>Ooops! Aconteceu algo inesperado, tente mais tarde! Nossa equipe já foi informada</h5><hr>";
             }
         }
-        die;
     }
 }
 
