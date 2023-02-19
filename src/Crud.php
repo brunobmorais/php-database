@@ -114,6 +114,7 @@ abstract class Crud {
      * @param string $where
      * @return bool
      */
+
     public function updateArray(array $params, string $where): bool
     {
         if (!empty($params)) {
@@ -121,10 +122,8 @@ abstract class Crud {
             $values = [];
 
             foreach ($params as $index => $column) {
-                if (($params[$index] != null)) {
-                    $query .= " {$index} = ?, ";
-                    $values[] = $params[$index];
-                }
+                $query .= " {$index} = ?, ";
+                $values[] = $params[$index];
             }
             $query = rtrim($query, ", ");
 
@@ -146,6 +145,7 @@ abstract class Crud {
      * @param bool $debug
      * @return bool|void
      */
+
     public function delete(array $values = null, string $where = null, bool $debug = false)
     {
         $sql = "DELETE FROM {$this->tableName}";
