@@ -207,6 +207,16 @@ Remember to include a tag, and to follow [Conventional Commits](https://www.conv
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
+<!-- ACKNOWLEDGMENTS -->
+## Aknowledgements
+Thank you to all the people who contributed to this project, whithout you this project would not be here today.
+
+<a href="https://github.com/flutterando/Uno/graphs/contributors">
+  <img src="https://contrib.rocks/image?repo=flutterando/Uno" />
+</a>
+
+<p align="right">(<a href="#readme-top">back to top</a>)</p>
+
 ## License
 
 The MIT License (MIT). Please see [License File](https://github.com/brunobmorais/database/blob/master/LICENSE) for more
