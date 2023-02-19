@@ -121,7 +121,7 @@ abstract class Crud {
             $values = [];
 
             foreach ($params as $index => $column) {
-                if (!empty($params[$index])) {
+                if (($params[$index] != null)) {
                     $query .= " {$index} = ?, ";
                     $values[] = $params[$index];
                 }
