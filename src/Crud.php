@@ -114,15 +114,17 @@ abstract class Crud {
      * @param string $where
      * @return bool
      */
-    public function updateArray(array $params, string $where = ""): bool
+    public function updateArray(array $params, string $where): bool
     {
         if (!empty($params)) {
             $query = "UPDATE {$this->tableName} SET";
             $values = [];
 
             foreach ($params as $index => $column) {
-                $query .= " {$index} = ?, ";
-                $values[] = $params[$index];
+                if (!empty($params[$index])) {
+                    $query .= " {$index} = ?, ";
+                    $values[] = $params[$index];
+                }
             }
             $query = rtrim($query, ", ");
 
