@@ -11,14 +11,14 @@ abstract class ModelAbstract
      */
     public function __construct(array $params = null){
         if (!empty($params))
-            $this->modelFromMap($params);
+            $this->fromMapToModel($params);
     }
 
     /**
      * @param array $params
      * @return void
      */
-    public function modelFromMap(array $params): void
+    public function fromMapToModel(array $params): void
     {
         foreach ($params as $key => $item)
         {
@@ -30,13 +30,10 @@ abstract class ModelAbstract
      * @param string $json
      * @return void
      */
-    public function modelFromJson(string $json): void
+    public function fromJsonToModel(string $json): void
     {
         $params = json_decode($json, true);
-        foreach ($params as $key => $item)
-        {
-            $this->{$key} = $item;
-        }
+        $this->fromMapToModel($params);
     }
 
     /**
