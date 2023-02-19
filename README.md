@@ -187,6 +187,26 @@ Thank you
 
 - [Bruno Morais](https://github.com/brunobmorais) (Developer)
 
+<!-- CONTRIBUTING -->
+## Contributing
+
+🚧 [Contributing Guidelines](https://github.com/angular/angular/blob/main/CONTRIBUTING.md) - Currently being updated 🚧
+
+Contributions are what make the open source community such an amazing place to learn, inspire, and create. Any contributions you make are **greatly appreciated**.
+
+If you have a suggestion that would make this better, please fork the repo and create a pull request. You can also simply open an issue with the appropriate tag.
+Don't forget to give the project a star! Thanks again!
+
+1. Fork the Project
+2. Create your Feature Branch (`git checkout -b feature/AmazingFeature`)
+3. Commit your Changes (`git commit -m 'Add some AmazingFeature'`)
+4. Push to the Branch (`git push origin feature/AmazingFeature`)
+5. Open a Pull Request
+
+Remember to include a tag, and to follow [Conventional Commits](https://www.conventionalcommits.org/en/v1.0.0/) and [Semantic Versioning](https://semver.org/) when uploading your commit and/or creating the issue.
+
+<p align="right">(<a href="#readme-top">back to top</a>)</p>
+
 ## License
 
 The MIT License (MIT). Please see [License File](https://github.com/brunobmorais/database/blob/master/LICENSE) for more
