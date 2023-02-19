@@ -74,6 +74,7 @@ abstract class Crud {
                 $values[] = $params[$column];
                 $query .= "?, ";
             }
+
             $query = rtrim($query, ', ');
             $query .= ')';
 
