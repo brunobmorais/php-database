@@ -6,7 +6,7 @@ namespace BMorais\Database;
  * Classe abastrada para fazer ligação entre o banco e aplicação
  *
  * @author Bruno Morais <brunomoraisti@gmail.com>
- * @copyright GPL © 2022, bmorais.com
+ * @copyright GPL © 2023, bmorais.com
  * @package bmorais\database
  * @subpackage class
  * @access private
@@ -54,6 +54,24 @@ abstract class Crud {
         if (empty($result))
             return false;
         return true;
+    }
+
+    /**
+     * @param object $object
+     * @return bool|null
+     */
+    public function insertObject(object $object)
+    {
+        $args = [];
+        $params = [];
+        foreach ($object as $chave => $valor) {
+            if ($valor != NULL) {
+                array_push($args, $chave);
+                array_push($params, $valor);
+            }
+        }
+        $args = implode(',', $args);
+        return $this->insert($args, $params);
     }
 
     /**
@@ -108,6 +126,25 @@ abstract class Crud {
         if (empty($result))
             return false;
         return true;
+    }
+
+
+    /**
+     * @param object $object
+     * @param string $where
+     * @return bool|null
+     */
+    public function updateObject(object $object, string $where){
+        $args = [];
+        $params = [];
+        foreach ($object as $chave => $valor) {
+            if ($valor != NULL) {
+                array_push($args, $chave);
+                array_push($params, $valor);
+            }
+        }
+        $args = implode(',', $args);
+        return $this->update($args, $params, $where);
     }
 
     /**
