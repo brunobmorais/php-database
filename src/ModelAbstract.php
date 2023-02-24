@@ -79,4 +79,17 @@ abstract class ModelAbstract
                 }, $re_2->getProperties())) .'}';
 
     }
+
+    /**
+     * @param 
+     * @return string|null 
+     */
+    public function __get($attribute) {
+        return $this->{$attribute} ; 
+    }
+
+    
+    public function __set($attribute, $value): void {
+        $this->{$attribute} = $value ; 
+    }
 }
