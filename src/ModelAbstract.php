@@ -85,10 +85,14 @@ abstract class ModelAbstract
      * @return string|null 
      */
     public function __get($attribute) {
-        return $this->{$attribute} ; 
+        return $this->{$attribute}??"" ;
     }
 
-    
+    /**
+     * @param $attribute
+     * @param $value
+     * @return void
+     */
     public function __set($attribute, $value): void {
         $this->{$attribute} = $value ; 
     }
