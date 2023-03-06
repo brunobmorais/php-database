@@ -139,12 +139,12 @@ class Usuario extends Crud
     }
     
     /**
-    * @param $codusuario
+    * @param $coduser
     * @return bool
      */
-    public function atualizar($codusuario)
+    public function updateUser($name, $email, $coduser)
     {
-        $result = $this->update("NOME, DATANASCIMENTO, EMAIL, TELEFONE, OBS", array($nome, $datanascimento, $email, $telefone, $obs, $codAluno), "CODALUNO=?");
+        $result = $this->update("NAME, EMAIL", array($name, $email), "CODUSER=?");
         if ($result){
             return true;
         } else {
@@ -153,12 +153,12 @@ class Usuario extends Crud
     }
     
     /**
-    * @param $codusuario
+    * @param $name
     * @return bool
     */
-    public function inserir($codusuario)
+    public function insertUser($name, $email)
     {
-        $result = $this->insert("NOME, DATANASCIMENTO, EMAIL, TELEFONE, OBS", array($nome, $datanascimento, $email, $telefone, $obs));
+        $result = $this->insert("NOME, EMAIL", array($name, $email));
         if ($result){
             return true;
         } else {
