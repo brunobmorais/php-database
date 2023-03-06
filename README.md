@@ -209,7 +209,9 @@ Remember to include a tag, and to follow [Conventional Commits](https://www.conv
 
 <!-- ACKNOWLEDGMENTS -->
 ## Aknowledgements
-Thank you to all the people who contributed to this project, whithout you this project would not be here today.
+###### Thank you to all the people who contributed to this project, whithout you this project would not be here today.
+
+Obrigado a todas as pessoas que contribuíram para este projeto, sem vocês este projeto não estaria aqui hoje.
 
 <a href="https://github.com/flutterando/Uno/graphs/contributors">
   <img src="https://contrib.rocks/image?repo=brunobmorais/php-database" />

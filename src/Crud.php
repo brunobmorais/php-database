@@ -2,11 +2,11 @@
 namespace BMorais\Database;
 
 /**
- * CLASSE CRUD
- * Classe abastrada para fazer ligação entre o banco e aplicação
+ * CLASS ABSTRACT CRUD
+ * Basic class to make connection between the database and the application
  *
  * @author Bruno Morais <brunomoraisti@gmail.com>
- * @copyright GPL © 2023, bmorais.com
+ * @copyright MIT, bmorais.com
  * @package bmorais\database
  * @subpackage class
  * @access private

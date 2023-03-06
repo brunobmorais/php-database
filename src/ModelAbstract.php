@@ -2,6 +2,17 @@
 
 namespace BMorais\Database;
 
+/**
+ * CLASS CRUD
+ * Basic class to make connection between the database and the application
+ *
+ * @author Bruno Morais <brunomoraisti@gmail.com>
+ * @copyright MIT, bmorais.com
+ * @package bmorais\database
+ * @subpackage class
+ * @access private
+ */
+
 use ReflectionObject;
 
 abstract class ModelAbstract

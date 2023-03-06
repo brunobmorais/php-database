@@ -1,11 +1,11 @@
 <?php
 namespace BMorais\Database;
 /**
- * CLASSE BANCO
- *  Esta classe faz conexão com o banco de dados mysql utilizando o pdo
+ * CLASS CONNECT
+ * This class connects to the mysql database using pdo
  *
  * @author Bruno Morais <brunomoraisti@gmail.com>
- * @copyright GPL © 2022, bmorais.com
+ * @copyright MIT, bmorais.com
  * @package bmorais\database
  * @subpackage class
  * @access private
@@ -66,7 +66,7 @@ class Connect
         if (CONFIG_DATA_LAYER["return_error_json"]) {
             $obj = [
                 "error" => true,
-                "message" => "Ooops! Aconteceu algo inesperado, tente mais tarde! Nossa equipe já foi informada",
+                "message" => "Ooops! ERRO",
                 "code" => "500",
             ];
 
@@ -77,7 +77,7 @@ class Connect
 
             echo json_encode($obj);
         } else {
-            $message = "<h4>Ooops! Aconteceu algo inesperado, tente mais tarde! Nossa equipe já foi informada</h5><hr>";
+            $message = "<h4>Ooops! ERRO</h5><hr>";
             $message .= "<p><b>File:</b>  " . $e->getFile() . "<br/>";
             $message .= "<b>SQL:</b>  " . $sql . "<br/>";
             $message .= "<b>Line:</b>  " . $e->getLine() . "<br/>";
@@ -87,7 +87,7 @@ class Connect
             if (CONFIG_DATA_LAYER["display_errors_details"]) {
                 echo $message;
             } else {
-                echo "<h4>Ooops! Aconteceu algo inesperado, tente mais tarde! Nossa equipe já foi informada</h5><hr>";
+                echo "<h4>Ooops! ERRO</h5><hr>";
             }
         }
     }

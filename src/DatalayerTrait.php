@@ -1,11 +1,11 @@
 <?php
 namespace BMorais\Database;
 /**
- * CLASSE TRAIT DO DATABASE
- *  Esta classe de métodos de execução no banco
+ * CLASS TRAIT DATALAYER
+ * This class of execution methods in the database
  *
  * @author Bruno Morais <brunomoraisti@gmail.com>
- * @copyright GPL © 2022, bmorais.com
+ * @copyright MIT, bmorais.com
  * @package bmorais\database
  * @subpackage class
  * @access private
