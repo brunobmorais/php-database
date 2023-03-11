@@ -28,7 +28,7 @@ abstract class Crud {
     {
         if (strlen($add)>0) { $add = " " . $add; }
         $sql = "SELECT {$fields} FROM {$this->tableName}{$add}";
-        if ($debug) { echo $sql; die(); }
+        if ($debug) { echo $sql; return; }
         $this->executeSQL($sql, $values);
         if ($returnModel) {
             return $this->fetchArrayClass($this->prepare);
