@@ -20,7 +20,8 @@ abstract class ModelAbstract
     /**
      * @param array|null $params
      */
-    public function __construct(array $params = null){
+    public function __construct(array $params = null)
+    {
         if (!empty($params))
             $this->fromMapToModel($params);
     }
@@ -50,9 +51,9 @@ abstract class ModelAbstract
     /**
      * @return array|null
      */
-    public function toMap(): ?array
+    public function toMap($objArray = null): ?array
     {
-        $data = $this;
+        $data = $objArray??$this;
         if (is_array($data) || is_object($data))
         {
             $result = [];
@@ -93,10 +94,10 @@ abstract class ModelAbstract
 
     /**
      * @param 
-     * @return string|null 
+     * @return string
      */
     public function __get($attribute) {
-        return $this->{$attribute}??"" ;
+        return $this->{$attribute}??"";
     }
 
     /**
@@ -105,6 +106,6 @@ abstract class ModelAbstract
      * @return void
      */
     public function __set($attribute, $value): void {
-        $this->{$attribute} = $value ; 
+        $this->{$attribute} = $value;
     }
 }
