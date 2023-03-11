@@ -49,7 +49,7 @@ abstract class Crud {
         foreach ($values as $item) { $numparams .= ",?"; }
         $numparams = substr($numparams, 1);
         $sql = "INSERT INTO {$this->tableName} ({$fields}) VALUES ({$numparams})";
-        if ($debug) { echo $sql; echo "<pre>"; print_r($values); echo "</pre>"; die(); }
+        if ($debug) { echo $sql; echo "<pre>"; print_r($values); echo "</pre>"; return; }
         $result = $this->executeSQL($sql, $values);
         if (empty($result))
             return false;
@@ -121,7 +121,7 @@ abstract class Crud {
         $fields_T = substr($fields_T, 2);
         $sql = "UPDATE {$this->tableName} SET {$fields_T}";
         if (isset($where)) { $sql .= " WHERE $where"; }
-        if ($debug) { echo $sql; echo "<pre>"; print_r($values); echo "</pre>"; die(); }
+        if ($debug) { echo $sql; echo "<pre>"; print_r($values); echo "</pre>"; return; }
         $result = $this->executeSQL($sql, $values);
         if (empty($result))
             return false;
@@ -188,7 +188,7 @@ abstract class Crud {
     {
         $sql = "DELETE FROM {$this->tableName}";
         if (!empty($where)) { $sql .= " WHERE $where"; }
-        if ($debug) { echo $sql; echo "<pre>"; print_r($values); echo "</pre>"; die(); }
+        if ($debug) { echo $sql; echo "<pre>"; print_r($values); echo "</pre>"; return; }
         $result = $this->executeSQL($sql, $values);
         if (empty($result))
             return false;

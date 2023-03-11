@@ -93,10 +93,11 @@ abstract class ModelAbstract
     }
 
     /**
-     * @param 
+     * @param $attribute
      * @return string
      */
-    public function __get($attribute) {
+    public function __get($attribute):string
+    {
         return $this->{$attribute}??"";
     }
 
@@ -105,7 +106,8 @@ abstract class ModelAbstract
      * @param $value
      * @return void
      */
-    public function __set($attribute, $value): void {
+    public function __set($attribute, $value): void
+    {
         $this->{$attribute} = $value;
     }
 }
