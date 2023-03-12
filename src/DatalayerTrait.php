@@ -13,20 +13,34 @@ namespace BMorais\Database;
 
 use PDO;
 use PDOException;
+use PDOStatement;
 use stdClass;
 
 
 trait DatalayerTrait
 {
-    /** @var PDO */
-    protected $instance;
-    protected $params;
+    /** @var PDO|null */
+    protected $instance = null;
+
+    /** @var array */
+    protected $fields;
+
+    /** @var PDOStatement|false */
     protected $prepare = null;
+
+    /** @var string */
     protected $database = CONFIG_DATA_LAYER["dbname"];
+
+    /** @var string */
     protected $classModel;
+
+    /** @var string */
     protected $tableName;
+
+    /** @var array */
     protected $resultArray = array();
 
+    /** @var string */
     private $logSQL;
 
     /**
@@ -34,15 +48,17 @@ trait DatalayerTrait
      */
     private function getInstance(): ?PDO
     {
-        if (strpos($_SERVER['SERVER_NAME'], "homologacao") && !strpos($this->database, "Homologacao") )
-            $this->database .= "Homologacao";
-
-        if (!isset($this->instance)) {
-            $this->instance = Connect::getInstance($this->database);
-            return $this->instance;
-        } else {
-            return $this->instance;
+        if (strpos($_SERVER['SERVER_NAME'], mb_strtolower(CONFIG_DATA_LAYER["homologation"])) && !strpos($this->database, ucfirst(CONFIG_DATA_LAYER["homologation"])))
+        {
+            $this->database .= ucfirst(CONFIG_DATA_LAYER["homologation"]);
         }
+
+        if (!isset($this->instance))
+        {
+            $this->instance = Connect::getInstance($this->database);
+        }
+
+        return $this->instance;
     }
 
     /**
