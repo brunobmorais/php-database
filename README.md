@@ -70,8 +70,10 @@ const CONFIG_DATA_LAYER = [
         PDO::MYSQL_ATTR_FOUND_ROWS => true,
         PDO::ATTR_STRINGIFY_FETCHES => true
     ],
+    "homologation" => "homologacao",
     "directory_models" => "App\\Models\\",
-    "display_errors_details" => true
+    "return_error_json" => true,
+    "display_errors_details" => true,
 ];
 ```
 
