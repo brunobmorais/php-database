@@ -1,4 +1,5 @@
 <?php
+
 namespace BMorais\Database;
 
 /**
@@ -12,9 +13,10 @@ namespace BMorais\Database;
  * @access private
  */
 
-abstract class Crud {
-
+abstract class Crud
+{
     use DatalayerTrait;
+
 
     /**
      * @param string $fields
@@ -24,11 +26,17 @@ abstract class Crud {
      * @param bool $debug
      * @return array|false|void
      */
-    public function select(string $fields = "*", string $add = "", array $values = null, bool $returnModel = false, bool $debug = false)
+    public function select(string $fields = '*', string $add = '', array $values = null, bool $returnModel = false, bool $debug = false)
     {
-        if (strlen($add)>0) { $add = " " . $add; }
+        if (strlen($add) > 0) {
+            $add = ' ' . $add;
+        }
         $sql = "SELECT {$fields} FROM {$this->tableName}{$add}";
-        if ($debug) { echo $sql; return; }
+        if ($debug) {
+            echo $sql;
+
+            return;
+        }
         $this->executeSQL($sql, $values);
         if ($returnModel) {
             return $this->fetchArrayClass($this->prepare);
@@ -45,14 +53,25 @@ abstract class Crud {
      */
     public function insert(string $fields, array $values = null, $debug = false)
     {
-        $numparams = "";
-        foreach ($values as $item) { $numparams .= ",?"; }
+        $numparams = '';
+        foreach ($values as $item) {
+            $numparams .= ',?';
+        }
         $numparams = substr($numparams, 1);
         $sql = "INSERT INTO {$this->tableName} ({$fields}) VALUES ({$numparams})";
-        if ($debug) { echo $sql; echo "<pre>"; print_r($values); echo "</pre>"; return; }
+        if ($debug) {
+            echo $sql;
+            echo '<pre>';
+            print_r($values);
+            echo '</pre>';
+
+            return;
+        }
         $result = $this->executeSQL($sql, $values);
-        if (empty($result))
+        if (empty($result)) {
             return false;
+        }
+
         return true;
     }
 
@@ -65,12 +84,13 @@ abstract class Crud {
         $args = [];
         $params = [];
         foreach ($object as $chave => $valor) {
-            if ($valor != NULL) {
+            if ($valor != null) {
                 array_push($args, $chave);
                 array_push($params, $valor);
             }
         }
         $args = implode(',', $args);
+
         return $this->insert($args, $params);
     }
 
@@ -84,21 +104,24 @@ abstract class Crud {
             $query = "INSERT INTO $this->tableName";
             $values = [];
             $dataColumns = array_keys($params);
-            if (isset ($dataColumns[0]))
+            if (isset($dataColumns[0])) {
                 $query .= ' (`' . implode('`, `', $dataColumns) . '`) ';
+            }
             $query .= ' VALUES (';
 
             foreach ($dataColumns as $index => $column) {
                 $values[] = $params[$column];
-                $query .= "?, ";
+                $query .= '?, ';
             }
 
             $query = rtrim($query, ', ');
             $query .= ')';
 
             $result = $this->executeSQL($query, $values);
-            if (empty($result))
+            if (empty($result)) {
                 return false;
+            }
+
             return true;
         } else {
             return false;
@@ -114,17 +137,30 @@ abstract class Crud {
      */
     public function update(string $fields, array $values = null, string $where = null, bool $debug = false)
     {
-        $fields_T = "";
-        $atributos = explode(",", $fields);
+        $fields_T = '';
+        $atributos = explode(',', $fields);
 
-        foreach ($atributos as $item) { $fields_T .= ", {$item} = ?"; }
+        foreach ($atributos as $item) {
+            $fields_T .= ", {$item} = ?";
+        }
         $fields_T = substr($fields_T, 2);
         $sql = "UPDATE {$this->tableName} SET {$fields_T}";
-        if (isset($where)) { $sql .= " WHERE $where"; }
-        if ($debug) { echo $sql; echo "<pre>"; print_r($values); echo "</pre>"; return; }
+        if (isset($where)) {
+            $sql .= " WHERE $where";
+        }
+        if ($debug) {
+            echo $sql;
+            echo '<pre>';
+            print_r($values);
+            echo '</pre>';
+
+            return;
+        }
         $result = $this->executeSQL($sql, $values);
-        if (empty($result))
+        if (empty($result)) {
             return false;
+        }
+
         return true;
     }
 
@@ -134,16 +170,18 @@ abstract class Crud {
      * @param string $where
      * @return bool|null
      */
-    public function updateObject(object $object, string $where){
+    public function updateObject(object $object, string $where)
+    {
         $args = [];
         $params = [];
         foreach ($object as $chave => $valor) {
-            if ($valor != NULL) {
+            if ($valor != null) {
                 array_push($args, $chave);
                 array_push($params, $valor);
             }
         }
         $args = implode(',', $args);
+
         return $this->update($args, $params, $where);
     }
 
@@ -163,14 +201,17 @@ abstract class Crud {
                 $query .= " {$index} = ?, ";
                 $values[] = $params[$index];
             }
-            $query = rtrim($query, ", ");
+            $query = rtrim($query, ', ');
 
-            if (!empty($where))
+            if (!empty($where)) {
                 $query .= " WHERE {$where}";
+            }
 
             $result = $this->executeSQL($query, $values);
-            if (empty($result))
+            if (empty($result)) {
                 return false;
+            }
+
             return true;
         } else {
             return false;
@@ -187,11 +228,22 @@ abstract class Crud {
     public function delete(array $values = null, string $where = null, bool $debug = false)
     {
         $sql = "DELETE FROM {$this->tableName}";
-        if (!empty($where)) { $sql .= " WHERE $where"; }
-        if ($debug) { echo $sql; echo "<pre>"; print_r($values); echo "</pre>"; return; }
+        if (!empty($where)) {
+            $sql .= " WHERE $where";
+        }
+        if ($debug) {
+            echo $sql;
+            echo '<pre>';
+            print_r($values);
+            echo '</pre>';
+
+            return;
+        }
         $result = $this->executeSQL($sql, $values);
-        if (empty($result))
+        if (empty($result)) {
             return false;
+        }
+
         return true;
     }
 
@@ -206,9 +258,8 @@ abstract class Crud {
     /**
      * @return string|null
      */
-    public function getLogSQL():?string
+    public function getLogSQL(): ?string
     {
         return $this->logSQL;
     }
-
 }

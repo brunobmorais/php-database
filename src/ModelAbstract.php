@@ -22,8 +22,9 @@ abstract class ModelAbstract
      */
     public function __construct(array $params = null)
     {
-        if (!empty($params))
+        if (!empty($params)) {
             $this->fromMapToModel($params);
+        }
     }
 
     /**
@@ -32,8 +33,7 @@ abstract class ModelAbstract
      */
     public function fromMapToModel(array $params): void
     {
-        foreach ($params as $key => $item)
-        {
+        foreach ($params as $key => $item) {
             $this->{$key} = $item;
         }
     }
@@ -53,23 +53,23 @@ abstract class ModelAbstract
      */
     public function toMap($objArray = null): ?array
     {
-        $data = $objArray??$this;
-        if (is_array($data) || is_object($data))
-        {
+        $data = $objArray ?? $this;
+        if (is_array($data) || is_object($data)) {
             $result = [];
-            foreach ($data as $key => $value)
-            {
+            foreach ($data as $key => $value) {
                 $result[$key] = (is_array($value) || is_object($value)) ? $this->toMap($value) : $value;
             }
+
             return $result;
         }
+
         return null;
     }
 
     /**
      * @return string
      */
-    public function toJson():string
+    public function toJson(): string
     {
         return json_encode($this->toMap(), JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
     }
@@ -77,28 +77,32 @@ abstract class ModelAbstract
     /**
      * @return string
      */
-    public function toString():string
+    public function toString(): string
     {
         $data = (object) $this->toMap();
         $re_2 = new ReflectionObject($data);
         $classname = get_class($this);
-        if ($pos = strrpos($classname, '\\')) $classname = substr($classname, $pos + 1);
-        return $classname .' {' . implode(', ', array_map(
-                function($p_0) use ($data)
-                {
-                    $p_0->setAccessible(true);
-                    return $p_0->getName() .': '. $p_0->getValue($data);
-                }, $re_2->getProperties())) .'}';
+        if ($pos = strrpos($classname, '\\')) {
+            $classname = substr($classname, $pos + 1);
+        }
 
+        return $classname . ' {' . implode(', ', array_map(
+            function ($p_0) use ($data) {
+                $p_0->setAccessible(true);
+
+                return $p_0->getName() . ': ' . $p_0->getValue($data);
+            },
+            $re_2->getProperties()
+        )) . '}';
     }
 
     /**
      * @param $attribute
      * @return string
      */
-    public function __get($attribute):string
+    public function __get($attribute): string
     {
-        return $this->{$attribute}??"";
+        return $this->{$attribute} ?? '';
     }
 
     /**

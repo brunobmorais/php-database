@@ -1,5 +1,6 @@
 <?php
 namespace BMorais\Database;
+
 /**
  * CLASS TRAIT DATALAYER
  * This class of execution methods in the database
@@ -15,7 +16,6 @@ use PDO;
 use PDOException;
 use PDOStatement;
 use stdClass;
-
 
 trait DatalayerTrait
 {
@@ -48,13 +48,11 @@ trait DatalayerTrait
      */
     private function getInstance(): ?PDO
     {
-        if (strpos($_SERVER['SERVER_NAME'], mb_strtolower(CONFIG_DATA_LAYER["homologation"])) && !strpos($this->database, ucfirst(CONFIG_DATA_LAYER["homologation"])))
-        {
+        if (strpos($_SERVER['SERVER_NAME'], mb_strtolower(CONFIG_DATA_LAYER["homologation"])) && !strpos($this->database, ucfirst(CONFIG_DATA_LAYER["homologation"]))) {
             $this->database .= ucfirst(CONFIG_DATA_LAYER["homologation"]??"");
         }
 
-        if (!isset($this->instance))
-        {
+        if (!isset($this->instance)) {
             $this->instance = Connect::getInstance($this->database);
         }
 
@@ -74,7 +72,7 @@ trait DatalayerTrait
             $this->prepare->execute($params);
             $this->setLogSQL($query, $params);
         } catch (PDOException $e) {
-            Connect::setError($e,$query);
+            Connect::setError($e, $query);
             return false;
         }
 
@@ -272,24 +270,32 @@ trait DatalayerTrait
      * @param array|null $params
      * @return void
      */
-    private function setLogSQL($sql_string, array $params = null) {
+    private function setLogSQL($sql_string, array $params = null)
+    {
         if (!empty($params)) {
             $indexed = $params == array_values($params);
             foreach($params as $k=>$v) {
                 if (is_object($v)) {
-                    if ($v instanceof \DateTime) $v = $v->format('Y-m-d H:i:s');
-                    else continue;
+                    if ($v instanceof \DateTime) {
+                        $v = $v->format('Y-m-d H:i:s');
+                    } else {
+                        continue;
+                    }
+                } elseif (is_string($v)) {
+                    $v="'$v'";
+                } elseif ($v === null) {
+                    $v='NULL';
+                } elseif (is_array($v)) {
+                    $v = implode(',', $v);
                 }
-                elseif (is_string($v)) $v="'$v'";
-                elseif ($v === null) $v='NULL';
-                elseif (is_array($v)) $v = implode(',', $v);
 
                 if ($indexed) {
                     $sql_string = preg_replace('/\?/', $v, $sql_string, 1);
-                }
-                else {
-                    if ($k[0] != ':') $k = ':'.$k; //add leading colon if it was left out
-                    $sql_string = str_replace($k,$v,$sql_string);
+                } else {
+                    if ($k[0] != ':') {
+                        $k = ':'.$k;
+                    } //add leading colon if it was left out
+                    $sql_string = str_replace($k, $v, $sql_string);
                 }
             }
         }
