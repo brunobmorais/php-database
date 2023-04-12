@@ -43,6 +43,11 @@ trait DatalayerTrait
     /** @var string */
     private $logSQL;
 
+    public function __construct()
+    {
+        $this->getInstance();
+    }
+
     /**
      * @return PDO|null
      */
@@ -52,7 +57,7 @@ trait DatalayerTrait
             $this->database .= ucfirst(CONFIG_DATA_LAYER["homologation"]??"");
         }
 
-        if (!isset($this->instance)) {
+        if (empty($this->instance)) {
             $this->instance = Connect::getInstance($this->database);
         }
 
