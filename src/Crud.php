@@ -262,4 +262,12 @@ abstract class Crud
     {
         return $this->logSQL;
     }
+
+    /**
+     * @return void
+     */
+    public function startInstance(): void
+    {
+        $this->getInstance();
+    }
 }

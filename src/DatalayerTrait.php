@@ -43,11 +43,6 @@ trait DatalayerTrait
     /** @var string */
     private $logSQL;
 
-    public function __construct()
-    {
-        $this->getInstance();
-    }
-
     /**
      * @return PDO|null
      */
