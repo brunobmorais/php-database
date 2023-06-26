@@ -170,7 +170,7 @@ abstract class Crud
      * @param string $where
      * @return bool|null
      */
-    public function updateObject(object $object, string $where)
+    public function updateObject(object $object, string $where): ?bool
     {
         $args = [];
         $params = [];
@@ -263,11 +263,4 @@ abstract class Crud
         return $this->logSQL;
     }
 
-    /**
-     * @return void
-     */
-    public function startInstance(): void
-    {
-        $this->getInstance();
-    }
 }
