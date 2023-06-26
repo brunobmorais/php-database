@@ -50,11 +50,11 @@ class Connect
                 CONFIG_DATA_LAYER['passwd'],
                 CONFIG_DATA_LAYER['options']
             );
+            return $instance;
         } catch (PDOException $e) {
             self::setError($e);
+            return null;
         }
-
-        return $instance;
     }
 
     /**

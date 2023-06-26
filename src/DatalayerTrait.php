@@ -50,7 +50,7 @@ trait DatalayerTrait
     {
         try {
             if (strpos($_SERVER['SERVER_NAME'], mb_strtolower(CONFIG_DATA_LAYER["homologation"])) && !strpos($this->database, ucfirst(CONFIG_DATA_LAYER["homologation"]))) {
-                $this->database .= ucfirst(CONFIG_DATA_LAYER["homologation"]??"");
+                $this->database .= ucfirst(CONFIG_DATA_LAYER["homologation"] ?? "");
             }
 
             if (empty($this->instance)) {
