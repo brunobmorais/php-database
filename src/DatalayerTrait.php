@@ -44,19 +44,24 @@ trait DatalayerTrait
     private $logSQL;
 
     /**
-     * @return PDO|null
+     * @return PDO|false
      */
-    private function getInstance(): ?PDO
+    private function getInstance()
     {
-        if (strpos($_SERVER['SERVER_NAME'], mb_strtolower(CONFIG_DATA_LAYER["homologation"])) && !strpos($this->database, ucfirst(CONFIG_DATA_LAYER["homologation"]))) {
-            $this->database .= ucfirst(CONFIG_DATA_LAYER["homologation"]??"");
+        try {
+            if (strpos($_SERVER['SERVER_NAME'], mb_strtolower(CONFIG_DATA_LAYER["homologation"])) && !strpos($this->database, ucfirst(CONFIG_DATA_LAYER["homologation"]))) {
+                $this->database .= ucfirst(CONFIG_DATA_LAYER["homologation"]??"");
+            }
+
+            if (empty($this->instance)) {
+                $this->instance = Connect::getInstance($this->database);
+            }
+            return $this->instance;
+        } catch (PDOException $e) {
+            Connect::setError($e);
+            return false;
         }
 
-        if (empty($this->instance)) {
-            $this->instance = Connect::getInstance($this->database);
-        }
-
-        return $this->instance;
     }
 
     /**
@@ -67,21 +72,19 @@ trait DatalayerTrait
     protected function executeSQL(String $query, ?array $params = null)
     {
         try {
-            $this->getInstance();
-            $this->prepare = $this->instance->prepare($query);
+            $this->prepare = $this->getInstance()->prepare($query);
             $this->prepare->execute($params);
             $this->setLogSQL($query, $params);
+            return $this->prepare;
         } catch (PDOException $e) {
             Connect::setError($e, $query);
             return false;
         }
-
-        return $this->prepare;
     }
 
     /**
      * @param $prepare
-     * @return int
+     * @return int|false
      */
     protected function count($prepare=null): ?int
     {
@@ -91,7 +94,7 @@ trait DatalayerTrait
             return $qtd;
         } catch (PDOException $e) {
             Connect::setError($e);
-            return null;
+            return false;
         }
 
 
@@ -206,8 +209,7 @@ trait DatalayerTrait
     protected function beginTrasaction(): ?bool
     {
         try {
-            $this->getInstance();
-            $this->instance->beginTransaction();
+            $this->getInstance()->beginTransaction();
             return true;
         } catch (PDOException $e) {
             Connect::setError($e);
@@ -222,8 +224,7 @@ trait DatalayerTrait
     protected function commitTransaction(): ?bool
     {
         try {
-            $this->getInstance();
-            $this->instance->commit();
+            $this->getInstance()->commit();
             return true;
         } catch (PDOException $e) {
             Connect::setError($e);
@@ -238,8 +239,7 @@ trait DatalayerTrait
     {
 
         try {
-            $this->getInstance();
-            $this->instance->rollBack();
+            $this->getInstance()->rollBack();
             return true;
         } catch (PDOException $e) {
             Connect::setError($e);
@@ -252,9 +252,14 @@ trait DatalayerTrait
      */
     private function lastId(): ?string
     {
-        $this->getInstance();
-        $ultimo = $this->instance->lastInsertId();
-        return $ultimo;
+         try {
+             $ultimo = $this->getInstance()->lastInsertId();
+             return $ultimo;
+         } catch (PDOException $e)
+         {
+             Connect::setError($e);
+             return null;
+         }
     }
 
     /**
@@ -262,7 +267,7 @@ trait DatalayerTrait
      */
     protected function printErrorInfo(): array
     {
-        return $this->getInstance($this->database)->errorInfo();
+        return $this->getInstance()->errorInfo();
     }
 
     /**
