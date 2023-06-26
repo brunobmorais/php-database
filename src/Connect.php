@@ -20,7 +20,7 @@ use PDOException;
 class Connect
 {
     /** @var PDOException|null */
-    private static ?PDOException $error = null;
+    private $error = null;
 
 
     /**
