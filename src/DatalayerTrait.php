@@ -54,11 +54,17 @@ trait DatalayerTrait
             }
 
             if (empty($this->instance)) {
-                $this->instance = Connect::getInstance($this->database);
+                $this->instance = new PDO(
+                    CONFIG_DATA_LAYER['driver'] . ':host=' . CONFIG_DATA_LAYER['host'] . ';dbname=' . $this->database . ';port=' . CONFIG_DATA_LAYER['port'],
+                    CONFIG_DATA_LAYER['username'],
+                    CONFIG_DATA_LAYER['passwd'],
+                    CONFIG_DATA_LAYER['options']
+                );
             }
+
             return $this->instance;
         } catch (PDOException $e) {
-            Connect::setError($e);
+            $this->setError($e);
             return false;
         }
 
@@ -77,7 +83,7 @@ trait DatalayerTrait
             $this->setLogSQL($query, $params);
             return $this->prepare;
         } catch (PDOException $e) {
-            Connect::setError($e, $query);
+            $this->setError($e, $query);
             return false;
         }
     }
@@ -93,7 +99,7 @@ trait DatalayerTrait
             $qtd = $prepare->rowCount();
             return $qtd;
         } catch (PDOException $e) {
-            Connect::setError($e);
+            $this->setError($e);
             return false;
         }
 
@@ -112,7 +118,7 @@ trait DatalayerTrait
             $this->resultArray = $dados;
             return $dados;
         } catch (PDOException $e) {
-            Connect::setError($e);
+            $this->setError($e);
             return null;
         }
     }
@@ -129,7 +135,7 @@ trait DatalayerTrait
             $this->resultArray = $dados;
             return $dados;
         } catch (PDOException $e) {
-            Connect::setError($e);
+            $this->setError($e);
             return null;
         }
     }
@@ -148,7 +154,7 @@ trait DatalayerTrait
             $this->resultArray = $dados;
             return $dados;
         } catch (PDOException $e) {
-            Connect::setError($e);
+            $this->setError($e);
             return null;
         }
     }
@@ -164,7 +170,7 @@ trait DatalayerTrait
             $dados = $prepare->fetch(PDO::FETCH_ASSOC);
             return $dados;
         } catch (PDOException $e) {
-            Connect::setError($e);
+            $this->setError($e);
             return null;
         }
     }
@@ -180,7 +186,7 @@ trait DatalayerTrait
             $dados = $prepare->fetch(PDO::FETCH_OBJ);
             return $dados;
         } catch (PDOException $e) {
-            Connect::setError($e);
+            $this->setError($e);
             return null;
         }
     }
@@ -198,7 +204,7 @@ trait DatalayerTrait
             $dados = $prepare->fetchObject(CONFIG_DATA_LAYER["directory_models"] . $class);
             return $dados;
         } catch (PDOException $e) {
-            Connect::setError($e);
+            $this->setError($e);
             return null;
         }
     }
@@ -212,7 +218,7 @@ trait DatalayerTrait
             $this->getInstance()->beginTransaction();
             return true;
         } catch (PDOException $e) {
-            Connect::setError($e);
+            $this->setError($e);
             return null;
         }
 
@@ -227,7 +233,7 @@ trait DatalayerTrait
             $this->getInstance()->commit();
             return true;
         } catch (PDOException $e) {
-            Connect::setError($e);
+            $this->setError($e);
             return null;
         }
     }
@@ -242,7 +248,7 @@ trait DatalayerTrait
             $this->getInstance()->rollBack();
             return true;
         } catch (PDOException $e) {
-            Connect::setError($e);
+            $this->setError($e);
             return null;
         }
     }
@@ -257,17 +263,9 @@ trait DatalayerTrait
              return $ultimo;
          } catch (PDOException $e)
          {
-             Connect::setError($e);
+             $this->setError($e);
              return null;
          }
-    }
-
-    /**
-     * @return array
-     */
-    protected function printErrorInfo(): array
-    {
-        return $this->getInstance()->errorInfo();
     }
 
     /**
@@ -305,5 +303,42 @@ trait DatalayerTrait
             }
         }
         $this->logSQL = $sql_string;
+    }
+
+    /**
+     * @param PDOException $e
+     * @param string $sql
+     * @return void
+     */
+    private static function setError(PDOException $e, string $sql = '')
+    {
+        self::$error = $e;
+        if (CONFIG_DATA_LAYER['return_error_json']) {
+            $obj = [
+                'error' => true,
+                'message' => 'Ooops! ERRO',
+                'code' => '500',
+            ];
+
+            if (CONFIG_DATA_LAYER['display_errors_details'] ?? true) {
+                $obj['sql'] = $sql;
+                $obj['exception'] = $e;
+            }
+
+            echo json_encode($obj);
+        } else {
+            $message = '<h4>Ooops! ERRO</h5><hr>';
+            $message .= '<p><b>File:</b>  ' . $e->getFile() . '<br/>';
+            $message .= '<b>SQL:</b>  ' . $sql . '<br/>';
+            $message .= '<b>Line:</b>  ' . $e->getLine() . '<br/>';
+            $message .= '<b>Message:</b>  ' . $e->getMessage() . '<br/>';
+            $message .= '<b>Exception:</b>' . $e->getCode() . '<br/>' . $e->getPrevious() . '<br/>' . $e->getTraceAsString() . '<br/></p>';
+
+            if (CONFIG_DATA_LAYER['display_errors_details']) {
+                echo $message;
+            } else {
+                echo '<h4>Ooops! ERRO</h5><hr>';
+            }
+        }
     }
 }
