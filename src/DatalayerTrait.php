@@ -78,7 +78,7 @@ trait DatalayerTrait
      * @param array|null $params
      * @return false|mixed|\PDOStatement|null
      */
-    protected function executeSQL(String $query, ?array $params = null)
+    protected function executeSQL(string $query, ?array $params = null)
     {
         try {
             $this->prepare = $this->getInstance()->prepare($query);
@@ -95,7 +95,7 @@ trait DatalayerTrait
      * @param $prepare
      * @return int|false
      */
-    protected function count($prepare=null): ?int
+    protected function count($prepare = null): ?int
     {
         try {
             $prepare = empty($prepare) ? $this->prepare : $prepare;
@@ -113,7 +113,7 @@ trait DatalayerTrait
      * @param $prepare
      * @return array|false
      */
-    protected function fetchArrayAssoc($prepare=null): ?array
+    protected function fetchArrayAssoc($prepare = null): ?array
     {
         try {
             $prepare = empty($prepare) ? $this->prepare : $prepare;
@@ -130,7 +130,7 @@ trait DatalayerTrait
      * @param $prepare
      * @return array|false
      */
-    protected function fetchArrayObj($prepare=null): ?array
+    protected function fetchArrayObj($prepare = null): ?array
     {
         try {
             $prepare = empty($prepare) ? $this->prepare : $prepare;
@@ -148,7 +148,7 @@ trait DatalayerTrait
      * @param String|null $class
      * @return array|false
      */
-    protected function fetchArrayClass($prepare=null, String $class=null): ?array
+    protected function fetchArrayClass($prepare = null, string $class = null): ?array
     {
         try {
             $prepare = empty($prepare) ? $this->prepare : $prepare;
@@ -166,7 +166,7 @@ trait DatalayerTrait
      * @param $prepare
      * @return array|false
      */
-    protected function fetchOneAssoc($prepare=null): ?array
+    protected function fetchOneAssoc($prepare = null): ?array
     {
         try {
             $prepare = empty($prepare) ? $this->prepare : $prepare;
@@ -182,7 +182,7 @@ trait DatalayerTrait
      * @param $prepare
      * @return stdClass|false
      */
-    protected function fetchOneObj($prepare=null): ?stdClass
+    protected function fetchOneObj($prepare = null): ?stdClass
     {
         try {
             $prepare = empty($prepare) ? $this->prepare : $prepare;
@@ -199,7 +199,7 @@ trait DatalayerTrait
      * @param String|null $class
      * @return array|false
      */
-    protected function fetchOneClass($prepare=null, String $class=null): ?object
+    protected function fetchOneClass($prepare = null, string $class = null): ?object
     {
         try {
             $prepare = empty($prepare) ? $this->prepare : $prepare;
@@ -264,8 +264,7 @@ trait DatalayerTrait
         try {
             $ultimo = $this->getInstance()->lastInsertId();
             return $ultimo;
-        } catch (PDOException $e)
-        {
+        } catch (PDOException $e) {
             $this->setError($e);
             return null;
         }
@@ -280,7 +279,7 @@ trait DatalayerTrait
     {
         if (!empty($params)) {
             $indexed = $params == array_values($params);
-            foreach($params as $k=>$v) {
+            foreach ($params as $k => $v) {
                 if (is_object($v)) {
                     if ($v instanceof \DateTime) {
                         $v = $v->format('Y-m-d H:i:s');
@@ -288,9 +287,9 @@ trait DatalayerTrait
                         continue;
                     }
                 } elseif (is_string($v)) {
-                    $v="'$v'";
+                    $v = "'$v'";
                 } elseif ($v === null) {
-                    $v='NULL';
+                    $v = 'NULL';
                 } elseif (is_array($v)) {
                     $v = implode(',', $v);
                 }
@@ -299,7 +298,7 @@ trait DatalayerTrait
                     $sql_string = preg_replace('/\?/', $v, $sql_string, 1);
                 } else {
                     if ($k[0] != ':') {
-                        $k = ':'.$k;
+                        $k = ':' . $k;
                     } //add leading colon if it was left out
                     $sql_string = str_replace($k, $v, $sql_string);
                 }
@@ -316,32 +315,7 @@ trait DatalayerTrait
     private function setError(PDOException $e)
     {
         $this->error = $e;
-        if (CONFIG_DATA_LAYER['return_error_json']) {
-            $obj = [
-                'error' => true,
-                'message' => 'Ooops! ERRO DATABASE',
-                'code' => '500',
-            ];
+        return throw new PDOException("{$e->getMessage()};<br/><b>SQL:</b> {$this->getLogSQL()};");
 
-            if (CONFIG_DATA_LAYER['display_errors_details'] ?? true) {
-                $obj['sql'] = $this->getLogSQL();
-                $obj['exception'] = $e;
-            }
-
-            echo json_encode($obj);
-        } else {
-            $message = '<h4>Ooops! DATABASE ERROR</h5><hr>';
-            $message .= '<p><b>File:</b>  ' . $e->getFile() . '<br/>';
-            $message .= '<b>SQL:</b>  ' . $this->getLogSQL() . '<br/>';
-            $message .= '<b>Line:</b>  ' . $e->getLine() . '<br/>';
-            $message .= '<b>Message:</b>  ' . $e->getMessage() . '<br/>';
-            $message .= '<b>Exception:</b>' . $e->getCode() . '<br/>' . $e->getPrevious() . '<br/>' . $e->getTraceAsString() . '<br/></p>';
-
-            if (CONFIG_DATA_LAYER['display_errors_details']) {
-                echo $message;
-            } else {
-                echo '<h4>Ooops! DATABASE ERROR</h5><hr>';
-            }
-        }
     }
 }
