@@ -315,7 +315,7 @@ trait DatalayerTrait
     private function setError(PDOException $e)
     {
         $this->error = $e;
-        return throw new PDOException("{$e->getMessage()};<br/><b>SQL:</b> {$this->getLogSQL()};");
+        throw new PDOException("{$e->getMessage()}<br/><b>SQL:</b> {$this->getLogSQL()}");
 
     }
 }

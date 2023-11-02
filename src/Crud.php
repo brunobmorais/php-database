@@ -260,7 +260,7 @@ abstract class Crud
      */
     public function getLogSQL(): ?string
     {
-        return $this->logSQL;
+        return $this->logSQL??"";
     }
 
 }
