@@ -43,6 +43,9 @@ trait DatalayerTrait
     /** @var string */
     private $logSQL;
 
+    /** @var PDOException */
+    private $error;
+
     /**
      * @return PDO|false
      */
@@ -79,8 +82,8 @@ trait DatalayerTrait
     {
         try {
             $this->prepare = $this->getInstance()->prepare($query);
-            $this->prepare->execute($params);
             $this->setLogSQL($query, $params);
+            $this->prepare->execute($params);
             return $this->prepare;
         } catch (PDOException $e) {
             $this->setError($e, $query);
@@ -258,14 +261,14 @@ trait DatalayerTrait
      */
     private function lastId(): ?string
     {
-         try {
-             $ultimo = $this->getInstance()->lastInsertId();
-             return $ultimo;
-         } catch (PDOException $e)
-         {
-             $this->setError($e);
-             return null;
-         }
+        try {
+            $ultimo = $this->getInstance()->lastInsertId();
+            return $ultimo;
+        } catch (PDOException $e)
+        {
+            $this->setError($e);
+            return null;
+        }
     }
 
     /**
@@ -310,26 +313,26 @@ trait DatalayerTrait
      * @param string $sql
      * @return void
      */
-    private static function setError(PDOException $e, string $sql = '')
+    private function setError(PDOException $e)
     {
-        self::$error = $e;
+        $this->error = $e;
         if (CONFIG_DATA_LAYER['return_error_json']) {
             $obj = [
                 'error' => true,
-                'message' => 'Ooops! ERRO',
+                'message' => 'Ooops! ERRO DATABASE',
                 'code' => '500',
             ];
 
             if (CONFIG_DATA_LAYER['display_errors_details'] ?? true) {
-                $obj['sql'] = $sql;
+                $obj['sql'] = $this->getLogSQL();
                 $obj['exception'] = $e;
             }
 
             echo json_encode($obj);
         } else {
-            $message = '<h4>Ooops! ERRO</h5><hr>';
+            $message = '<h4>Ooops! DATABASE ERROR</h5><hr>';
             $message .= '<p><b>File:</b>  ' . $e->getFile() . '<br/>';
-            $message .= '<b>SQL:</b>  ' . $sql . '<br/>';
+            $message .= '<b>SQL:</b>  ' . $this->getLogSQL() . '<br/>';
             $message .= '<b>Line:</b>  ' . $e->getLine() . '<br/>';
             $message .= '<b>Message:</b>  ' . $e->getMessage() . '<br/>';
             $message .= '<b>Exception:</b>' . $e->getCode() . '<br/>' . $e->getPrevious() . '<br/>' . $e->getTraceAsString() . '<br/></p>';
@@ -337,7 +340,7 @@ trait DatalayerTrait
             if (CONFIG_DATA_LAYER['display_errors_details']) {
                 echo $message;
             } else {
-                echo '<h4>Ooops! ERRO</h5><hr>';
+                echo '<h4>Ooops! DATABASE ERROR</h5><hr>';
             }
         }
     }
