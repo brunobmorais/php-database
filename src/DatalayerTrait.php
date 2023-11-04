@@ -22,10 +22,10 @@ trait DatalayerTrait
     protected $instance = null;
 
     /** @var string */
-    private $fields;
+    protected $fields;
 
     /** @var PDOStatement|null */
-    private $prepare = null;
+    protected $prepare = null;
 
     /** @var string */
     protected $database = CONFIG_DATA_LAYER["dbname"];
@@ -79,18 +79,17 @@ trait DatalayerTrait
         $this->instance = $pdo;
     }
 
-    protected function setDatabase(string $databaseName)
+    protected function setDatabase(string $database)
     {
-        $this->database = $databaseName;
+        $this->database = $database;
     }
 
     /**
-     * @param string $tableName
-     * @return void
+     * @return string
      */
     protected function getDatabase(): string
     {
-        return $this->tableName;
+        return $this->database;
     }
 
     /**
