@@ -25,7 +25,7 @@ trait DatalayerTrait
     private $fields;
 
     /** @var PDOStatement|null */
-    protected $prepare = null;
+    private $prepare = null;
 
     /** @var string */
     protected $database = CONFIG_DATA_LAYER["dbname"];
