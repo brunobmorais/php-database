@@ -22,7 +22,7 @@ trait DatalayerTrait
     /** @var PDO|null */
     protected $instance = null;
 
-    /** @var array */
+    /** @var string */
     protected $fields;
 
     /** @var PDOStatement|null */
@@ -84,9 +84,36 @@ trait DatalayerTrait
      * @param string $tableName
      * @return void
      */
+    protected function setFields(string $fields)
+    {
+        $this->fields = $fields;
+    }
+
+    /**
+     * @param string $tableName
+     * @return void
+     */
+    protected function getFields():string
+    {
+        return $this->fields;
+    }
+
+    /**
+     * @param string $tableName
+     * @return void
+     */
     protected function setTable(string $tableName)
     {
         $this->tableName = $tableName;
+    }
+
+    /**
+     * @param string $tableName
+     * @return void
+     */
+    protected function getTable(): string
+    {
+        return $this->tableName;
     }
 
     /**
