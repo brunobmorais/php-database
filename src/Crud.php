@@ -17,7 +17,6 @@ abstract class Crud
 {
     use DatalayerTrait;
 
-
     /**
      * @param string $fields
      * @param string $add
@@ -48,10 +47,10 @@ abstract class Crud
     /**
      * @param string $fields
      * @param array|null $values
-     * @param $debug
+     * @param bool $debug
      * @return bool|void
      */
-    public function insert(string $fields, array $values = null, $debug = false)
+    public function insert(string $fields, array $values = null, bool $debug = false)
     {
         $numparams = '';
         foreach ($values as $item) {
@@ -68,11 +67,8 @@ abstract class Crud
             return;
         }
         $result = $this->executeSQL($sql, $values);
-        if (empty($result)) {
-            return false;
-        }
+        return !empty($result);
 
-        return true;
     }
 
     /**
@@ -157,11 +153,7 @@ abstract class Crud
             return;
         }
         $result = $this->executeSQL($sql, $values);
-        if (empty($result)) {
-            return false;
-        }
-
-        return true;
+        return !empty($result);
     }
 
 
@@ -240,11 +232,8 @@ abstract class Crud
             return;
         }
         $result = $this->executeSQL($sql, $values);
-        if (empty($result)) {
-            return false;
-        }
+        return !empty($result);
 
-        return true;
     }
 
     /**
@@ -260,7 +249,7 @@ abstract class Crud
      */
     public function getLogSQL(): ?string
     {
-        return $this->logSQL??"";
+        return $this->logSQL ?? "";
     }
 
 }

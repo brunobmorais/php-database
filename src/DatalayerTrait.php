@@ -25,7 +25,7 @@ trait DatalayerTrait
     /** @var array */
     protected $fields;
 
-    /** @var PDOStatement|false */
+    /** @var PDOStatement|null */
     protected $prepare = null;
 
     /** @var string */
@@ -46,9 +46,7 @@ trait DatalayerTrait
     /** @var PDOException */
     private $error;
 
-    /**
-     * @return PDO|false
-     */
+    /** @return PDO|false */
     private function getInstance()
     {
         try {
@@ -68,9 +66,36 @@ trait DatalayerTrait
             return $this->instance;
         } catch (PDOException $e) {
             $this->setError($e);
-            return false;
         }
 
+    }
+
+    /**
+     * @param PDO $pdo
+     * @return void
+     *
+     * */
+    protected function setInstance(PDO $pdo)
+    {
+        $this->instance = $pdo;
+    }
+
+    /**
+     * @param string $tableName
+     * @return void
+     */
+    protected function setTable(string $tableName)
+    {
+        $this->tableName = $tableName;
+    }
+
+    /**
+     * @param string $classModel
+     * @return void
+     */
+    protected function setClassModel(string $classModel)
+    {
+        $this->classModel = $classModel;
     }
 
     /**
@@ -86,8 +111,7 @@ trait DatalayerTrait
             $this->prepare->execute($params);
             return $this->prepare;
         } catch (PDOException $e) {
-            $this->setError($e, $query);
-            return false;
+            $this->setError($e);
         }
     }
 
@@ -95,25 +119,20 @@ trait DatalayerTrait
      * @param $prepare
      * @return int|false
      */
-    protected function count($prepare = null): ?int
+    protected function count(PDOStatement $prepare = null): ?int
     {
         try {
             $prepare = empty($prepare) ? $this->prepare : $prepare;
-            $qtd = $prepare->rowCount();
-            return $qtd;
+            return $prepare->rowCount();
         } catch (PDOException $e) {
-            $this->setError($e);
-            return false;
-        }
-
-
+            $this->setError($e);}
     }
 
     /**
      * @param $prepare
      * @return array|false
      */
-    protected function fetchArrayAssoc($prepare = null): ?array
+    protected function fetchArrayAssoc(PDOStatement $prepare = null): ?array
     {
         try {
             $prepare = empty($prepare) ? $this->prepare : $prepare;
@@ -122,7 +141,6 @@ trait DatalayerTrait
             return $dados;
         } catch (PDOException $e) {
             $this->setError($e);
-            return null;
         }
     }
 
@@ -130,7 +148,7 @@ trait DatalayerTrait
      * @param $prepare
      * @return array|false
      */
-    protected function fetchArrayObj($prepare = null): ?array
+    protected function fetchArrayObj(PDOStatement $prepare = null): ?array
     {
         try {
             $prepare = empty($prepare) ? $this->prepare : $prepare;
@@ -139,7 +157,6 @@ trait DatalayerTrait
             return $dados;
         } catch (PDOException $e) {
             $this->setError($e);
-            return null;
         }
     }
 
@@ -148,7 +165,7 @@ trait DatalayerTrait
      * @param String|null $class
      * @return array|false
      */
-    protected function fetchArrayClass($prepare = null, string $class = null): ?array
+    protected function fetchArrayClass(PDOStatement $prepare = null, string $class = null): ?array
     {
         try {
             $prepare = empty($prepare) ? $this->prepare : $prepare;
@@ -158,7 +175,6 @@ trait DatalayerTrait
             return $dados;
         } catch (PDOException $e) {
             $this->setError($e);
-            return null;
         }
     }
 
@@ -166,7 +182,7 @@ trait DatalayerTrait
      * @param $prepare
      * @return array|false
      */
-    protected function fetchOneAssoc($prepare = null): ?array
+    protected function fetchOneAssoc(PDOStatement $prepare = null): ?array
     {
         try {
             $prepare = empty($prepare) ? $this->prepare : $prepare;
@@ -174,7 +190,6 @@ trait DatalayerTrait
             return $dados;
         } catch (PDOException $e) {
             $this->setError($e);
-            return null;
         }
     }
 
@@ -182,7 +197,7 @@ trait DatalayerTrait
      * @param $prepare
      * @return stdClass|false
      */
-    protected function fetchOneObj($prepare = null): ?stdClass
+    protected function fetchOneObj(PDOStatement $prepare = null): ?stdClass
     {
         try {
             $prepare = empty($prepare) ? $this->prepare : $prepare;
@@ -190,7 +205,6 @@ trait DatalayerTrait
             return $dados;
         } catch (PDOException $e) {
             $this->setError($e);
-            return null;
         }
     }
 
@@ -199,7 +213,7 @@ trait DatalayerTrait
      * @param String|null $class
      * @return array|false
      */
-    protected function fetchOneClass($prepare = null, string $class = null): ?object
+    protected function fetchOneClass(PDOStatement $prepare = null, string $class = null): ?object
     {
         try {
             $prepare = empty($prepare) ? $this->prepare : $prepare;
@@ -208,7 +222,6 @@ trait DatalayerTrait
             return $dados;
         } catch (PDOException $e) {
             $this->setError($e);
-            return null;
         }
     }
 
@@ -222,7 +235,6 @@ trait DatalayerTrait
             return true;
         } catch (PDOException $e) {
             $this->setError($e);
-            return null;
         }
 
     }
@@ -237,7 +249,6 @@ trait DatalayerTrait
             return true;
         } catch (PDOException $e) {
             $this->setError($e);
-            return null;
         }
     }
 
@@ -252,13 +263,12 @@ trait DatalayerTrait
             return true;
         } catch (PDOException $e) {
             $this->setError($e);
-            return null;
         }
     }
 
     /**
-     * @return string|null
-     */
+     *  @return string|null
+     *  */
     private function lastId(): ?string
     {
         try {
@@ -266,7 +276,6 @@ trait DatalayerTrait
             return $ultimo;
         } catch (PDOException $e) {
             $this->setError($e);
-            return null;
         }
     }
 
@@ -275,7 +284,7 @@ trait DatalayerTrait
      * @param array|null $params
      * @return void
      */
-    private function setLogSQL($sql_string, array $params = null)
+    private function setLogSQL($sql_string, ?array $params = null)
     {
         if (!empty($params)) {
             $indexed = $params == array_values($params);
