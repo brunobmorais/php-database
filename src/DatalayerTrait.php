@@ -11,7 +11,6 @@ namespace BMorais\Database;
  * @subpackage class
  * @access private
  */
-
 use PDO;
 use PDOException;
 use PDOStatement;
