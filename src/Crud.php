@@ -30,7 +30,7 @@ abstract class Crud
         if (strlen($add) > 0) {
             $add = ' ' . $add;
         }
-        $sql = "SELECT {$fields} FROM {$this->tableName}{$add}";
+        $sql = "SELECT {$fields} FROM {$this->getTable()}{$add}";
         if ($debug) {
             echo $sql;
 
@@ -57,13 +57,9 @@ abstract class Crud
             $numparams .= ',?';
         }
         $numparams = substr($numparams, 1);
-        $sql = "INSERT INTO {$this->tableName} ({$fields}) VALUES ({$numparams})";
+        $sql = "INSERT INTO {$this->getTable()} ({$fields}) VALUES ({$numparams})";
         if ($debug) {
-            echo $sql;
-            echo '<pre>';
-            print_r($values);
-            echo '</pre>';
-
+            echo $sql.'<pre>'.print_r($values).'</pre>';
             return;
         }
         $result = $this->executeSQL($sql, $values);
@@ -81,8 +77,8 @@ abstract class Crud
         $params = [];
         foreach ($object as $chave => $valor) {
             if ($valor != null) {
-                array_push($args, $chave);
-                array_push($params, $valor);
+                $args[] = $chave;
+                $params[] = $valor;
             }
         }
         $args = implode(',', $args);
@@ -97,7 +93,7 @@ abstract class Crud
     public function insertArray(array $params): bool
     {
         if (!empty($params)) {
-            $query = "INSERT INTO $this->tableName";
+            $query = "INSERT INTO {$this->getTable()}";
             $values = [];
             $dataColumns = array_keys($params);
             if (isset($dataColumns[0])) {
@@ -140,16 +136,12 @@ abstract class Crud
             $fields_T .= ", {$item} = ?";
         }
         $fields_T = substr($fields_T, 2);
-        $sql = "UPDATE {$this->tableName} SET {$fields_T}";
+        $sql = "UPDATE {{$this->getTable()}} SET {$fields_T}";
         if (isset($where)) {
             $sql .= " WHERE $where";
         }
         if ($debug) {
-            echo $sql;
-            echo '<pre>';
-            print_r($values);
-            echo '</pre>';
-
+            echo $sql.'<pre>'.print_r($values).'</pre>';
             return;
         }
         $result = $this->executeSQL($sql, $values);
@@ -168,8 +160,8 @@ abstract class Crud
         $params = [];
         foreach ($object as $chave => $valor) {
             if ($valor != null) {
-                array_push($args, $chave);
-                array_push($params, $valor);
+                $args[] = $chave;
+                $params[] = $valor;
             }
         }
         $args = implode(',', $args);
@@ -186,7 +178,7 @@ abstract class Crud
     public function updateArray(array $params, string $where): bool
     {
         if (!empty($params)) {
-            $query = "UPDATE {$this->tableName} SET";
+            $query = "UPDATE {$this->getTable()} SET";
             $values = [];
 
             foreach ($params as $index => $column) {
@@ -219,16 +211,12 @@ abstract class Crud
 
     public function delete(array $values = null, string $where = null, bool $debug = false)
     {
-        $sql = "DELETE FROM {$this->tableName}";
+        $sql = "DELETE FROM {$this->getTable()}";
         if (!empty($where)) {
             $sql .= " WHERE $where";
         }
         if ($debug) {
-            echo $sql;
-            echo '<pre>';
-            print_r($values);
-            echo '</pre>';
-
+            echo $sql.'<pre>'.print_r($values).'</pre>';
             return;
         }
         $result = $this->executeSQL($sql, $values);
