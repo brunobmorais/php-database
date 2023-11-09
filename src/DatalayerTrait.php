@@ -73,13 +73,17 @@ trait DatalayerTrait
      * @param PDO $pdo
      * @return Crud
      *
-     * */
+     */
     protected function setInstance(PDO $pdo)
     {
         $this->instance = $pdo;
         return $this;
     }
 
+    /**
+     * @param string $database
+     * @return $this
+     */
     protected function setDatabase(string $database)
     {
         $this->database = $database;
@@ -105,8 +109,7 @@ trait DatalayerTrait
     }
 
     /**
-     * @param string $tableName
-     * @return void
+     * @return string
      */
     protected function getFields():string
     {
@@ -124,8 +127,7 @@ trait DatalayerTrait
     }
 
     /**
-     * @param string $tableName
-     * @return void
+     * @return string
      */
     protected function getTable(): string
     {
@@ -284,7 +286,7 @@ trait DatalayerTrait
     }
 
     /**
-     * @return bool
+     * @return bool|null
      */
     protected function commitTransaction(): ?bool
     {
@@ -297,7 +299,8 @@ trait DatalayerTrait
     }
 
     /**
-     * @return bool
+     * @return bool|null
+     *
      */
     protected function rollBackTransaction(): ?bool
     {
