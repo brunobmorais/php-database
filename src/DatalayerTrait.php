@@ -71,17 +71,19 @@ trait DatalayerTrait
 
     /**
      * @param PDO $pdo
-     * @return void
+     * @return Crud
      *
      * */
     protected function setInstance(PDO $pdo)
     {
         $this->instance = $pdo;
+        return $this;
     }
 
     protected function setDatabase(string $database)
     {
         $this->database = $database;
+        return $this;
     }
 
     /**
@@ -94,11 +96,12 @@ trait DatalayerTrait
 
     /**
      * @param string $tableName
-     * @return void
+     * @return Crud
      */
     protected function setFields(string $fields)
     {
         $this->fields = $fields;
+        return $this;
     }
 
     /**
@@ -112,11 +115,12 @@ trait DatalayerTrait
 
     /**
      * @param string $tableName
-     * @return void
+     * @return Crud
      */
     protected function setTable(string $tableName)
     {
         $this->tableName = $tableName;
+        return $this;
     }
 
     /**
@@ -130,11 +134,12 @@ trait DatalayerTrait
 
     /**
      * @param string $classModel
-     * @return void
+     * @return Crud
      */
     protected function setClassModel(string $classModel)
     {
         $this->classModel = $classModel;
+        return $this;
     }
 
     /**
