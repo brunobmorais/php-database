@@ -17,11 +17,11 @@ class QueryBuilder
 {
     use DatalayerTrait;
 
-    public function __construct(\PDO $instance, $table, $model)
+    public function __construct(DatalayerTrait $data)
     {
-        $this->setInstance($instance);
-        $this->setTable($table);
-        $this->setClassModel($model);
+        $this->setInstance($data->getInstance());
+        $this->setTable($data->getTable());
+        $this->setClassModel($this->getClassModel());
     }
 
     public function select(string $fields = "*", array $paramns = []):self

@@ -152,7 +152,7 @@ trait DatalayerTrait
     {
         if (!empty($this->queryBuild))
             return $this->queryBuild;
-        return new QueryBuilder($this->getInstance(), $this->getTable(), $this->getClassModel());
+        return new QueryBuilder($this);
     }
 
     public  function getTableAlias(): string
