@@ -36,6 +36,9 @@ trait DatalayerTrait
     /** @var string */
     protected $tableName;
 
+    /** @var string */
+    private $tableAlias;
+
     /** @var array */
     protected $resultArray = array();
 
@@ -44,6 +47,15 @@ trait DatalayerTrait
 
     /** @var PDOException */
     private $error;
+
+    /** @var string */
+    private $query = "";
+
+    /** @var array */
+    private $params = [];
+
+    private QueryBuilder $queryBuild;
+
 
     /** @return PDO|false */
     private function getInstance()
@@ -120,8 +132,10 @@ trait DatalayerTrait
      * @param string $tableName
      * @return Crud
      */
-    protected function setTable(string $tableName)
+    protected function setTable(string $tableName, string $tableAlias = ""): self
     {
+        if (!empty($tableAlias))
+            $this->tableAlias = $tableAlias;
         $this->tableName = $tableName;
         return $this;
     }
@@ -132,6 +146,17 @@ trait DatalayerTrait
     protected function getTable(): string
     {
         return $this->tableName;
+    }
+
+    public function getQueryBuilder(): QueryBuilder
+    {
+        if (!empty($this->queryBuild))
+            return $this->queryBuild;
+        return new QueryBuilder($this->getInstance());
+    }
+    public  function getTableAlias(): string
+    {
+        return $this->tableAlias;
     }
 
     /**

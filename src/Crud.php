@@ -30,7 +30,14 @@ abstract class Crud
         if (strlen($add) > 0) {
             $add = ' ' . $add;
         }
-        $sql = "SELECT {$fields} FROM {$this->getTable()}{$add}";
+
+        $sql = "SELECT {$fields} FROM {$this->getTable()}";
+
+        if (!empty($this->getTableAlias()))
+            $sql .= " AS {$this->getTableAlias()}";
+
+        $sql .= "{$add}";
+
         if ($debug) {
             echo $sql;
 
