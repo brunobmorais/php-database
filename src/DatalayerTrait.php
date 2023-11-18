@@ -152,8 +152,9 @@ trait DatalayerTrait
     {
         if (!empty($this->queryBuild))
             return $this->queryBuild;
-        return new QueryBuilder($this->getInstance());
+        return new QueryBuilder($this->getInstance(), $this->getTable(), $this->getClassModel());
     }
+
     public  function getTableAlias(): string
     {
         return $this->tableAlias;
@@ -163,10 +164,15 @@ trait DatalayerTrait
      * @param string $classModel
      * @return Crud
      */
-    protected function setClassModel(string $classModel)
+    protected function setClassModel(string $classModel): self
     {
         $this->classModel = $classModel;
         return $this;
+    }
+
+    protected function getClassModel()
+    {
+        return $this->classModel;
     }
 
     /**
