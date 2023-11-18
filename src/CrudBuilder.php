@@ -21,7 +21,7 @@ class CrudBuilder
     {
         $query = "SELECT {$fields} FROM {$this->getTable()} ";
         if (!empty($this->getTableAlias()))
-            $query .= "AS {$this->getTableAlias()}";
+            $query .= "AS {$this->getTableAlias()} ";
         $this->add($query, $paramns);
         return $this;
     }
@@ -59,27 +59,27 @@ class CrudBuilder
         return $this;
     }
 
-    public function query(string $texto, array $paramns): self
+    public function query(string $texto, array $paramns = []): self
     {
         $this->add($texto, $paramns);
         return $this;
     }
 
-    public function where(string $texto, array $paramns): self
+    public function where(string $texto, array $paramns = []): self
     {
         $query = "WHERE {$texto} ";
         $this->add($query, $paramns);
         return $this;
     }
 
-    public function andWhere(string $condition, array $paramns): self
+    public function andWhere(string $condition, array $paramns = []): self
     {
         $query = "AND {$condition} ";
         $this->add($query, $paramns);
         return $this;
     }
 
-    public function orWhere(string $texto, array $paramns): self
+    public function orWhere(string $texto, array $paramns = []): self
     {
         $query = "OR {$texto} ";
         $this->add($query, $paramns);
@@ -149,7 +149,8 @@ class CrudBuilder
 
     public function debug()
     {
-        return  $this->query.'<pre>'.print_r($this->params).'</pre>';
+        echo $this->query.'<pre>'.print_r($this->params).'</pre>';
+        exit;
     }
 
     /**
@@ -171,7 +172,7 @@ class CrudBuilder
     private function add(string $text, array $params = [])
     {
         if (!empty($params))
-            $this->params[] = $params;
+            $this->params = array_merge($this->params, $params);
         $this->query .= $text;
     }
 

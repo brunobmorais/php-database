@@ -105,7 +105,7 @@ trait DatalayerTrait
      */
     protected function getDatabase(): string
     {
-        return $this->database;
+        return $this->database ?? "";
     }
 
     /**
@@ -143,12 +143,12 @@ trait DatalayerTrait
      */
     protected function getTable(): string
     {
-        return $this->tableName;
+        return $this->tableName ?? "";
     }
 
     public  function getTableAlias(): string
     {
-        return $this->tableAlias;
+        return $this->tableAlias ?? "";
     }
 
     /**
