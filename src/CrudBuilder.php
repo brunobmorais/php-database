@@ -13,16 +13,9 @@ namespace BMorais\Database;
  * @access private
  */
 
-class QueryBuilder
+class CrudBuilder
 {
     use DatalayerTrait;
-
-    public function __construct(DatalayerTrait $data)
-    {
-        $this->setInstance($data->getInstance());
-        $this->setTable($data->getTable());
-        $this->setClassModel($this->getClassModel());
-    }
 
     public function select(string $fields = "*", array $paramns = []):self
     {

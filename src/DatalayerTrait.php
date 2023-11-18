@@ -54,8 +54,6 @@ trait DatalayerTrait
     /** @var array */
     private $params = [];
 
-    private QueryBuilder $queryBuild;
-
 
     /** @return PDO|false */
     private function getInstance()
@@ -146,13 +144,6 @@ trait DatalayerTrait
     protected function getTable(): string
     {
         return $this->tableName;
-    }
-
-    public function getQueryBuilder(): QueryBuilder
-    {
-        if (!empty($this->queryBuild))
-            return $this->queryBuild;
-        return new QueryBuilder($this);
     }
 
     public  function getTableAlias(): string
