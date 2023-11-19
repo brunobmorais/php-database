@@ -3,7 +3,7 @@
 namespace BMorais\Database;
 
 /**
- * CLASS ABSTRACT QUERY
+ * CLASS CrudBuilder
  * Basic class to make connection between the database and the application
  *
  * @author Bruno Morais <brunomoraisti@gmail.com>
@@ -16,7 +16,9 @@ class CrudBuilder
 {
     use DatalayerTrait;
 
-
+    /**
+    * @var array
+     */
     private array $sqlPartsSelect = [
         'main'      => [],
         'join'      => [],
