@@ -16,7 +16,29 @@ class CrudBuilder
 {
     use DatalayerTrait;
 
+
+    private array $sqlPartsSelect = [
+        'main'     => [],
+        'join'     => [],
+        'where'    => "",
+        'andWhere' => [],
+        'orWhere'  => [],
+        'groupBy'  => [],
+        'having'   => [],
+        'andHaving'=> [],
+        'orHaving' => [],
+        'orderBy'  => "",
+        'limit'    => "",
+        'offset'   => "",
+
+    ];
+
     /**
+     *
+    * <code>
+    *   $qb = $this->select('u.id, p.id')
+    *           ->where('phonenumbers=?', [$number]);
+    * </code>
     * @param string $fields
     * @param array $paramns
     * @return $this
@@ -27,7 +49,7 @@ class CrudBuilder
             $query = "SELECT {$fields} FROM {$this->getTable()} ";
             if (!empty($this->getTableAlias()))
                 $query .= "AS {$this->getTableAlias()} ";
-            $this->add($query, $paramns);
+            $this->add($query, "main", $paramns);
             return $this;
         } catch (\PDOException $e) {
             $this->setError($e);
@@ -48,7 +70,7 @@ class CrudBuilder
             }
             $numparams = substr($numparams, 1);
             $query = "INSERT INTO {$this->getTable()} ({$fields}) VALUES ({$numparams})";
-            $this->add($query, $paramns);
+            $this->add($query, "main", $paramns);
             return $this;
         } catch (\PDOException $e) {
             $this->setError($e);
@@ -71,7 +93,7 @@ class CrudBuilder
             }
             $fields_T = substr($fields_T, 2);
             $query = "UPDATE {{$this->getTable()}} SET {$fields_T}";
-            $this->add($query, $paramns);
+            $this->add($query, "main", $paramns);
             return $this;
         } catch (\PDOException $e) {
             $this->setError($e);
@@ -87,7 +109,7 @@ class CrudBuilder
     {
         try {
             $query = "DELETE FROM {$this->getTable()}";
-            $this->add($query, $paramns);
+            $this->add($query, "main", $paramns);
             return $this;
         } catch (\PDOException $e) {
             $this->setError($e);
@@ -95,14 +117,14 @@ class CrudBuilder
     }
 
     /**
-    * @param string $texto
+    * @param string $query
     * @param array $paramns
     * @return $this
      */
-    public function query(string $texto, array $paramns = []): self
+    public function query(string $query, array $paramns = []): self
     {
         try {
-            $this->add($texto, $paramns);
+            $this->add($query, "main", $paramns);
             return $this;
         } catch (\PDOException $e) {
             $this->setError($e);
@@ -118,7 +140,7 @@ class CrudBuilder
     {
         try {
             $query = "WHERE {$texto} ";
-            $this->add($query, $paramns);
+            $this->add($query, "where", $paramns);
             return $this;
         } catch (\PDOException $e) {
             $this->setError($e);
@@ -134,7 +156,7 @@ class CrudBuilder
     {
         try {
             $query = "AND {$condition} ";
-            $this->add($query, $paramns);
+            $this->add($query, "andWhere", $paramns);
             return $this;
         } catch (\PDOException $e) {
             $this->setError($e);
@@ -150,7 +172,7 @@ class CrudBuilder
     {
         try {
             $query = "OR {$texto} ";
-            $this->add($query, $paramns);
+            $this->add($query, "orWhere", $paramns);
             return $this;
         } catch (\PDOException $e) {
             $this->setError($e);
@@ -161,11 +183,11 @@ class CrudBuilder
     * @param string $texto
     * @return $this
      */
-    public function orderBy(string $texto): self
+    public function orderBy(string $texto, $order = null): self
     {
         try {
-            $query = "ORDER BY {$texto} ";
-            $this->add($query);
+            $query = "ORDER BY {$texto} ($order ?? 'ASC')";
+            $this->add($query, "orderBy");
             return $this;
         } catch (\PDOException $e) {
             $this->setError($e);
@@ -179,7 +201,7 @@ class CrudBuilder
     public function limit(string $texto): self
     {
         $query = "LIMIT {$texto} ";
-        $this->add($query);
+        $this->add($query,"limit");
         return $this;
     }
 
@@ -191,7 +213,7 @@ class CrudBuilder
     {
         try {
             $query = "OFFSET {$texto} ";
-            $this->add($query);
+            $this->add($query,"offset");
             return $this;
         } catch (\PDOException $e) {
             $this->setError($e);
@@ -206,7 +228,7 @@ class CrudBuilder
     {
         try {
             $query = "GROUP BY {$texto} ";
-            $this->add($query);
+            $this->add($query,"groupBy");
             return $this;
         } catch (\PDOException $e) {
             $this->setError($e);
@@ -221,7 +243,37 @@ class CrudBuilder
     {
         try {
             $query = "HAVING {$texto} ";
-            $this->add($query);
+            $this->add($query,"having");
+            return $this;
+        } catch (\PDOException $e) {
+            $this->setError($e);
+        }
+    }
+
+    /**
+     * @param string $texto
+     * @return $this
+     */
+    public function andHaving(string $texto): self
+    {
+        try {
+            $query = "AND {$texto} ";
+            $this->add($query,"andHaving");
+            return $this;
+        } catch (\PDOException $e) {
+            $this->setError($e);
+        }
+    }
+
+    /**
+     * @param string $codition
+     * @return $this
+     */
+    public function orHaving(string $codition): self
+    {
+        try {
+            $query = "OR {$codition} ";
+            $this->add($query,"orHaving");
             return $this;
         } catch (\PDOException $e) {
             $this->setError($e);
@@ -238,7 +290,7 @@ class CrudBuilder
     {
         try {
             $query = "INNER JOIN {$table} AS {$alias} ON $codition ";
-            $this->add($query);
+            $this->add($query,"join");
             return $this;
         } catch (\PDOException $e) {
             $this->setError($e);
@@ -255,7 +307,7 @@ class CrudBuilder
     {
         try {
             $query = "LEFT JOIN {$table} AS {$alias} ON $codition ";
-            $this->add($query);
+            $this->add($query,"join");
             return $this;
         } catch (\PDOException $e) {
             $this->setError($e);
@@ -272,7 +324,7 @@ class CrudBuilder
     {
         try {
             $query = "RIGHT JOIN {$table} AS {$alias} ON $codition ";
-            $this->add($query);
+            $this->add($query,"join");
             return $this;
         } catch (\PDOException $e) {
             $this->setError($e);
@@ -282,9 +334,20 @@ class CrudBuilder
     /**
      * @return $this
      */
-    public function execute(): self
+    public function executeQuery(): self
     {
         try {
+            foreach ($this->sqlPartsSelect as $key => $part){
+                if (is_array($part)) {
+                    foreach ($part as $item){
+                        $this->query .= $item;
+                    }
+                } else {
+                    $this->query .= $part;
+                }
+
+            }
+
             $this->executeSQL($this->query, $this->params);
             return $this;
         } catch (\PDOException $e) {
@@ -320,7 +383,7 @@ class CrudBuilder
     /**
      * @return string|null
      */
-    public function getLogSQL(): ?string
+    protected function getSQL(): ?string
     {
         try {
             return $this->logSQL ?? "";
@@ -329,12 +392,23 @@ class CrudBuilder
         }
     }
 
-    private function add(string $text, array $params = [])
+    public function setParameter($params): self
+    {
+        $this->params = array_merge($this->params, $params);
+        return $this;
+    }
+
+    private function add(string $text, string $type, array $params = [])
     {
         try {
+            if (is_array($this->sqlPartsSelect[$type])) {
+                $this->sqlPartsSelect[$type][] = $text;
+            } else {
+                $this->sqlPartsSelect[$type] = $text;
+            }
+
             if (!empty($params))
                 $this->params = array_merge($this->params, $params);
-            $this->query .= $text;
         } catch (\PDOException $e) {
             $this->setError($e);
         }
