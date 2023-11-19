@@ -262,15 +262,15 @@ trait DatalayerTrait
 
     /**
      * @param $prepare
-     * @param String|null $class
+     * @param String|null $classModel
      * @return array|false
      */
-    protected function fetchArrayClass(PDOStatement $prepare = null, string $class = null): ?array
+    protected function fetchArrayClass(PDOStatement $prepare = null, string $classModel = null): ?array
     {
         try {
             $prepare = empty($prepare) ? $this->getPrepare() : $prepare;
-            $class = empty($class) ? $this->classModel : $class;
-            $dados = $prepare->fetchAll(PDO::FETCH_CLASS | PDO::FETCH_PROPS_LATE, CONFIG_DATA_LAYER["directory_models"] . $class);
+            $classModel = empty($classModel) ? $this->classModel : $classModel;
+            $dados = $prepare->fetchAll(PDO::FETCH_CLASS | PDO::FETCH_PROPS_LATE, CONFIG_DATA_LAYER["directory_models"] . $classModel);
             $this->resultArray = $dados;
             return $dados;
         } catch (PDOException $e) {
