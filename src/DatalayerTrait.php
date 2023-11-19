@@ -23,13 +23,18 @@ trait DatalayerTrait
      * */
     protected $instance = null;
 
-    /** @var string */
+    /** @var string
+     *  @deprecated
+     */
     protected $fields;
 
-    /** @var PDOStatement|null */
+    /** @var PDOStatement|null
+     *   @deprecated */
     protected $prepare = null;
 
-    /** @var string */
+    /** @var string
+     *  @deprecated
+     */
     protected $database = CONFIG_DATA_LAYER["dbname"];
 
     /** @var string
@@ -45,7 +50,9 @@ trait DatalayerTrait
     /** @var string */
     private $tableAlias;
 
-    /** @var array */
+    /** @var array
+     * @deprecated
+     */
     protected $resultArray = array();
 
     /** @var string */
