@@ -48,7 +48,7 @@ class CrudBuilder
         try {
             $query = "SELECT {$fields} FROM {$this->getTable()}";
             if (!empty($this->getTableAlias()))
-                $query .= "AS {$this->getTableAlias()} ";
+                $query .= " AS {$this->getTableAlias()}";
             $this->add($query, "main", $paramns);
             return $this;
         } catch (\PDOException $e) {
