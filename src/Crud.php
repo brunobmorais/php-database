@@ -45,9 +45,9 @@ abstract class Crud
         }
         $this->executeSQL($sql, $values);
         if ($returnModel) {
-            return $this->fetchArrayClass($this->prepare);
+            return $this->fetchArrayClass();
         } else {
-            return $this->fetchArrayObj($this->prepare);
+            return $this->fetchArrayObj();
         }
     }
 

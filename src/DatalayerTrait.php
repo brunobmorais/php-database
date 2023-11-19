@@ -279,7 +279,7 @@ trait DatalayerTrait
     {
         try {
             $prepare = empty($prepare) ? $this->getPrepare() : $prepare;
-            $classModel = empty($classModel) ? $this->classModel : $classModel;
+            $classModel = empty($classModel) ? $this->getClassModel() : $classModel;
             $dados = $prepare->fetchAll(PDO::FETCH_CLASS | PDO::FETCH_PROPS_LATE, CONFIG_DATA_LAYER["directory_models"] . $classModel);
             $this->setResult($dados);
             return $dados;
@@ -325,7 +325,7 @@ trait DatalayerTrait
     {
         try {
             $prepare = empty($prepare) ? $this->getPrepare() : $prepare;
-            $class = empty($class) ? $this->classModel : $class;
+            $class = empty($class) ? $this->getClassModel() : $class;
             return $prepare->fetchObject(CONFIG_DATA_LAYER["directory_models"] . $class);
         } catch (PDOException $e) {
             $this->setError($e);
