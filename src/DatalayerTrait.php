@@ -97,7 +97,7 @@ trait DatalayerTrait
      * @return Crud
      *
      */
-    protected function setInstance(?PDO $pdo)
+    protected function setInstance(?PDO $pdo): self
     {
         $this->instance = $pdo;
         return $this;
@@ -107,7 +107,7 @@ trait DatalayerTrait
      * @param string $database
      * @return $this
      */
-    protected function setDatabase(string $database)
+    protected function setDatabase(string $database): self
     {
         $this->database = $database;
         $this->setInstance(null);
@@ -126,7 +126,7 @@ trait DatalayerTrait
      * @param string $tableName
      * @return Crud
      */
-    protected function setFields(string $fields)
+    protected function setFields(string $fields): self
     {
         $this->fields = $fields;
         return $this;
@@ -175,7 +175,7 @@ trait DatalayerTrait
         return $this;
     }
 
-    protected function getClassModel()
+    protected function getClassModel(): string
     {
         return $this->classModel;
     }
