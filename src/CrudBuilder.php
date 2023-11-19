@@ -44,7 +44,7 @@ class CrudBuilder
     * @param array $paramns
     * @return $this
      */
-    public function select(string $fields = "*", array $paramns = []): CrudBuilder
+    private function select(string $fields = "*", array $paramns = []): CrudBuilder
     {
         try {
             $query = "SELECT {$fields} FROM {$this->getTable()}";
@@ -62,7 +62,7 @@ class CrudBuilder
     * @param array $paramns
     * @return $this
      */
-    public function insert(string $fields, array $paramns): self
+    private function insert(string $fields, array $paramns): self
     {
         try {
             $numparams = '';
@@ -83,7 +83,7 @@ class CrudBuilder
     * @param array $paramns
     * @return $this
      */
-    public function update(string $fields, array $paramns): self
+    private function update(string $fields, array $paramns): self
     {
         try {
             $fields_T = '';
@@ -106,7 +106,7 @@ class CrudBuilder
     * @param array $paramns
     * @return $this
      */
-    public function delete(): self
+    private function delete(): self
     {
         try {
             $query = "DELETE FROM {$this->getTable()}";
@@ -122,7 +122,7 @@ class CrudBuilder
     * @param array $paramns
     * @return $this
      */
-    public function query(string $query, array $paramns = []): self
+    private function query(string $query, array $paramns = []): self
     {
         try {
             $this->add($query, "main", $paramns);
@@ -137,7 +137,7 @@ class CrudBuilder
     * @param array $paramns
     * @return $this
      */
-    public function where(string $texto, array $paramns = []): self
+    private function where(string $texto, array $paramns = []): self
     {
         try {
             $query = "WHERE {$texto}";
@@ -153,7 +153,7 @@ class CrudBuilder
     * @param array $paramns
     * @return $this
      */
-    public function andWhere(string $condition, array $paramns = []): self
+    private function andWhere(string $condition, array $paramns = []): self
     {
         try {
             $query = "AND {$condition}";
@@ -169,7 +169,7 @@ class CrudBuilder
     * @param array $paramns
     * @return $this
      */
-    public function orWhere(string $condition, array $paramns = []): self
+    private function orWhere(string $condition, array $paramns = []): self
     {
         try {
             $query = "OR {$condition}";
@@ -184,7 +184,7 @@ class CrudBuilder
     * @param string $parameter
     * @return $this
      */
-    public function orderBy(string $parameter, $order = null): self
+    private function orderBy(string $parameter, $order = null): self
     {
         try {
             $query = "ORDER BY {$parameter} ".($order ?? 'ASC');
@@ -195,7 +195,7 @@ class CrudBuilder
         }
     }
 
-    public function addOrderBy(string $parameter, $order = null): self
+    private function addOrderBy(string $parameter, $order = null): self
     {
         try {
             $query = ", {$parameter} ".($order ?? 'ASC')." ";
@@ -210,7 +210,7 @@ class CrudBuilder
     * @param string $texto
     * @return $this
      */
-    public function limit(string $texto): self
+    private function limit(string $texto): self
     {
         $query = "LIMIT {$texto}";
         $this->add($query,"limit");
@@ -221,7 +221,7 @@ class CrudBuilder
     * @param string $texto
     * @return $this
      */
-    public function offset(string $texto): self
+    private function offset(string $texto): self
     {
         try {
             $query = "OFFSET {$texto}";
@@ -236,7 +236,7 @@ class CrudBuilder
     * @param string $texto
     * @return $this
      */
-    public function groupBy(string $texto): self
+    private function groupBy(string $texto): self
     {
         try {
             $query = "GROUP BY {$texto}";
@@ -251,7 +251,7 @@ class CrudBuilder
     * @param string $texto
     * @return $this
      */
-    public function having(string $texto): self
+    private function having(string $texto): self
     {
         try {
             $query = "HAVING {$texto}";
@@ -266,7 +266,7 @@ class CrudBuilder
      * @param string $texto
      * @return $this
      */
-    public function andHaving(string $texto): self
+    private function andHaving(string $texto): self
     {
         try {
             $query = "AND {$texto}";
@@ -281,7 +281,7 @@ class CrudBuilder
      * @param string $codition
      * @return $this
      */
-    public function orHaving(string $codition): self
+    private function orHaving(string $codition): self
     {
         try {
             $query = "OR {$codition}";
@@ -298,7 +298,7 @@ class CrudBuilder
     * @param string $codition
     * @return $this
      */
-    public function innerJoin(string $table, string $alias, string $codition): self
+    private function innerJoin(string $table, string $alias, string $codition): self
     {
         try {
             $query = "INNER JOIN {$table} AS {$alias} ON $codition";
@@ -315,7 +315,7 @@ class CrudBuilder
     * @param string $codition
     * @return $this
      */
-    public function leftJoin(string $table, string $alias, string $codition): self
+    private function leftJoin(string $table, string $alias, string $codition): self
     {
         try {
             $query = "LEFT JOIN {$table} AS {$alias} ON {$codition}";
@@ -332,7 +332,7 @@ class CrudBuilder
     * @param string $codition
     * @return $this
      */
-    public function rightJoin(string $table, string $alias, string $codition): self
+    private function rightJoin(string $table, string $alias, string $codition): self
     {
         try {
             $query = "RIGHT JOIN {$table} AS {$alias} ON $codition";
@@ -346,7 +346,7 @@ class CrudBuilder
     /**
      * @return $this
      */
-    public function executeQuery(): self
+    private function executeQuery(): self
     {
         try {
             foreach ($this->sqlPartsSelect as $key => $part){
@@ -370,7 +370,7 @@ class CrudBuilder
     /**
     * @return void
      */
-    public function debug()
+    private function debug()
     {
         try {
             echo $this->query . '<pre>' . print_r($this->params) . '</pre>';
@@ -383,7 +383,7 @@ class CrudBuilder
     /**
      * @return false|string
      */
-    public function lastInsertId(): ?string
+    private function lastInsertId(): ?string
     {
         try {
             return $this->lastId();
@@ -404,7 +404,7 @@ class CrudBuilder
         }
     }
 
-    public function setParameter($params): self
+    private function setParameter($params): self
     {
         $this->params = array_merge($this->params, $params);
         return $this;
