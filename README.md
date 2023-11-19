@@ -72,7 +72,6 @@ const CONFIG_DATA_LAYER = [
     ],
     "homologation" => "homologacao",
     "directory_models" => "App\\Models\\",
-    "return_error_json" => true,
     "display_errors_details" => true,
 ];
 ```

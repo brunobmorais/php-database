@@ -31,7 +31,6 @@ class CrudBuilder
         'addOrderBy'=> [],
         'limit'     => "",
         'offset'    => "",
-
     ];
 
     /**
@@ -404,20 +403,30 @@ class CrudBuilder
         }
     }
 
+    /**
+    * @param $params
+    * @return self
+     */
     private function setParameter($params): self
     {
         $this->params = array_merge($this->params, $params);
         return $this;
     }
 
-    private function add(string $text, string $type, array $params = [])
+    /**
+    * @param string $query
+    * @param string $type
+    * @param array $params
+    * @return void
+     */
+    private function add(string $query, string $type, array $params = []): void
     {
-        $text = $text." ";
+        $query = $query." ";
         try {
             if (is_array($this->sqlPartsSelect[$type])) {
-                $this->sqlPartsSelect[$type][] = $text;
+                $this->sqlPartsSelect[$type][] = $query;
             } else {
-                $this->sqlPartsSelect[$type] = $text;
+                $this->sqlPartsSelect[$type] = $query;
             }
 
             if (!empty($params))
