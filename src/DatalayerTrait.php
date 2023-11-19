@@ -51,9 +51,8 @@ trait DatalayerTrait
     private $tableAlias;
 
     /** @var array
-     * @deprecated
      */
-    protected $resultArray = array();
+    protected array $resultArray = [];
 
     /** @var string */
     private $logSQL;
@@ -198,6 +197,17 @@ trait DatalayerTrait
         return $this->prepare;
     }
 
+    protected function getResult(): array
+    {
+       return $this->resultArray;
+    }
+
+    protected function setResult(array $array): self
+    {
+        $this->resultArray = $array;
+        return $this;
+    }
+
     /**
         * @param string $query
         * @param array|null $params
@@ -237,7 +247,7 @@ trait DatalayerTrait
         try {
             $prepare = empty($prepare) ? $this->getPrepare() : $prepare;
             $dados = $prepare->fetchAll(PDO::FETCH_ASSOC);
-            $this->resultArray = $dados;
+            $this->setResult($dados);
             return $dados;
         } catch (PDOException $e) {
             $this->setError($e);
@@ -253,7 +263,7 @@ trait DatalayerTrait
         try {
             $prepare = empty($prepare) ? $this->getPrepare() : $prepare;
             $dados = $prepare->fetchAll(PDO::FETCH_OBJ);
-            $this->resultArray = $dados;
+            $this->setResult($dados);
             return $dados;
         } catch (PDOException $e) {
             $this->setError($e);
@@ -271,7 +281,7 @@ trait DatalayerTrait
             $prepare = empty($prepare) ? $this->getPrepare() : $prepare;
             $classModel = empty($classModel) ? $this->classModel : $classModel;
             $dados = $prepare->fetchAll(PDO::FETCH_CLASS | PDO::FETCH_PROPS_LATE, CONFIG_DATA_LAYER["directory_models"] . $classModel);
-            $this->resultArray = $dados;
+            $this->setResult($dados);
             return $dados;
         } catch (PDOException $e) {
             $this->setError($e);
