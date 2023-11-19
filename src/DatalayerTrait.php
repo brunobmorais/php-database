@@ -229,8 +229,8 @@ trait DatalayerTrait
     }
 
     /**
-     * @param $prepare
-     * @return array|false
+    * @param PDOStatement|null $prepare
+    * @return array|null
      */
     protected function fetchArrayAssoc(PDOStatement $prepare = null): ?array
     {
@@ -286,23 +286,21 @@ trait DatalayerTrait
     {
         try {
             $prepare = empty($prepare) ? $this->getPrepare() : $prepare;
-            $dados = $prepare->fetch(PDO::FETCH_ASSOC);
-            return $dados;
+            return $prepare->fetch(PDO::FETCH_ASSOC);
         } catch (PDOException $e) {
             $this->setError($e);
         }
     }
 
     /**
-     * @param $prepare
-     * @return stdClass|false
+    * @param PDOStatement|null $prepare
+    * @return stdClass|null
      */
     protected function fetchOneObj(PDOStatement $prepare = null): ?stdClass
     {
         try {
             $prepare = empty($prepare) ? $this->getPrepare() : $prepare;
-            $dados = $prepare->fetch(PDO::FETCH_OBJ);
-            return $dados;
+            return $prepare->fetch(PDO::FETCH_OBJ);
         } catch (PDOException $e) {
             $this->setError($e);
         }

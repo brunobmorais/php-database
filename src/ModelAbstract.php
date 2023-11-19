@@ -49,7 +49,8 @@ abstract class ModelAbstract
     }
 
     /**
-     * @return array|null
+    * @param $objArray
+    * @return array|null
      */
     public function toMap($objArray = null): ?array
     {
