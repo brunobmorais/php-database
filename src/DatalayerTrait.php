@@ -152,7 +152,7 @@ trait DatalayerTrait
         return $this->tableName ?? "";
     }
 
-    public  function getTableAlias(): string
+    protected function getTableAlias(): string
     {
         return $this->tableAlias ?? "";
     }
