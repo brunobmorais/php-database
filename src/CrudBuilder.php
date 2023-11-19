@@ -46,7 +46,7 @@ class CrudBuilder
     public function select(string $fields = "*", array $paramns = []): CrudBuilder
     {
         try {
-            $query = "SELECT {$fields} FROM {$this->getTable()} ";
+            $query = "SELECT {$fields} FROM {$this->getTable()}";
             if (!empty($this->getTableAlias()))
                 $query .= "AS {$this->getTableAlias()} ";
             $this->add($query, "main", $paramns);
@@ -186,7 +186,7 @@ class CrudBuilder
     public function orderBy(string $texto, $order = null): self
     {
         try {
-            $query = "ORDER BY {$texto} ($order ?? 'ASC')";
+            $query = "ORDER BY {$texto} ".($order ?? 'ASC')." ";
             $this->add($query, "orderBy");
             return $this;
         } catch (\PDOException $e) {
@@ -200,7 +200,7 @@ class CrudBuilder
      */
     public function limit(string $texto): self
     {
-        $query = "LIMIT {$texto} ";
+        $query = "LIMIT {$texto}";
         $this->add($query,"limit");
         return $this;
     }
@@ -212,7 +212,7 @@ class CrudBuilder
     public function offset(string $texto): self
     {
         try {
-            $query = "OFFSET {$texto} ";
+            $query = "OFFSET {$texto}";
             $this->add($query,"offset");
             return $this;
         } catch (\PDOException $e) {
@@ -227,7 +227,7 @@ class CrudBuilder
     public function groupBy(string $texto): self
     {
         try {
-            $query = "GROUP BY {$texto} ";
+            $query = "GROUP BY {$texto}";
             $this->add($query,"groupBy");
             return $this;
         } catch (\PDOException $e) {
@@ -242,7 +242,7 @@ class CrudBuilder
     public function having(string $texto): self
     {
         try {
-            $query = "HAVING {$texto} ";
+            $query = "HAVING {$texto}";
             $this->add($query,"having");
             return $this;
         } catch (\PDOException $e) {
@@ -257,7 +257,7 @@ class CrudBuilder
     public function andHaving(string $texto): self
     {
         try {
-            $query = "AND {$texto} ";
+            $query = "AND {$texto}";
             $this->add($query,"andHaving");
             return $this;
         } catch (\PDOException $e) {
@@ -272,7 +272,7 @@ class CrudBuilder
     public function orHaving(string $codition): self
     {
         try {
-            $query = "OR {$codition} ";
+            $query = "OR {$codition}";
             $this->add($query,"orHaving");
             return $this;
         } catch (\PDOException $e) {
@@ -289,7 +289,7 @@ class CrudBuilder
     public function innerJoin(string $table, string $alias, string $codition): self
     {
         try {
-            $query = "INNER JOIN {$table} AS {$alias} ON $codition ";
+            $query = "INNER JOIN {$table} AS {$alias} ON $codition";
             $this->add($query,"join");
             return $this;
         } catch (\PDOException $e) {
@@ -306,7 +306,7 @@ class CrudBuilder
     public function leftJoin(string $table, string $alias, string $codition): self
     {
         try {
-            $query = "LEFT JOIN {$table} AS {$alias} ON $codition ";
+            $query = "LEFT JOIN {$table} AS {$alias} ON {$codition}";
             $this->add($query,"join");
             return $this;
         } catch (\PDOException $e) {
@@ -323,7 +323,7 @@ class CrudBuilder
     public function rightJoin(string $table, string $alias, string $codition): self
     {
         try {
-            $query = "RIGHT JOIN {$table} AS {$alias} ON $codition ";
+            $query = "RIGHT JOIN {$table} AS {$alias} ON $codition";
             $this->add($query,"join");
             return $this;
         } catch (\PDOException $e) {
@@ -400,6 +400,7 @@ class CrudBuilder
 
     private function add(string $text, string $type, array $params = [])
     {
+        $text = $text." ";
         try {
             if (is_array($this->sqlPartsSelect[$type])) {
                 $this->sqlPartsSelect[$type][] = $text;
