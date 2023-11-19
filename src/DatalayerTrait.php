@@ -97,7 +97,7 @@ trait DatalayerTrait
      * @return Crud
      *
      */
-    protected function setInstance(PDO $pdo)
+    protected function setInstance(?PDO $pdo)
     {
         $this->instance = $pdo;
         return $this;
@@ -110,6 +110,7 @@ trait DatalayerTrait
     protected function setDatabase(string $database)
     {
         $this->database = $database;
+        $this->setInstance(null);
         return $this;
     }
 
