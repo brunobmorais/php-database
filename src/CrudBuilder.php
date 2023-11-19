@@ -18,18 +18,19 @@ class CrudBuilder
 
 
     private array $sqlPartsSelect = [
-        'main'     => [],
-        'join'     => [],
-        'where'    => "",
-        'andWhere' => [],
-        'orWhere'  => [],
-        'groupBy'  => [],
-        'having'   => [],
-        'andHaving'=> [],
-        'orHaving' => [],
-        'orderBy'  => "",
-        'limit'    => "",
-        'offset'   => "",
+        'main'      => [],
+        'join'      => [],
+        'where'     => "",
+        'andWhere'  => [],
+        'orWhere'   => [],
+        'groupBy'   => [],
+        'having'    => [],
+        'andHaving' => [],
+        'orHaving'  => [],
+        'orderBy'   => "",
+        'addOrderBy'=> [],
+        'limit'     => "",
+        'offset'    => "",
 
     ];
 
@@ -139,7 +140,7 @@ class CrudBuilder
     public function where(string $texto, array $paramns = []): self
     {
         try {
-            $query = "WHERE {$texto} ";
+            $query = "WHERE {$texto}";
             $this->add($query, "where", $paramns);
             return $this;
         } catch (\PDOException $e) {
@@ -155,7 +156,7 @@ class CrudBuilder
     public function andWhere(string $condition, array $paramns = []): self
     {
         try {
-            $query = "AND {$condition} ";
+            $query = "AND {$condition}";
             $this->add($query, "andWhere", $paramns);
             return $this;
         } catch (\PDOException $e) {
@@ -164,14 +165,14 @@ class CrudBuilder
     }
 
     /**
-    * @param string $texto
+    * @param string $condition
     * @param array $paramns
     * @return $this
      */
-    public function orWhere(string $texto, array $paramns = []): self
+    public function orWhere(string $condition, array $paramns = []): self
     {
         try {
-            $query = "OR {$texto} ";
+            $query = "OR {$condition}";
             $this->add($query, "orWhere", $paramns);
             return $this;
         } catch (\PDOException $e) {
@@ -180,14 +181,25 @@ class CrudBuilder
     }
 
     /**
-    * @param string $texto
+    * @param string $parameter
     * @return $this
      */
-    public function orderBy(string $texto, $order = null): self
+    public function orderBy(string $parameter, $order = null): self
     {
         try {
-            $query = "ORDER BY {$texto} ".($order ?? 'ASC')." ";
+            $query = "ORDER BY {$parameter} ".($order ?? 'ASC');
             $this->add($query, "orderBy");
+            return $this;
+        } catch (\PDOException $e) {
+            $this->setError($e);
+        }
+    }
+
+    public function addOrderBy(string $parameter, $order = null): self
+    {
+        try {
+            $query = ", {$parameter} ".($order ?? 'ASC')." ";
+            $this->add($query, "addOrderBy");
             return $this;
         } catch (\PDOException $e) {
             $this->setError($e);
