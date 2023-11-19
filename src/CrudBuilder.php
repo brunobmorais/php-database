@@ -105,11 +105,11 @@ class CrudBuilder
     * @param array $paramns
     * @return $this
      */
-    public function delete(string $fields, array $paramns): self
+    public function delete(): self
     {
         try {
             $query = "DELETE FROM {$this->getTable()}";
-            $this->add($query, "main", $paramns);
+            $this->add($query, "main");
             return $this;
         } catch (\PDOException $e) {
             $this->setError($e);
