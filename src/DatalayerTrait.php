@@ -52,7 +52,7 @@ trait DatalayerTrait
 
     /** @var array
      */
-    protected array $resultArray = [];
+    private array $resultArray = [];
 
     /** @var string */
     private $logSQL;
