@@ -68,7 +68,7 @@ trait DatalayerTrait
 
 
     /** @return PDO|false */
-    private function getInstance()
+    private function getConnect()
     {
         try {
             if (strpos($_SERVER['SERVER_NAME'], mb_strtolower(CONFIG_DATA_LAYER["homologation"])) && !strpos($this->getDatabase(), ucfirst(CONFIG_DATA_LAYER["homologation"]))) {
@@ -76,17 +76,16 @@ trait DatalayerTrait
                 $this->setDatabase($database);
             }
 
-            if (empty($this->getInstance())) {
-                $instance = new PDO(
+            if (empty($this->instance)) {
+                $this->instance = new PDO(
                     CONFIG_DATA_LAYER['driver'] . ':host=' . CONFIG_DATA_LAYER['host'] . ';dbname=' . $this->getDatabase() . ';port=' . CONFIG_DATA_LAYER['port'],
                     CONFIG_DATA_LAYER['username'],
                     CONFIG_DATA_LAYER['passwd'],
                     CONFIG_DATA_LAYER['options']
                 );
-                $this->setInstance($instance);
             }
 
-            return $this->getInstance();
+            return $this->instance;
         } catch (PDOException $e) {
             $this->setError($e);
         }
@@ -104,14 +103,23 @@ trait DatalayerTrait
         return $this;
     }
 
+    protected function getInstance(): PDO
+    {
+        return $this->instance ?? $this->getConnect();
+    }
+
     /**
      * @param string $database
      * @return $this
      */
     protected function setDatabase(string $database): self
     {
+        if (strpos($_SERVER['SERVER_NAME'], mb_strtolower(CONFIG_DATA_LAYER["homologation"])) && !strpos($this->getDatabase(), ucfirst(CONFIG_DATA_LAYER["homologation"]))) {
+            $database = $database.ucfirst(CONFIG_DATA_LAYER["homologation"] ?? "");
+        }
+
         $this->database = $database;
-        $this->setInstance(null);
+        $this->setInstance(null)->getInstance();
         return $this;
     }
 
