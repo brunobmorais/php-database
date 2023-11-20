@@ -143,7 +143,7 @@ abstract class Crud
             $fields_T .= ", {$item} = ?";
         }
         $fields_T = substr($fields_T, 2);
-        $sql = "UPDATE {{$this->getTable()}} SET {$fields_T}";
+        $sql = "UPDATE {$this->getTable()} SET {$fields_T}";
         if (isset($where)) {
             $sql .= " WHERE $where";
         }

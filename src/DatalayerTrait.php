@@ -114,10 +114,6 @@ trait DatalayerTrait
      */
     protected function setDatabase(string $database): self
     {
-        if (strpos($_SERVER['SERVER_NAME'], mb_strtolower(CONFIG_DATA_LAYER["homologation"])) && !strpos($this->getDatabase(), ucfirst(CONFIG_DATA_LAYER["homologation"]))) {
-            $database = $database.ucfirst(CONFIG_DATA_LAYER["homologation"] ?? "");
-        }
-
         $this->database = $database;
         $this->setInstance(null)->getInstance();
         return $this;
