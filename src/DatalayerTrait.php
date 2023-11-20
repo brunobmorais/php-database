@@ -105,7 +105,7 @@ trait DatalayerTrait
 
     protected function getInstance(): PDO
     {
-        return $this->instance ?? $this->getConnect();
+        return $this->getConnect();
     }
 
     /**
@@ -114,8 +114,17 @@ trait DatalayerTrait
      */
     protected function setDatabase(string $database): self
     {
-        $this->database = $database;
-        $this->setInstance(null)->getInstance();
+        if (strpos($_SERVER['SERVER_NAME'], mb_strtolower(CONFIG_DATA_LAYER["homologation"])) && !strpos($database, ucfirst(CONFIG_DATA_LAYER["homologation"]))) {
+            $database = $database.ucfirst(CONFIG_DATA_LAYER["homologation"] ?? "");
+            $this->database = $database;
+        } else {
+            $this->database = $database;
+        }
+
+        if (!empty($this->instance)){
+            $this->executeSQL("USE {$this->getDatabase()}");
+        }
+
         return $this;
     }
 
