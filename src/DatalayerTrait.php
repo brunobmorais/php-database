@@ -230,7 +230,7 @@ trait DatalayerTrait
     {
         try {
             $this->setPrepare($this->getInstance()->prepare($query));
-            $this->setLogSQL($query, $params);
+            $this->setSQL($query, $params);
             $this->getPrepare()->execute($params);
             return $this->getPrepare();
         } catch (PDOException $e) {
@@ -404,36 +404,52 @@ trait DatalayerTrait
      * @param array|null $params
      * @return void
      */
-    private function setLogSQL($sql_string, ?array $params = null)
+    private function setSQL($sql_string, ?array $params = null)
     {
-        if (!empty($params)) {
-            $indexed = $params == array_values($params);
-            foreach ($params as $k => $v) {
-                if (is_object($v)) {
-                    if ($v instanceof \DateTime) {
-                        $v = $v->format('Y-m-d H:i:s');
-                    } else {
-                        continue;
+        try {
+            if (!empty($params)) {
+                $indexed = $params == array_values($params);
+                foreach ($params as $k => $v) {
+                    if (is_object($v)) {
+                        if ($v instanceof \DateTime) {
+                            $v = $v->format('Y-m-d H:i:s');
+                        } else {
+                            continue;
+                        }
+                    } elseif (is_string($v)) {
+                        $v = "'$v'";
+                    } elseif ($v === null) {
+                        $v = 'NULL';
+                    } elseif (is_array($v)) {
+                        $v = implode(',', $v);
                     }
-                } elseif (is_string($v)) {
-                    $v = "'$v'";
-                } elseif ($v === null) {
-                    $v = 'NULL';
-                } elseif (is_array($v)) {
-                    $v = implode(',', $v);
-                }
 
-                if ($indexed) {
-                    $sql_string = preg_replace('/\?/', $v, $sql_string, 1);
-                } else {
-                    if ($k[0] != ':') {
-                        $k = ':' . $k;
-                    } //add leading colon if it was left out
-                    $sql_string = str_replace($k, $v, $sql_string);
+                    if ($indexed) {
+                        $sql_string = preg_replace('/\?/', $v, $sql_string, 1);
+                    } else {
+                        if ($k[0] != ':') {
+                            $k = ':' . $k;
+                        } //add leading colon if it was left out
+                        $sql_string = str_replace($k, $v, $sql_string);
+                    }
                 }
             }
+            $this->logSQL = $sql_string;
+        } catch (PDOException $e) {
+            $this->setError($e);
         }
-        $this->logSQL = $sql_string;
+    }
+
+    /**
+     * @return string|null
+     */
+    protected function getSQL(): ?string
+    {
+        try {
+            return $this->logSQL ?? "";
+        } catch (\PDOException $e) {
+            $this->setError($e);
+        }
     }
 
     /**

@@ -394,18 +394,6 @@ class CrudBuilder
     }
 
     /**
-     * @return string|null
-     */
-    protected function getSQL(): ?string
-    {
-        try {
-            return $this->logSQL ?? "";
-        } catch (\PDOException $e) {
-            $this->setError($e);
-        }
-    }
-
-    /**
     * @param $params
     * @return self
      */
