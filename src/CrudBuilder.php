@@ -12,7 +12,7 @@ namespace BMorais\Database;
  * @subpackage class
  * @access protected
  */
-abstract class CrudBuilder
+abstract class CrudBuilder extends Crud
 {
     use DatalayerTrait;
 
@@ -45,7 +45,7 @@ abstract class CrudBuilder
     * @param array $paramns
     * @return $this
      */
-    protected function select(string $fields = "*", array $paramns = []): CrudBuilder
+    public function selectBuilder(string $fields = "*", array $paramns = []): self
     {
         try {
             $query = "SELECT {$fields} FROM {$this->getTable()}";
@@ -63,7 +63,7 @@ abstract class CrudBuilder
     * @param array $paramns
     * @return $this
      */
-    protected function insert(string $fields, array $paramns): self
+    protected function insertBuilder(string $fields, array $paramns): self
     {
         try {
             $numparams = '';
@@ -84,7 +84,7 @@ abstract class CrudBuilder
     * @param array $paramns
     * @return $this
      */
-    protected function update(string $fields, array $paramns): self
+    protected function updateBuilder(string $fields, array $paramns): self
     {
         try {
             $fields_T = '';
@@ -107,7 +107,7 @@ abstract class CrudBuilder
     * @param array $paramns
     * @return $this
      */
-    protected function delete(): self
+    protected function deleteBuilder(): self
     {
         try {
             $query = "DELETE FROM {$this->getTable()}";
@@ -183,6 +183,7 @@ abstract class CrudBuilder
 
     /**
     * @param string $parameter
+    * @param $order
     * @return $this
      */
     protected function orderBy(string $parameter, $order = null): self
@@ -196,6 +197,11 @@ abstract class CrudBuilder
         }
     }
 
+    /**
+    * @param string $parameter
+    * @param $order
+    * @return $this
+     */
     protected function addOrderBy(string $parameter, $order = null): self
     {
         try {
@@ -371,7 +377,7 @@ abstract class CrudBuilder
     /**
     * @return void
      */
-    protected function debug()
+    protected function debug(): void
     {
         try {
             echo $this->query . '<pre>' . print_r($this->params) . '</pre>';
@@ -381,27 +387,6 @@ abstract class CrudBuilder
         }
     }
 
-    /**
-     * @return false|string
-     */
-    protected function lastInsertId(): ?string
-    {
-        try {
-            return $this->lastId();
-        } catch (\PDOException $e) {
-            $this->setError($e);
-        }
-    }
-
-    /**
-    * @param $params
-    * @return self
-     */
-    protected function setParameter($params): self
-    {
-        $this->params = array_merge($this->params, $params);
-        return $this;
-    }
 
     /**
     * @param string $query
@@ -420,7 +405,7 @@ abstract class CrudBuilder
             }
 
             if (!empty($params))
-                $this->params = array_merge($this->params, $params);
+                $this->setParameter($params);
         } catch (\PDOException $e) {
             $this->setError($e);
         }

@@ -210,6 +210,25 @@ trait DatalayerTrait
         return $this->prepare;
     }
 
+    /**
+     * @param $params
+     * @return self
+     */
+    protected function setParameter($params): self
+    {
+        $this->params = array_merge($this->params, $params);
+        return $this;
+    }
+
+    /**
+     * @param $params
+     * @return array
+     */
+    protected function getParameter(): array
+    {
+        return $this->params;
+    }
+
     protected function getResult(): array
     {
        return $this->resultArray;
