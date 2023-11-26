@@ -12,7 +12,7 @@ namespace BMorais\Database;
  * @subpackage class
  * @access protected
  */
-class CrudBuilder
+abstract class CrudBuilder
 {
     use DatalayerTrait;
 
