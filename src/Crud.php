@@ -31,7 +31,7 @@ abstract class Crud
             $add = ' ' . $add;
         }
 
-        $sql = "SELECT {$fields} FROM {$this->getTable()}";
+        $sql = "SELECT {$fields} FROM {$this->getTableName()}";
 
         if (!empty($this->getTableAlias()))
             $sql .= " AS {$this->getTableAlias()}";
@@ -64,7 +64,7 @@ abstract class Crud
             $numparams .= ',?';
         }
         $numparams = substr($numparams, 1);
-        $sql = "INSERT INTO {$this->getTable()} ({$fields}) VALUES ({$numparams})";
+        $sql = "INSERT INTO {$this->getTableName()} ({$fields}) VALUES ({$numparams})";
         if ($debug) {
             echo $sql.'<pre>'.print_r($values).'</pre>';
             return;
@@ -100,7 +100,7 @@ abstract class Crud
     public function insertArray(array $params): bool
     {
         if (!empty($params)) {
-            $query = "INSERT INTO {$this->getTable()}";
+            $query = "INSERT INTO {$this->getTableName()}";
             $values = [];
             $dataColumns = array_keys($params);
             if (isset($dataColumns[0])) {
@@ -143,7 +143,7 @@ abstract class Crud
             $fields_T .= ", {$item} = ?";
         }
         $fields_T = substr($fields_T, 2);
-        $sql = "UPDATE {$this->getTable()} SET {$fields_T}";
+        $sql = "UPDATE {$this->getTableName()} SET {$fields_T}";
         if (isset($where)) {
             $sql .= " WHERE $where";
         }
@@ -185,7 +185,7 @@ abstract class Crud
     public function updateArray(array $params, string $where): bool
     {
         if (!empty($params)) {
-            $query = "UPDATE {$this->getTable()} SET";
+            $query = "UPDATE {$this->getTableName()} SET";
             $values = [];
 
             foreach ($params as $index => $column) {
@@ -218,7 +218,7 @@ abstract class Crud
 
     public function delete(array $values = null, string $where = null, bool $debug = false)
     {
-        $sql = "DELETE FROM {$this->getTable()}";
+        $sql = "DELETE FROM {$this->getTableName()}";
         if (!empty($where)) {
             $sql .= " WHERE $where";
         }

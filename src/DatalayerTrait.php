@@ -52,7 +52,7 @@ trait DatalayerTrait
 
     /** @var array
      */
-    private array $resultArray = [];
+    private array $data = [];
 
     /** @var string */
     private $logSQL;
@@ -159,7 +159,7 @@ trait DatalayerTrait
         * @param string $tableAlias
         * @return CrudBuilder|Crud|DatalayerTrait
      */
-    protected function setTable(string $tableName, string $tableAlias = ""): self
+    protected function setTableName(string $tableName, string $tableAlias = ""): self
     {
         if (!empty($tableAlias))
             $this->tableAlias = $tableAlias;
@@ -170,7 +170,7 @@ trait DatalayerTrait
     /**
      * @return string
      */
-    protected function getTable(): string
+    protected function getTableName(): string
     {
         return $this->tableName ?? "";
     }
@@ -214,7 +214,7 @@ trait DatalayerTrait
      * @param $params
      * @return self
      */
-    protected function setParameter($params): self
+    protected function setParams($params): self
     {
         $this->params = array_merge($this->params, $params);
         return $this;
@@ -224,19 +224,28 @@ trait DatalayerTrait
      * @param $params
      * @return array
      */
-    protected function getParameter(): array
+    protected function getParams(): array
     {
         return $this->params;
     }
 
-    protected function getResult(): array
+    protected function getData(): array
     {
-       return $this->resultArray;
+       return $this->data;
     }
 
-    protected function setResult(array $array): self
+    protected function setData(array $array): self
     {
-        $this->resultArray = $array;
+        $this->data = $array;
+        return $this;
+    }
+    public  function getQuery(): string
+    {
+        return $this->query;
+    }
+    public  function setQuery(string $query): self
+    {
+        $this->query = $query;
         return $this;
     }
 
@@ -279,7 +288,7 @@ trait DatalayerTrait
         try {
             $prepare = empty($prepare) ? $this->getPrepare() : $prepare;
             $dados = $prepare->fetchAll(PDO::FETCH_ASSOC);
-            $this->setResult($dados);
+            $this->setData($dados);
             return $dados;
         } catch (PDOException $e) {
             $this->setError($e);
@@ -295,7 +304,7 @@ trait DatalayerTrait
         try {
             $prepare = empty($prepare) ? $this->getPrepare() : $prepare;
             $dados = $prepare->fetchAll(PDO::FETCH_OBJ);
-            $this->setResult($dados);
+            $this->setData($dados);
             return $dados;
         } catch (PDOException $e) {
             $this->setError($e);
@@ -313,7 +322,7 @@ trait DatalayerTrait
             $prepare = empty($prepare) ? $this->getPrepare() : $prepare;
             $classModel = empty($classModel) ? $this->getClassModel() : $classModel;
             $dados = $prepare->fetchAll(PDO::FETCH_CLASS | PDO::FETCH_PROPS_LATE, CONFIG_DATA_LAYER["directory_models"] . $classModel);
-            $this->setResult($dados);
+            $this->setData($dados);
             return $dados;
         } catch (PDOException $e) {
             $this->setError($e);
@@ -475,7 +484,7 @@ trait DatalayerTrait
      * @param PDOException $e
      * @return void
      */
-    private function setError(PDOException $e)
+    protected function setError(PDOException $e)
     {
         $this->error = $e;
         throw new PDOException("{$e->getMessage()}<br/><b>SQL:</b> {$this->getSQL()}");

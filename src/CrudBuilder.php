@@ -14,8 +14,6 @@ namespace BMorais\Database;
  */
 abstract class CrudBuilder extends Crud
 {
-    use DatalayerTrait;
-
     /**
     * @var array
      */
@@ -48,7 +46,7 @@ abstract class CrudBuilder extends Crud
     public function selectBuilder(string $fields = "*", array $paramns = []): self
     {
         try {
-            $query = "SELECT {$fields} FROM {$this->getTable()}";
+            $query = "SELECT {$fields} FROM {$this->getTableName()}";
             if (!empty($this->getTableAlias()))
                 $query .= " AS {$this->getTableAlias()}";
             $this->add($query, "main", $paramns);
@@ -71,7 +69,7 @@ abstract class CrudBuilder extends Crud
                 $numparams .= ',?';
             }
             $numparams = substr($numparams, 1);
-            $query = "INSERT INTO {$this->getTable()} ({$fields}) VALUES ({$numparams})";
+            $query = "INSERT INTO {$this->getTableName()} ({$fields}) VALUES ({$numparams})";
             $this->add($query, "main", $paramns);
             return $this;
         } catch (\PDOException $e) {
@@ -94,7 +92,7 @@ abstract class CrudBuilder extends Crud
                 $fields_T .= ", {$item} = ?";
             }
             $fields_T = substr($fields_T, 2);
-            $query = "UPDATE {{$this->getTable()}} SET {$fields_T}";
+            $query = "UPDATE {{$this->getTableName()}} SET {$fields_T}";
             $this->add($query, "main", $paramns);
             return $this;
         } catch (\PDOException $e) {
@@ -110,7 +108,7 @@ abstract class CrudBuilder extends Crud
     protected function deleteBuilder(): self
     {
         try {
-            $query = "DELETE FROM {$this->getTable()}";
+            $query = "DELETE FROM {$this->getTableName()}";
             $this->add($query, "main");
             return $this;
         } catch (\PDOException $e) {
@@ -359,15 +357,15 @@ abstract class CrudBuilder extends Crud
             foreach ($this->sqlPartsSelect as $key => $part){
                 if (is_array($part)) {
                     foreach ($part as $item){
-                        $this->query .= $item;
+                        $this->setQuery($this->getQuery().$item);
                     }
                 } else {
-                    $this->query .= $part;
+                    $this->setQuery($this->getQuery().$part);
                 }
 
             }
 
-            $this->executeSQL($this->query, $this->params);
+            $this->executeSQL($this->getQuery(), $this->getParams());
             return $this;
         } catch (\PDOException $e) {
             $this->setError($e);
@@ -380,7 +378,7 @@ abstract class CrudBuilder extends Crud
     protected function debug(): void
     {
         try {
-            echo $this->query . '<pre>' . print_r($this->params) . '</pre>';
+            echo $this->getQuery() . '<pre>' . print_r($this->getParams()) . '</pre>';
             exit;
         } catch (\PDOException $e) {
             $this->setError($e);
@@ -405,7 +403,7 @@ abstract class CrudBuilder extends Crud
             }
 
             if (!empty($params))
-                $this->setParameter($params);
+                $this->setParams($params);
         } catch (\PDOException $e) {
             $this->setError($e);
         }

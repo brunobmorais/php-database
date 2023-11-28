@@ -8,7 +8,7 @@ class ExampleDao extends CrudBuilder {
 
     public function __construct()
     {
-        $this->setTable("EXAMPLE");
+        $this->setTableName("EXAMPLE");
         $this->setClassModel("exampleModel");
     }
 
