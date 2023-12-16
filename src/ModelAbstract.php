@@ -17,6 +17,8 @@ use ReflectionObject;
 
 abstract class ModelAbstract
 {
+    protected array $dataArray = [];
+
     /**
      * @param array|null $params
      */
@@ -35,6 +37,7 @@ abstract class ModelAbstract
     {
         foreach ($params as $key => $item) {
             $this->{$key} = $item;
+            $this->dataArray[$key] = $item;
         }
     }
 
@@ -49,8 +52,8 @@ abstract class ModelAbstract
     }
 
     /**
-    * @param $objArray
-    * @return array|null
+     * @param $objArray
+     * @return array|null
      */
     public function toMap($objArray = null): ?array
     {
@@ -88,31 +91,38 @@ abstract class ModelAbstract
         }
 
         return $classname . ' {' . implode(', ', array_map(
-            function ($p_0) use ($data) {
-                $p_0->setAccessible(true);
+                function ($p_0) use ($data) {
+                    $p_0->setAccessible(true);
 
-                return $p_0->getName() . ': ' . $p_0->getValue($data);
-            },
-            $re_2->getProperties()
-        )) . '}';
+                    return $p_0->getName() . ': ' . $p_0->getValue($data);
+                },
+                $re_2->getProperties()
+            )) . '}';
     }
 
     /**
      * @param $attribute
      * @return string
      */
-    public function __get($attribute): string
+    /**
+     * @param $name
+     * @return string
+     */
+    public function __get($name): string
     {
-        return $this->{$attribute} ?? '';
+        return $this->{$name} ?? ($this->dataArray[$name]?? "");
     }
 
     /**
-     * @param $attribute
+     * @param $name
      * @param $value
      * @return void
      */
-    public function __set($attribute, $value): void
+    public function __set($name, $value): void
     {
-        $this->{$attribute} = $value;
+        $this->{$name} = $value;
+        $this->dataArray[$name] = $value;
     }
+
 }
+
