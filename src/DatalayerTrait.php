@@ -35,27 +35,27 @@ trait DatalayerTrait
     /** @var string
      *  @deprecated
      */
-    protected $database = CONFIG_DATA_LAYER["dbname"];
+    protected string $database = CONFIG_DATA_LAYER["dbname"];
 
     /** @var string
      *  @deprecated
      */
-    protected $classModel;
+    protected string $classModel;
 
     /** @var string
      * @deprecated
      */
-    protected $tableName;
+    protected string $tableName;
 
     /** @var string */
-    private $tableAlias;
+    private string $tableAlias;
 
     /** @var array
      */
     private array $data = [];
 
     /** @var string */
-    private $logSQL;
+    private string $logSQL;
 
     /** @var PDOException */
     private $error;
