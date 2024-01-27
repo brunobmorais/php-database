@@ -29,5 +29,8 @@
     "php": ">=7.4",
     "ext-json": "*",
     "ext-mbstring": "*"
+  },
+  "require-dev": {
+    "rector/rector": "^0.19.2"
   }
 }

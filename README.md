@@ -1,4 +1,4 @@
-# Database @BMorais Code
+# Database BMORAIS Code
 
 [![Maintainer](http://img.shields.io/badge/maintainer-@brunobmorais-blue.svg?style=flat-square)](https://linkedin.com/in/brunobmorais)
 [![Source Code](http://img.shields.io/badge/source-bmorais/database-blue.svg?style=flat-square)](https://github.com/brunobmorais/php-database)
@@ -187,6 +187,8 @@ Thank you
 ## Credits
 
 - [Bruno Morais](https://github.com/brunobmorais) (Developer)
+- [Athus Felipe](https://github.com/AthusFelipe) (Developer)
+
 
 <!-- CONTRIBUTING -->
 ## Contributing
@@ -214,7 +216,7 @@ Remember to include a tag, and to follow [Conventional Commits](https://www.conv
 
 Obrigado a todas as pessoas que contribuíram para este projeto, sem vocês este projeto não estaria aqui hoje.
 
-<a href="https://github.com/flutterando/Uno/graphs/contributors">
+<a href="https://github.com/brunobmorais/php-database/graphs/contributors">
   <img src="https://contrib.rocks/image?repo=brunobmorais/php-database" />
 </a>
 
