@@ -43,7 +43,7 @@ abstract class CrudBuilder extends Crud
     * @param array $paramns
     * @return $this
      */
-    public function selectBuilder(string $fields = "*", array $paramns = []): self
+    protected function selectBuilder(string $fields = "*", array $paramns = []): self
     {
         try {
             $query = "SELECT {$fields} FROM {$this->getTableName()}";
