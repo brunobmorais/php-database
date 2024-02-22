@@ -15,9 +15,10 @@ namespace BMorais\Database;
 
 use ReflectionObject;
 
+#[\AllowDynamicProperties]
 abstract class ModelAbstract
 {
-    protected array $dataArray = [];
+    protected array $dataModelArray = [];
 
     /**
      * @param array|null $params
@@ -30,14 +31,52 @@ abstract class ModelAbstract
     }
 
     /**
+     * @param $name
+     * @return string
+     */
+    public function __get($name): string
+    {
+        return $this->{$name} ?? ($this->dataModelArray[$name]?? "");
+    }
+
+    /**
+     * @param $name
+     * @param $value
+     * @return void
+     */
+    public function __set($name, $value): void
+    {
+        if (property_exists($this, $this->{$key})){
+            $this->{$key} = $value;
+        }
+        $this->dataModelArray[$name] = $value;
+    }
+
+    /**
+     * @param $isset
+     * @return bool
+     */
+    function __isset($isset) {
+
+        $result = isset($this->dataModelArray[$isset]);
+        if (property_exists($this, $this->{$key})){
+            $result = isset($this->{$isset});
+        }
+
+        return $result;
+    }
+
+    /**
      * @param array $params
      * @return void
      */
     public function fromMapToModel(array $params): void
     {
         foreach ($params as $key => $item) {
-            $this->{$key} = $item;
-            $this->dataArray[$key] = $item;
+            $this->dataModelArray[$key] = $item;
+            if (property_exists($this, $this->{$key})){
+                $this->{$key} = $item;
+            }
         }
     }
 
@@ -98,30 +137,6 @@ abstract class ModelAbstract
                 },
                 $re_2->getProperties()
             )) . '}';
-    }
-
-    /**
-     * @param $attribute
-     * @return string
-     */
-    /**
-     * @param $name
-     * @return string
-     */
-    public function __get($name): string
-    {
-        return $this->{$name} ?? ($this->dataArray[$name]?? "");
-    }
-
-    /**
-     * @param $name
-     * @param $value
-     * @return void
-     */
-    public function __set($name, $value): void
-    {
-        $this->{$name} = $value;
-        $this->dataArray[$name] = $value;
     }
 
 }
