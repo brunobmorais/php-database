@@ -18,7 +18,7 @@ use ReflectionObject;
 #[\AllowDynamicProperties]
 abstract class ModelAbstract
 {
-    protected array $dataModelArray = [];
+    private array $dataModelArray = [];
 
     /**
      * @param array|null $params
@@ -64,6 +64,13 @@ abstract class ModelAbstract
         }
 
         return $result;
+    }
+
+    /**
+     * @return array
+     */
+    public function getDataModelArray():array {
+        return $this->dataModelArray;
     }
 
     /**
