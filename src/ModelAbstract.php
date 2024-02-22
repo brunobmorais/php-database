@@ -40,27 +40,27 @@ abstract class ModelAbstract
     }
 
     /**
-     * @param $name
+     * @param $key
      * @param $value
      * @return void
      */
-    public function __set($name, $value): void
+    public function __set($key, $value): void
     {
-        if (property_exists($this, $this->{$key})){
+        if (property_exists($this, $key)){
             $this->{$key} = $value;
         }
-        $this->dataModelArray[$name] = $value;
+        $this->dataModelArray[$key] = $value;
     }
 
     /**
-     * @param $isset
+     * @param $key
      * @return bool
      */
-    function __isset($isset) {
+    function __isset($key) {
 
-        $result = isset($this->dataModelArray[$isset]);
-        if (property_exists($this, $this->{$key})){
-            $result = isset($this->{$isset});
+        $result = isset($this->dataModelArray[$key]);
+        if (property_exists($this, $key)){
+            $result = isset($this->{$key});
         }
 
         return $result;
@@ -81,7 +81,7 @@ abstract class ModelAbstract
     {
         foreach ($params as $key => $item) {
             $this->dataModelArray[$key] = $item;
-            if (property_exists($this, $this->{$key})){
+            if (property_exists($this, $key)){
                 $this->{$key} = $item;
             }
         }
