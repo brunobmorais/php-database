@@ -32,9 +32,8 @@ abstract class ModelAbstract
 
     /**
      * @param $name
-     * @return string
      */
-    public function __get($name): string
+    public function __get($name)
     {
         return $this->{$name} ?? ($this->dataModelArray[$name]?? "");
     }
