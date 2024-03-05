@@ -106,7 +106,8 @@ abstract class ModelAbstract
         if (is_array($data) || is_object($data)) {
             $result = [];
             foreach ($data as $key => $value) {
-                $result[$key] = (is_array($value) || is_object($value)) ? $this->toMap($value) : $value;
+                if(strlen($value) > 0)
+                    $result[$key] = (is_array($value) || is_object($value)) ? $this->toMap($value) : $value;
             }
 
             return $result;
