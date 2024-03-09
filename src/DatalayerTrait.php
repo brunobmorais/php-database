@@ -19,7 +19,7 @@ use stdClass;
 trait DatalayerTrait
 {
     /** @var PDO|null
-     * @deprecated
+     * @deprecated USE $this->setClassModel("NAME");
      * */
     protected $instance = null;
 
@@ -38,12 +38,12 @@ trait DatalayerTrait
     protected string $database = CONFIG_DATA_LAYER["dbname"];
 
     /** @var string
-     *  @deprecated
+     *  @deprecated USE $this->setInstance(PDO);
      */
     protected string $classModel;
 
     /** @var string
-     * @deprecated
+     * @deprecated USE $this->setTableName("name");
      */
     protected string $tableName;
 
@@ -487,7 +487,7 @@ trait DatalayerTrait
     protected function setError(PDOException $e)
     {
         $this->error = $e;
-        throw new PDOException("{$e->getMessage()}<br/><b>SQL:</b> {$this->getSQL()}");
+        throw new PDOException("{$e->getMessage()} ###### SQL: {$this->getSQL()}");
 
     }
 }
