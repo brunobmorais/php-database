@@ -78,11 +78,17 @@ abstract class ModelAbstract
      */
     public function fromMapToModel(array $params): void
     {
+        $reflection = new \ReflectionClass($this);
+
         foreach ($params as $key => $item) {
-            $this->dataModelArray[$key] = $item;
-            if (property_exists($this, $key)){
-                $this->{$key} = $item;
+            if ($reflection->hasProperty($key)) {
+                $property = $reflection->getProperty($key);
+                $property->setAccessible(true);
+                $property->setValue($this, $item);
             }
+
+            $this->dataModelArray[$key] = $item;
+
         }
     }
 
