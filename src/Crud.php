@@ -247,19 +247,4 @@ abstract class Crud
         return $this->logSQL ?? "";
     }
 
-       public function extractModel($model): \stdClass{
-        $reflection = new \ReflectionClass(get_class($model)); 
-        $objeto = new \stdClass; 
-
-        foreach ($reflection->getProperties() as $prop) {
-            $method = 'get'.$prop->name ; 
-            $objeto->{$prop->name} =  call_user_func([$model, $method]); 
-            
-        }
-
-        return $objeto ; 
-
-
-    }
-
 }

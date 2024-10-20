@@ -116,6 +116,25 @@ abstract class ModelAbstract
         return null;
     }
 
+    public function toObject(): \stdClass{
+        $reflection = new \ReflectionClass($this);
+        $objeto = new \stdClass;
+
+        foreach ($reflection->getProperties() as $prop) {
+            $prop->setAccessible(true);
+
+            $method = 'get' . $prop->getName();
+
+            if (method_exists($this, $method)) {
+                $objeto->{$prop->getName()} = call_user_func([$this, $method]);
+            } else {
+                $objeto->{$prop->getName()} = $prop->getValue($this);
+            }
+        }
+
+        return $objeto;
+    }
+
     /**
      * @return string
      */
