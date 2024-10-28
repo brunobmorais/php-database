@@ -270,7 +270,7 @@ trait DatalayerTrait
      * @param $prepare
      * @return int|false
      */
-    protected function count(PDOStatement $prepare = null): ?int
+    protected function rowCount(PDOStatement $prepare = null): ?int
     {
         try {
             $prepare = empty($prepare) ? $this->getPrepare() : $prepare;
