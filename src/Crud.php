@@ -82,15 +82,23 @@ abstract class Crud
     {
         $args = [];
         $params = [];
+
+        // Filtrar propriedades do objeto que não são null
         foreach ($object as $chave => $valor) {
-            if ($valor != null) {
+            if ($valor !== null) {  // Verifica explicitamente se o valor não é null
                 $args[] = $chave;
                 $params[] = $valor;
             }
         }
-        $args = implode(',', $args);
 
-        return $this->insert($args, $params);
+        // Se houver colunas a serem inseridas
+        if (!empty($args)) {
+            $columns = implode(',', $args);
+            return $this->insert($columns, $params);
+        }
+
+        // Retorna falso se todos os valores forem null
+        return false;
     }
 
     /**
@@ -99,32 +107,35 @@ abstract class Crud
      */
     public function insertArray(array $params): bool
     {
+        // Remove colunas com valores null
+        $params = array_filter($params, fn($value) => $value !== null);
+
         if (!empty($params)) {
             $query = "INSERT INTO {$this->getTableName()}";
             $values = [];
             $dataColumns = array_keys($params);
+
             if (isset($dataColumns[0])) {
                 $query .= ' (`' . implode('`, `', $dataColumns) . '`) ';
             }
+
             $query .= ' VALUES (';
 
-            foreach ($dataColumns as $index => $column) {
+            foreach ($dataColumns as $column) {
                 $values[] = $params[$column];
                 $query .= '?, ';
             }
 
+            // Remove a última vírgula e espaço
             $query = rtrim($query, ', ');
             $query .= ')';
 
             $result = $this->executeSQL($query, $values);
-            if (empty($result)) {
-                return false;
-            }
 
-            return true;
-        } else {
-            return false;
+            return !empty($result);
         }
+
+        return false;
     }
 
     /**
