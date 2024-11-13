@@ -18,8 +18,6 @@ use ReflectionObject;
 #[\AllowDynamicProperties]
 abstract class ModelAbstract
 {
-    private array $dataModelArray = [];
-
     /**
      * @param array|null $params
      */
@@ -35,7 +33,7 @@ abstract class ModelAbstract
      */
     public function __get($name)
     {
-        return $this->{$name} ?? ($this->dataModelArray[$name]?? "");
+        return property_exists($this, $name) ? $this->{$name} : null;
     }
 
     /**
@@ -45,10 +43,9 @@ abstract class ModelAbstract
      */
     public function __set($key, $value): void
     {
-        if (property_exists($this, $key)){
+        if (property_exists($this, $key)) {
             $this->{$key} = $value;
         }
-        $this->dataModelArray[$key] = $value;
     }
 
     /**
@@ -57,26 +54,15 @@ abstract class ModelAbstract
      */
     function __isset($key) {
 
-        $result = isset($this->dataModelArray[$key]);
-        if (property_exists($this, $key)){
-            $result = isset($this->{$key});
-        }
+        return property_exists($this, $key) && isset($this->{$key});
 
-        return $result;
-    }
-
-    /**
-     * @return array
-     */
-    public function getDataModelArray():array {
-        return $this->dataModelArray;
     }
 
     /**
      * @param array $params
      * @return void
      */
-    public function fromMapToModel(array $params): void
+    public function fromMapToModel(array $params)
     {
         $reflection = new \ReflectionClass($this);
 
@@ -86,20 +72,20 @@ abstract class ModelAbstract
                 $property->setAccessible(true);
                 $property->setValue($this, $item);
             }
-
-            $this->dataModelArray[$key] = $item;
-
         }
+
+        return $this;
     }
 
     /**
      * @param string $json
      * @return void
      */
-    public function fromJsonToModel(string $json): void
+    public function fromJsonToModel(string $json)
     {
-        $params = json_decode($json, true);
-        $this->fromMapToModel($params);
+        $params = json_decode($json, true, flags: JSON_THROW_ON_ERROR);
+        return $this->fromMapToModel($params);
+
     }
 
     /**
@@ -112,8 +98,7 @@ abstract class ModelAbstract
         if (is_array($data) || is_object($data)) {
             $result = [];
             foreach ($data as $key => $value) {
-                if(strlen($value) > 0)
-                    $result[$key] = (is_array($value) || is_object($value)) ? $this->toMap($value) : $value;
+                $result[$key] = (is_array($value) || is_object($value)) ? $this->toMap($value) : $value;
             }
 
             return $result;
@@ -122,6 +107,9 @@ abstract class ModelAbstract
         return null;
     }
 
+    /**
+     * @return \stdClass
+     */
     public function toObject(): \stdClass{
         $reflection = new \ReflectionClass($this);
         $objeto = new \stdClass;
@@ -142,11 +130,28 @@ abstract class ModelAbstract
     }
 
     /**
+     * @return array
+     */
+    public function toArray(): array
+    {
+        $array = [];
+        foreach ((new \ReflectionClass($this))->getProperties() as $prop) {
+            $prop->setAccessible(true);
+            $method = 'get' . ucfirst($prop->getName());
+
+            $array[$prop->getName()] = method_exists($this, $method)
+                ? $this->{$method}()
+                : $prop->getValue($this);
+        }
+        return $array;
+    }
+
+    /**
      * @return string
      */
     public function toJson(): string
     {
-        return json_encode($this->toMap(), JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
+        return json_encode($this->toArray(), JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES | JSON_THROW_ON_ERROR);
     }
 
     /**
@@ -154,22 +159,12 @@ abstract class ModelAbstract
      */
     public function toString(): string
     {
-        $data = (object) $this->toMap();
-        $re_2 = new ReflectionObject($data);
-        $classname = get_class($this);
-        if ($pos = strrpos($classname, '\\')) {
-            $classname = substr($classname, $pos + 1);
-        }
-
-        return $classname . ' {' . implode(', ', array_map(
-                function ($p_0) use ($data) {
-                    $p_0->setAccessible(true);
-
-                    return $p_0->getName() . ': ' . $p_0->getValue($data);
-                },
-                $re_2->getProperties()
-            )) . '}';
+        $classname = (new \ReflectionClass($this))->getShortName();
+        $properties = array_map(
+            fn($prop) => "{$prop->getName()}: '" . ($prop->getValue($this) ?? '') . "'",
+            (new \ReflectionClass($this))->getProperties()
+        );
+        return "$classname {" . implode(', ', $properties) . '}';
     }
 
 }
-
