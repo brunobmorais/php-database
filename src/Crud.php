@@ -105,34 +105,20 @@ abstract class Crud
      * @param array $params
      * @return bool
      */
-    public function insertArray(array $params): bool
+    public function insertArray(array $object): bool
     {
-        // Remove colunas com valores null
-        $params = array_filter($params, fn($value) => $value !== null);
-
-        if (!empty($params)) {
-            $query = "INSERT INTO {$this->getTableName()}";
-            $values = [];
-            $dataColumns = array_keys($params);
-
-            if (isset($dataColumns[0])) {
-                $query .= ' (`' . implode('`, `', $dataColumns) . '`) ';
+        $args = [];
+        $params = [];
+        foreach ($object as $chave => $valor) {
+            if ($valor != null) {
+                $args[] = $chave;
+                $params[] = $valor;
             }
+        }
 
-            $query .= ' VALUES (';
-
-            foreach ($dataColumns as $column) {
-                $values[] = $params[$column];
-                $query .= '?, ';
-            }
-
-            // Remove a última vírgula e espaço
-            $query = rtrim($query, ', ');
-            $query .= ')';
-
-            $result = $this->executeSQL($query, $values);
-
-            return !empty($result);
+        if (!empty($args)) {
+            $args = implode(',', $args);
+            return $this->insert($args, $params);
         }
 
         return false;
@@ -182,9 +168,13 @@ abstract class Crud
                 $params[] = $valor;
             }
         }
-        $args = implode(',', $args);
 
-        return $this->update($args, $params, $where);
+        if (!empty($args)) {
+            $args = implode(',', $args);
+            return $this->update($args, $params, $where);
+        }
+
+        return false;
     }
 
     /**
@@ -193,31 +183,24 @@ abstract class Crud
      * @return bool
      */
 
-    public function updateArray(array $params, string $where): bool
+    public function updateArray(array $object, string $where): bool
     {
-        if (!empty($params)) {
-            $query = "UPDATE {$this->getTableName()} SET";
-            $values = [];
+        $args = [];
+        $params = [];
 
-            foreach ($params as $index => $column) {
-                $query .= " {$index} = ?, ";
-                $values[] = $params[$index];
+        foreach ($object as $chave => $valor) {
+            if ($valor != null) {
+                $args[] = $chave;
+                $params[] = $valor;
             }
-            $query = rtrim($query, ', ');
-
-            if (!empty($where)) {
-                $query .= " WHERE {$where}";
-            }
-
-            $result = $this->executeSQL($query, $values);
-            if (empty($result)) {
-                return false;
-            }
-
-            return true;
-        } else {
-            return false;
         }
+
+        if (!empty($args)) {
+            $args = implode(',', $args);
+            return $this->update($args, $params, $where);
+        }
+
+        return false;
     }
 
     /**
