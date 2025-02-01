@@ -110,7 +110,7 @@ abstract class Crud
         $args = [];
         $params = [];
         foreach ($object as $chave => $valor) {
-            if ($valor != null) {
+            if ($valor !== null) {
                 $args[] = $chave;
                 $params[] = $valor;
             }
@@ -163,7 +163,7 @@ abstract class Crud
         $args = [];
         $params = [];
         foreach ($object as $chave => $valor) {
-            if ($valor != null) {
+            if ($valor !== null) {
                 $args[] = $chave;
                 $params[] = $valor;
             }
@@ -189,7 +189,7 @@ abstract class Crud
         $params = [];
 
         foreach ($object as $chave => $valor) {
-            if ($valor != null) {
+            if ($valor !== null) {
                 $args[] = $chave;
                 $params[] = $valor;
             }
