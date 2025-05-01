@@ -21,7 +21,7 @@ trait DatalayerTrait
     /** @var PDO|null
      * @deprecated USE $this->setClassModel("NAME");
      * */
-    protected $instance = null;
+    protected ?PDO $instance = null;
 
     /** @var string
      *  @deprecated
@@ -270,7 +270,7 @@ trait DatalayerTrait
      * @param $prepare
      * @return int|false
      */
-    protected function rowCount(PDOStatement $prepare = null): ?int
+    protected function rowCount(?PDOStatement $prepare = null): ?int
     {
         try {
             $prepare = empty($prepare) ? $this->getPrepare() : $prepare;
@@ -283,7 +283,7 @@ trait DatalayerTrait
     * @param PDOStatement|null $prepare
     * @return array|null
      */
-    protected function fetchArrayAssoc(PDOStatement $prepare = null): ?array
+    protected function fetchArrayAssoc(?PDOStatement $prepare = null): ?array
     {
         try {
             $prepare = empty($prepare) ? $this->getPrepare() : $prepare;
@@ -299,7 +299,7 @@ trait DatalayerTrait
      * @param $prepare
      * @return array|false
      */
-    protected function fetchArrayObj(PDOStatement $prepare = null): ?array
+    protected function fetchArrayObj(?PDOStatement $prepare = null): ?array
     {
         try {
             $prepare = empty($prepare) ? $this->getPrepare() : $prepare;
@@ -316,7 +316,7 @@ trait DatalayerTrait
      * @param String|null $classModel
      * @return array|false
      */
-    protected function fetchArrayClass(PDOStatement $prepare = null, string $classModel = null): ?array
+    protected function fetchArrayClass(?PDOStatement $prepare = null, ?string $classModel = null): ?array
     {
         try {
             $prepare = empty($prepare) ? $this->getPrepare() : $prepare;
@@ -333,7 +333,7 @@ trait DatalayerTrait
      * @param $prepare
      * @return array|false
      */
-    protected function fetchOneAssoc(PDOStatement $prepare = null): ?array
+    protected function fetchOneAssoc(?PDOStatement $prepare = null): ?array
     {
         try {
             $prepare = empty($prepare) ? $this->getPrepare() : $prepare;
@@ -347,7 +347,7 @@ trait DatalayerTrait
     * @param PDOStatement|null $prepare
     * @return stdClass|null
      */
-    protected function fetchOneObj(PDOStatement $prepare = null): ?stdClass
+    protected function fetchOneObj(?PDOStatement $prepare = null): ?stdClass
     {
         try {
             $prepare = empty($prepare) ? $this->getPrepare() : $prepare;
@@ -362,7 +362,7 @@ trait DatalayerTrait
      * @param String|null $class
      * @return array|false
      */
-    protected function fetchOneClass(PDOStatement $prepare = null, string $class = null): ?object
+    protected function fetchOneClass(?PDOStatement $prepare = null, ?string $class = null): ?object
     {
         try {
             $prepare = empty($prepare) ? $this->getPrepare() : $prepare;

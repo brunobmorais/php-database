@@ -25,7 +25,7 @@ abstract class Crud
      * @param bool $debug
      * @return array|false|void
      */
-    public function select(string $fields = '*', string $add = '', array $values = null, bool $returnModel = false, bool $debug = false)
+    public function select(string $fields = '*', string $add = '', ?array $values = null, bool $returnModel = false, bool $debug = false)
     {
         if (strlen($add) > 0) {
             $add = ' ' . $add;
@@ -57,7 +57,7 @@ abstract class Crud
      * @param bool $debug
      * @return bool|void
      */
-    public function insert(string $fields, array $values = null, bool $debug = false)
+    public function insert(string $fields, ?array $values = null, bool $debug = false)
     {
         $numparams = '';
         foreach ($values as $item) {
@@ -131,7 +131,7 @@ abstract class Crud
      * @param bool $debug
      * @return bool|void
      */
-    public function update(string $fields, array $values = null, string $where = null, bool $debug = false)
+    public function update(string $fields, ?array $values = null, ?string $where = null, bool $debug = false)
     {
         $fields_T = '';
         $atributos = explode(',', $fields);
@@ -210,7 +210,7 @@ abstract class Crud
      * @return bool|void
      */
 
-    public function delete(array $values = null, string $where = null, bool $debug = false)
+    public function delete(?array $values = null, ?string $where = null, bool $debug = false)
     {
         $sql = "DELETE FROM {$this->getTableName()}";
         if (!empty($where)) {

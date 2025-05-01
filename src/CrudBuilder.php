@@ -184,7 +184,7 @@ abstract class CrudBuilder extends Crud
     * @param $order
     * @return $this
      */
-    protected function orderBy(string $parameter, $order = null): self
+    protected function orderBy(string $parameter, ?string $order = null): self
     {
         try {
             $query = "ORDER BY {$parameter} ".($order ?? 'ASC');
@@ -200,7 +200,7 @@ abstract class CrudBuilder extends Crud
     * @param $order
     * @return $this
      */
-    protected function addOrderBy(string $parameter, $order = null): self
+    protected function addOrderBy(string $parameter, ?string $order = null): self
     {
         try {
             $query = ", {$parameter} ".($order ?? 'ASC')." ";

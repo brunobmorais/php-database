@@ -21,7 +21,7 @@ abstract class ModelAbstract
     /**
      * @param array|null $params
      */
-    public function __construct(array $params = null)
+    public function __construct(?array $params = null)
     {
         if (!empty($params)) {
             $this->fromMapToModel($params);
