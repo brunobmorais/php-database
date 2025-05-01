@@ -376,7 +376,7 @@ trait DatalayerTrait
     /**
      * @return bool
      */
-    protected function beginTrasaction(): ?bool
+    protected function beginTransaction(): ?bool
     {
         try {
             $this->getInstance()->beginTransaction();
