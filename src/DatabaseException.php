@@ -1,6 +1,6 @@
 <?php
 
-namespace BMorais\Database\Exception;
+namespace BMorais\Database;
 
 use Exception;
 use Throwable;
