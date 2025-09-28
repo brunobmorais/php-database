@@ -2,6 +2,8 @@
 
 namespace BMorais\Database;
 
+use PDOException;
+
 /**
  * CLASS ABSTRACT CRUD
  * Basic class to make connection between the database and the application
@@ -23,31 +25,35 @@ abstract class Crud
      * @param array|null $values
      * @param bool $returnModel
      * @param bool $debug
-     * @return array|false|void
+     * @return array|\Exception|false|PDOException|void
      */
     public function select(string $fields = '*', string $add = '', ?array $values = null, bool $returnModel = false, bool $debug = false)
     {
-        if (strlen($add) > 0) {
-            $add = ' ' . $add;
-        }
+        try {
+            if (strlen($add) > 0) {
+                $add = ' ' . $add;
+            }
 
-        $sql = "SELECT {$fields} FROM {$this->getTableName()}";
+            $sql = "SELECT {$fields} FROM {$this->getTableName()}";
 
-        if (!empty($this->getTableAlias()))
-            $sql .= " AS {$this->getTableAlias()}";
+            if (!empty($this->getTableAlias()))
+                $sql .= " AS {$this->getTableAlias()}";
 
-        $sql .= "{$add}";
+            $sql .= "{$add}";
 
-        if ($debug) {
-            echo $sql;
+            if ($debug) {
+                echo $sql;
 
-            return;
-        }
-        $this->executeSQL($sql, $values);
-        if ($returnModel) {
-            return $this->fetchArrayClass();
-        } else {
-            return $this->fetchArrayObj();
+                return;
+            }
+            $this->executeSQL($sql, $values);
+            if ($returnModel) {
+                return $this->fetchArrayClass();
+            } else {
+                return $this->fetchArrayObj();
+            }
+        } catch (PDOException $e) {
+            return $e;
         }
     }
 
@@ -55,73 +61,85 @@ abstract class Crud
      * @param string $fields
      * @param array|null $values
      * @param bool $debug
-     * @return bool|void
+     * @return bool|\Exception|PDOException|void
      */
     public function insert(string $fields, ?array $values = null, bool $debug = false)
     {
-        $numparams = '';
-        foreach ($values as $item) {
-            $numparams .= ',?';
+        try {
+            $numparams = '';
+            foreach ($values as $item) {
+                $numparams .= ',?';
+            }
+            $numparams = substr($numparams, 1);
+            $sql = "INSERT INTO {$this->getTableName()} ({$fields}) VALUES ({$numparams})";
+            if ($debug) {
+                echo $sql . '<pre>' . print_r($values) . '</pre>';
+                return;
+            }
+            $result = $this->executeSQL($sql, $values);
+            return !empty($result);
+        } catch (PDOException $e) {
+            return $e;
         }
-        $numparams = substr($numparams, 1);
-        $sql = "INSERT INTO {$this->getTableName()} ({$fields}) VALUES ({$numparams})";
-        if ($debug) {
-            echo $sql.'<pre>'.print_r($values).'</pre>';
-            return;
-        }
-        $result = $this->executeSQL($sql, $values);
-        return !empty($result);
 
     }
 
     /**
      * @param object $object
-     * @return bool|null
+     * @return bool|\Exception|PDOException|null
      */
     public function insertObject(object $object)
     {
-        $args = [];
-        $params = [];
+        try {
+            $args = [];
+            $params = [];
 
-        // Filtrar propriedades do objeto que não são null
-        foreach ($object as $chave => $valor) {
-            if ($valor !== null) {  // Verifica explicitamente se o valor não é null
-                $args[] = $chave;
-                $params[] = $valor;
+            // Filtrar propriedades do objeto que não são null
+            foreach ($object as $chave => $valor) {
+                if ($valor !== null) {  // Verifica explicitamente se o valor não é null
+                    $args[] = $chave;
+                    $params[] = $valor;
+                }
             }
-        }
 
-        // Se houver colunas a serem inseridas
-        if (!empty($args)) {
-            $columns = implode(',', $args);
-            return $this->insert($columns, $params);
-        }
+            // Se houver colunas a serem inseridas
+            if (!empty($args)) {
+                $columns = implode(',', $args);
+                return $this->insert($columns, $params);
+            }
 
-        // Retorna falso se todos os valores forem null
-        return false;
+            // Retorna falso se todos os valores forem null
+            return false;
+        } catch (PDOException $e) {
+            return $e;
+        }
     }
 
     /**
      * @param array $params
-     * @return bool
+     * @return bool|\Exception|\PDOException
      */
-    public function insertArray(array $object): bool
+    public function insertArray(array $object)
     {
-        $args = [];
-        $params = [];
-        foreach ($object as $chave => $valor) {
-            if ($valor !== null) {
-                $args[] = $chave;
-                $params[] = $valor;
+        try {
+            $args = [];
+            $params = [];
+            foreach ($object as $chave => $valor) {
+                if ($valor !== null) {
+                    $args[] = $chave;
+                    $params[] = $valor;
+                }
             }
-        }
 
-        if (!empty($args)) {
-            $args = implode(',', $args);
-            return $this->insert($args, $params);
-        }
+            if (!empty($args)) {
+                $args = implode(',', $args);
+                return $this->insert($args, $params);
+            }
 
-        return false;
+            return false;
+        } catch (\PDOException $e) {
+            return $e;
+        }
     }
 
     /**
@@ -129,99 +147,116 @@ abstract class Crud
      * @param array|null $values
      * @param string|null $where
      * @param bool $debug
-     * @return bool|void
+     * @return bool|\Exception|\PDOException|void
      */
     public function update(string $fields, ?array $values = null, ?string $where = null, bool $debug = false)
     {
-        $fields_T = '';
-        $atributos = explode(',', $fields);
+        try {
+            $fields_T = '';
+            $atributos = explode(',', $fields);
 
-        foreach ($atributos as $item) {
-            $fields_T .= ", {$item} = ?";
+            foreach ($atributos as $item) {
+                $fields_T .= ", {$item} = ?";
+            }
+            $fields_T = substr($fields_T, 2);
+            $sql = "UPDATE {$this->getTableName()} SET {$fields_T}";
+            if (isset($where)) {
+                $sql .= " WHERE $where";
+            }
+            if ($debug) {
+                echo $sql . '<pre>' . print_r($values) . '</pre>';
+                return;
+            }
+            $result = $this->executeSQL($sql, $values);
+            return !empty($result);
+        } catch (\PDOException $e) {
+            return $e;
         }
-        $fields_T = substr($fields_T, 2);
-        $sql = "UPDATE {$this->getTableName()} SET {$fields_T}";
-        if (isset($where)) {
-            $sql .= " WHERE $where";
-        }
-        if ($debug) {
-            echo $sql.'<pre>'.print_r($values).'</pre>';
-            return;
-        }
-        $result = $this->executeSQL($sql, $values);
-        return !empty($result);
+
     }
 
 
     /**
      * @param object $object
      * @param string $where
-     * @return bool|null
+     * @return bool|\Exception|PDOException|null
      */
-    public function updateObject(object $object, string $where): ?bool
+    public function updateObject(object $object, string $where)
     {
-        $args = [];
-        $params = [];
-        foreach ($object as $chave => $valor) {
-            if ($valor !== null) {
-                $args[] = $chave;
-                $params[] = $valor;
+        try {
+            $args = [];
+            $params = [];
+            foreach ($object as $chave => $valor) {
+                if ($valor !== null) {
+                    $args[] = $chave;
+                    $params[] = $valor;
+                }
             }
-        }
 
-        if (!empty($args)) {
-            $args = implode(',', $args);
-            return $this->update($args, $params, $where);
-        }
+            if (!empty($args)) {
+                $args = implode(',', $args);
+                return $this->update($args, $params, $where);
+            }
 
-        return false;
+            return false;
+        } catch (PDOException $e) {
+            return $e;
+        }
     }
 
     /**
      * @param array $params
      * @param string $where
-     * @return bool
+     * @return bool|\Exception|PDOException
      */
 
-    public function updateArray(array $object, string $where): bool
+    public function updateArray(array $object, string $where)
     {
-        $args = [];
-        $params = [];
+        try {
+            $args = [];
+            $params = [];
 
-        foreach ($object as $chave => $valor) {
-            if ($valor !== null) {
-                $args[] = $chave;
-                $params[] = $valor;
+            foreach ($object as $chave => $valor) {
+                if ($valor !== null) {
+                    $args[] = $chave;
+                    $params[] = $valor;
+                }
             }
-        }
 
-        if (!empty($args)) {
-            $args = implode(',', $args);
-            return $this->update($args, $params, $where);
-        }
+            if (!empty($args)) {
+                $args = implode(',', $args);
+                return $this->update($args, $params, $where);
+            }
 
-        return false;
+            return false;
+        } catch (PDOException $e) {
+            return $e;
+        }
     }
 
     /**
      * @param array|null $values
      * @param string|null $where
      * @param bool $debug
-     * @return bool|void
+     * @return bool|\Exception|PDOException|void
      */
 
     public function delete(?array $values = null, ?string $where = null, bool $debug = false)
     {
-        $sql = "DELETE FROM {$this->getTableName()}";
-        if (!empty($where)) {
-            $sql .= " WHERE $where";
+        try {
+            $sql = "DELETE FROM {$this->getTableName()}";
+            if (!empty($where)) {
+                $sql .= " WHERE $where";
+            }
+            if ($debug) {
+                echo $sql . '<pre>' . print_r($values) . '</pre>';
+                return;
+            }
+            $result = $this->executeSQL($sql, $values);
+            return !empty($result);
+        } catch (PDOException $e) {
+            return $e;
         }
-        if ($debug) {
-            echo $sql.'<pre>'.print_r($values).'</pre>';
-            return;
-        }
-        $result = $this->executeSQL($sql, $values);
-        return !empty($result);
 
     }
 
