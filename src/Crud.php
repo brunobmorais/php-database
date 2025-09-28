@@ -54,7 +54,7 @@ abstract class Crud
             }
         } catch (PDOException $e) {
             throw new DatabaseException(
-                "Query failed: {$e->getMessage()}",
+                "Query failed: TABLE: {$this->getTableName()} MESSAGE: {$e->getMessage()} COLUMNS: {$fields}",
                 $e->getCode(),
                 $e,
                 $sql ?? '',
@@ -87,7 +87,7 @@ abstract class Crud
             return !empty($result);
         } catch (PDOException $e) {
             throw new DatabaseException(
-                "Insert failed: {$e->getMessage()}",
+                "Insert failed: TABLE: {$this->getTableName()} MESSAGE: {$e->getMessage()} COLUMNS: {$fields}",
                 $e->getCode(),
                 $e,
                 $sql ?? '',
@@ -125,7 +125,7 @@ abstract class Crud
             return false;
         } catch (PDOException $e) {
             throw new DatabaseException(
-                "Insert object failed: {$e->getMessage()}",
+                "Insert object failed: TABLE: {$this->getTableName()} MESSAGE: {$e->getMessage()} COLUMNS: {$columns}",
                 $e->getCode(),
                 $e
             );
@@ -157,7 +157,7 @@ abstract class Crud
             return false;
         } catch (PDOException $e) {
             throw new DatabaseException(
-                "Insert array failed: {$e->getMessage()}",
+                "Insert array failed: TABLE: {$this->getTableName()} MESSAGE: {$e->getMessage()} COLUMNS: {$args}",
                 $e->getCode(),
                 $e
             );
@@ -194,7 +194,7 @@ abstract class Crud
             return !empty($result);
         } catch (PDOException $e) {
             throw new DatabaseException(
-                "Update failed: {$e->getMessage()}",
+                "Update failed: TABLE: {$this->getTableName()} MESSAGE: {$e->getMessage()} COLUMNS: {$fields}",
                 $e->getCode(),
                 $e,
                 $sql ?? '',
@@ -229,7 +229,7 @@ abstract class Crud
             return false;
         } catch (PDOException $e) {
             throw new DatabaseException(
-                "Update object failed: {$e->getMessage()}",
+                "Update object failed: TABLE: {$this->getTableName()} MESSAGE: {$e->getMessage()} COLUMNS: {$args}",
                 $e->getCode(),
                 $e
             );
@@ -263,7 +263,7 @@ abstract class Crud
             return false;
         } catch (PDOException $e) {
             throw new DatabaseException(
-                "Update array failed: {$e->getMessage()}",
+                "Update array failed: TABLE: {$this->getTableName()} MESSAGE: {$e->getMessage()} COLUMNS: {$args}",
                 $e->getCode(),
                 $e
             );
@@ -292,7 +292,7 @@ abstract class Crud
             return !empty($result);
         } catch (PDOException $e) {
             throw new DatabaseException(
-                "Delete failed: {$e->getMessage()}",
+                "Delete failed: TABLE: {$this->getTableName()} MESSAGE: {$e->getMessage()}",
                 $e->getCode(),
                 $e,
                 $sql ?? '',
