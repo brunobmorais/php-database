@@ -1,6 +1,6 @@
 <?php
 
-namespace BMorais\Database;
+namespace BMorais\Database\Exception;
 
 use Exception;
 use Throwable;
@@ -19,12 +19,20 @@ class DatabaseException extends Exception
 
     public function __construct(
         string $message,
-        int $code = 0,
+        int|string $code = 0,  // ✅ Aceita int ou string
         ?Throwable $previous = null,
         ?string $query = null,
         ?array $parameters = null
     ) {
-        parent::__construct($message, $code, $previous);
+        // ✅ Converte string para int de forma segura
+        $intCode = is_string($code) ? (int)$code : $code;
+        if ($intCode === 0 && is_string($code) && !empty($code)) {
+            // Se a conversão resultou em 0 mas o código original não era vazio,
+            // usa um código padrão
+            $intCode = 1000;
+        }
+
+        parent::__construct($message, $intCode, $previous);
         $this->query = $query;
         $this->parameters = $parameters;
     }
@@ -48,5 +56,14 @@ class DatabaseException extends Exception
             'file' => $this->getFile(),
             'line' => $this->getLine()
         ];
+    }
+
+    /**
+     * Get original PDO error code (may be string)
+     */
+    public function getOriginalCode(): int|string
+    {
+        $previous = $this->getPrevious();
+        return $previous ? $previous->getCode() : $this->getCode();
     }
 }

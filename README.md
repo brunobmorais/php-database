@@ -32,7 +32,7 @@ BMorais Code é um conjunto de pequenos e otimizados componentes PHP para tarefa
 Database is available via Composer:
 
 ```bash
-"bmorais/database": "1.0.*"
+"bmorais/database": "2.0.*"
 ```
 
 or run
