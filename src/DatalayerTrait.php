@@ -1,6 +1,11 @@
 <?php
 namespace BMorais\Database;
 
+use PDO;
+use PDOException;
+use PDOStatement;
+use stdClass;
+
 /**
  * CLASS TRAIT DATALAYER
  * This class of execution methods in the database
@@ -11,11 +16,6 @@ namespace BMorais\Database;
  * @subpackage class
  * @access private
  */
-use PDO;
-use PDOException;
-use PDOStatement;
-use stdClass;
-
 trait DatalayerTrait
 {
     /** @var PDO|null
@@ -67,7 +67,10 @@ trait DatalayerTrait
     private array $params = [];
 
 
-    /** @return PDO|false */
+    /**
+     * @return PDO|false
+     * @throws DatabaseException
+     */
     private function getConnect()
     {
         try {
@@ -87,9 +90,12 @@ trait DatalayerTrait
 
             return $this->instance;
         } catch (PDOException $e) {
-            $this->setError($e);
+            throw new DatabaseException(
+                "Database connection failed: {$e->getMessage()}",
+                $e->getCode(),
+                $e
+            );
         }
-
     }
 
     /**
@@ -103,6 +109,10 @@ trait DatalayerTrait
         return $this;
     }
 
+    /**
+     * @return PDO
+     * @throws DatabaseException
+     */
     protected function getInstance(): PDO
     {
         return $this->getConnect();
@@ -155,9 +165,9 @@ trait DatalayerTrait
     }
 
     /**
-        * @param string $tableName
-        * @param string $tableAlias
-        * @return CrudBuilder|Crud|DatalayerTrait
+     * @param string $tableName
+     * @param string $tableAlias
+     * @return CrudBuilder|Crud|DatalayerTrait
      */
     protected function setTableName(string $tableName, string $tableAlias = ""): self
     {
@@ -231,7 +241,7 @@ trait DatalayerTrait
 
     protected function getData(): array
     {
-       return $this->data;
+        return $this->data;
     }
 
     protected function setData(array $array): self
@@ -239,22 +249,25 @@ trait DatalayerTrait
         $this->data = $array;
         return $this;
     }
-    public  function getQuery(): string
+
+    public function getQuery(): string
     {
         return $this->query;
     }
-    public  function setQuery(string $query): self
+
+    public function setQuery(string $query): self
     {
         $this->query = $query;
         return $this;
     }
 
     /**
-        * @param string $query
-        * @param array|null $params
-        * @return PDOStatement|void
+     * @param string $query
+     * @param array|null $params
+     * @return PDOStatement
+     * @throws DatabaseException
      */
-    protected function executeSQL(string $query, ?array $params = null)
+    protected function executeSQL(string $query, ?array $params = null): PDOStatement
     {
         try {
             $this->setPrepare($this->getInstance()->prepare($query));
@@ -262,13 +275,20 @@ trait DatalayerTrait
             $this->getPrepare()->execute($params);
             return $this->getPrepare();
         } catch (PDOException $e) {
-            $this->setError($e);
+            throw new DatabaseException(
+                "SQL execution failed: {$e->getMessage()}",
+                $e->getCode(),
+                $e,
+                $query,
+                $params
+            );
         }
     }
 
     /**
-     * @param $prepare
-     * @return int|false
+     * @param PDOStatement|null $prepare
+     * @return int|null
+     * @throws DatabaseException
      */
     protected function rowCount(?PDOStatement $prepare = null): ?int
     {
@@ -276,12 +296,18 @@ trait DatalayerTrait
             $prepare = empty($prepare) ? $this->getPrepare() : $prepare;
             return $prepare->rowCount();
         } catch (PDOException $e) {
-            $this->setError($e);}
+            throw new DatabaseException(
+                "Row count failed: {$e->getMessage()}",
+                $e->getCode(),
+                $e
+            );
+        }
     }
 
     /**
-    * @param PDOStatement|null $prepare
-    * @return array|null
+     * @param PDOStatement|null $prepare
+     * @return array|null
+     * @throws DatabaseException
      */
     protected function fetchArrayAssoc(?PDOStatement $prepare = null): ?array
     {
@@ -291,13 +317,18 @@ trait DatalayerTrait
             $this->setData($dados);
             return $dados;
         } catch (PDOException $e) {
-            $this->setError($e);
+            throw new DatabaseException(
+                "Fetch array assoc failed: {$e->getMessage()}",
+                $e->getCode(),
+                $e
+            );
         }
     }
 
     /**
-     * @param $prepare
-     * @return array|false
+     * @param PDOStatement|null $prepare
+     * @return array|null
+     * @throws DatabaseException
      */
     protected function fetchArrayObj(?PDOStatement $prepare = null): ?array
     {
@@ -307,14 +338,19 @@ trait DatalayerTrait
             $this->setData($dados);
             return $dados;
         } catch (PDOException $e) {
-            $this->setError($e);
+            throw new DatabaseException(
+                "Fetch array object failed: {$e->getMessage()}",
+                $e->getCode(),
+                $e
+            );
         }
     }
 
     /**
-     * @param $prepare
+     * @param PDOStatement|null $prepare
      * @param String|null $classModel
-     * @return array|false
+     * @return array|null
+     * @throws DatabaseException
      */
     protected function fetchArrayClass(?PDOStatement $prepare = null, ?string $classModel = null): ?array
     {
@@ -325,13 +361,18 @@ trait DatalayerTrait
             $this->setData($dados);
             return $dados;
         } catch (PDOException $e) {
-            $this->setError($e);
+            throw new DatabaseException(
+                "Fetch array class failed: {$e->getMessage()}",
+                $e->getCode(),
+                $e
+            );
         }
     }
 
     /**
-     * @param $prepare
-     * @return array|false
+     * @param PDOStatement|null $prepare
+     * @return array|null
+     * @throws DatabaseException
      */
     protected function fetchOneAssoc(?PDOStatement $prepare = null): ?array
     {
@@ -339,13 +380,18 @@ trait DatalayerTrait
             $prepare = empty($prepare) ? $this->getPrepare() : $prepare;
             return $prepare->fetch(PDO::FETCH_ASSOC);
         } catch (PDOException $e) {
-            $this->setError($e);
+            throw new DatabaseException(
+                "Fetch one assoc failed: {$e->getMessage()}",
+                $e->getCode(),
+                $e
+            );
         }
     }
 
     /**
-    * @param PDOStatement|null $prepare
-    * @return stdClass|null
+     * @param PDOStatement|null $prepare
+     * @return stdClass|null
+     * @throws DatabaseException
      */
     protected function fetchOneObj(?PDOStatement $prepare = null): ?stdClass
     {
@@ -353,14 +399,19 @@ trait DatalayerTrait
             $prepare = empty($prepare) ? $this->getPrepare() : $prepare;
             return $prepare->fetch(PDO::FETCH_OBJ);
         } catch (PDOException $e) {
-            $this->setError($e);
+            throw new DatabaseException(
+                "Fetch one object failed: {$e->getMessage()}",
+                $e->getCode(),
+                $e
+            );
         }
     }
 
     /**
-     * @param $prepare
+     * @param PDOStatement|null $prepare
      * @param String|null $class
-     * @return array|false
+     * @return object|null
+     * @throws DatabaseException
      */
     protected function fetchOneClass(?PDOStatement $prepare = null, ?string $class = null): ?object
     {
@@ -369,12 +420,17 @@ trait DatalayerTrait
             $class = empty($class) ? $this->getClassModel() : $class;
             return $prepare->fetchObject(CONFIG_DATA_LAYER["directory_models"] . $class);
         } catch (PDOException $e) {
-            $this->setError($e);
+            throw new DatabaseException(
+                "Fetch one class failed: {$e->getMessage()}",
+                $e->getCode(),
+                $e
+            );
         }
     }
 
     /**
-     * @return bool
+     * @return bool|null
+     * @throws DatabaseException
      */
     protected function beginTransaction(): ?bool
     {
@@ -382,13 +438,17 @@ trait DatalayerTrait
             $this->getInstance()->beginTransaction();
             return true;
         } catch (PDOException $e) {
-            $this->setError($e);
+            throw new DatabaseException(
+                "Begin transaction failed: {$e->getMessage()}",
+                $e->getCode(),
+                $e
+            );
         }
-
     }
 
     /**
      * @return bool|null
+     * @throws DatabaseException
      */
     protected function commitTransaction(): ?bool
     {
@@ -396,34 +456,46 @@ trait DatalayerTrait
             $this->getInstance()->commit();
             return true;
         } catch (PDOException $e) {
-            $this->setError($e);
+            throw new DatabaseException(
+                "Commit transaction failed: {$e->getMessage()}",
+                $e->getCode(),
+                $e
+            );
         }
     }
 
     /**
      * @return bool|null
-     *
+     * @throws DatabaseException
      */
     protected function rollBackTransaction(): ?bool
     {
-
         try {
             $this->getInstance()->rollBack();
             return true;
         } catch (PDOException $e) {
-            $this->setError($e);
+            throw new DatabaseException(
+                "Rollback transaction failed: {$e->getMessage()}",
+                $e->getCode(),
+                $e
+            );
         }
     }
 
     /**
-     *  @return string|null
-     *  */
+     * @return string|null
+     * @throws DatabaseException
+     */
     private function lastId(): ?string
     {
         try {
             return $this->getInstance()->lastInsertId();
         } catch (PDOException $e) {
-            $this->setError($e);
+            throw new DatabaseException(
+                "Get last insert ID failed: {$e->getMessage()}",
+                $e->getCode(),
+                $e
+            );
         }
     }
 
@@ -431,6 +503,7 @@ trait DatalayerTrait
      * @param $sql_string
      * @param array|null $params
      * @return void
+     * @throws DatabaseException
      */
     private function setSQL($sql_string, ?array $params = null)
     {
@@ -464,30 +537,44 @@ trait DatalayerTrait
             }
             $this->logSQL = $sql_string;
         } catch (PDOException $e) {
-            $this->setError($e);
+            throw new DatabaseException(
+                "Set SQL failed: {$e->getMessage()}",
+                $e->getCode(),
+                $e
+            );
         }
     }
 
     /**
      * @return string|null
+     * @throws DatabaseException
      */
     protected function getSQL(): ?string
     {
         try {
             return $this->logSQL ?? "";
-        } catch (\PDOException $e) {
-            $this->setError($e);
+        } catch (PDOException $e) {
+            throw new DatabaseException(
+                "Get SQL failed: {$e->getMessage()}",
+                $e->getCode(),
+                $e
+            );
         }
     }
 
     /**
      * @param PDOException $e
      * @return void
+     * @throws DatabaseException
+     * @deprecated This method is no longer used - exceptions are thrown directly
      */
     protected function setError(PDOException $e)
     {
         $this->error = $e;
-        throw new PDOException("{$e->getMessage()} ###### SQL: {$this->getSQL()}");
-
+        throw new DatabaseException(
+            "Database error: {$e->getMessage()}",
+            $e->getCode(),
+            $e
+        );
     }
 }

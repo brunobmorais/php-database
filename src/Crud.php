@@ -25,7 +25,8 @@ abstract class Crud
      * @param array|null $values
      * @param bool $returnModel
      * @param bool $debug
-     * @return array|\Exception|false|PDOException|void
+     * @return array|false|void|null
+     * @throws DatabaseException
      */
     public function select(string $fields = '*', string $add = '', ?array $values = null, bool $returnModel = false, bool $debug = false)
     {
@@ -39,11 +40,10 @@ abstract class Crud
             if (!empty($this->getTableAlias()))
                 $sql .= " AS {$this->getTableAlias()}";
 
-            $sql .= "{$add}";
+            $sql .= $add;
 
             if ($debug) {
                 echo $sql;
-
                 return;
             }
             $this->executeSQL($sql, $values);
@@ -53,7 +53,13 @@ abstract class Crud
                 return $this->fetchArrayObj();
             }
         } catch (PDOException $e) {
-            return $e;
+            throw new DatabaseException(
+                "Query failed: {$e->getMessage()}",
+                $e->getCode(),
+                $e,
+                $sql ?? '',
+                $values
+            );
         }
     }
 
@@ -61,7 +67,8 @@ abstract class Crud
      * @param string $fields
      * @param array|null $values
      * @param bool $debug
-     * @return bool|\Exception|PDOException|void
+     * @return bool|void
+     * @throws DatabaseException
      */
     public function insert(string $fields, ?array $values = null, bool $debug = false)
     {
@@ -79,14 +86,20 @@ abstract class Crud
             $result = $this->executeSQL($sql, $values);
             return !empty($result);
         } catch (PDOException $e) {
-            return $e;
+            throw new DatabaseException(
+                "Insert failed: {$e->getMessage()}",
+                $e->getCode(),
+                $e,
+                $sql ?? '',
+                $values
+            );
         }
-
     }
 
     /**
      * @param object $object
-     * @return bool|\Exception|PDOException|null
+     * @return bool|null
+     * @throws DatabaseException
      */
     public function insertObject(object $object)
     {
@@ -111,13 +124,18 @@ abstract class Crud
             // Retorna falso se todos os valores forem null
             return false;
         } catch (PDOException $e) {
-            return $e;
+            throw new DatabaseException(
+                "Insert object failed: {$e->getMessage()}",
+                $e->getCode(),
+                $e
+            );
         }
     }
 
     /**
-     * @param array $params
-     * @return bool|\Exception|\PDOException
+     * @param array $object
+     * @return bool
+     * @throws DatabaseException
      */
     public function insertArray(array $object)
     {
@@ -137,8 +155,12 @@ abstract class Crud
             }
 
             return false;
-        } catch (\PDOException $e) {
-            return $e;
+        } catch (PDOException $e) {
+            throw new DatabaseException(
+                "Insert array failed: {$e->getMessage()}",
+                $e->getCode(),
+                $e
+            );
         }
     }
 
@@ -147,7 +169,8 @@ abstract class Crud
      * @param array|null $values
      * @param string|null $where
      * @param bool $debug
-     * @return bool|\Exception|\PDOException|void
+     * @return bool|void
+     * @throws DatabaseException
      */
     public function update(string $fields, ?array $values = null, ?string $where = null, bool $debug = false)
     {
@@ -169,17 +192,22 @@ abstract class Crud
             }
             $result = $this->executeSQL($sql, $values);
             return !empty($result);
-        } catch (\PDOException $e) {
-            return $e;
+        } catch (PDOException $e) {
+            throw new DatabaseException(
+                "Update failed: {$e->getMessage()}",
+                $e->getCode(),
+                $e,
+                $sql ?? '',
+                $values
+            );
         }
-
     }
-
 
     /**
      * @param object $object
      * @param string $where
-     * @return bool|\Exception|PDOException|null
+     * @return bool|null
+     * @throws DatabaseException
      */
     public function updateObject(object $object, string $where)
     {
@@ -200,16 +228,20 @@ abstract class Crud
 
             return false;
         } catch (PDOException $e) {
-            return $e;
+            throw new DatabaseException(
+                "Update object failed: {$e->getMessage()}",
+                $e->getCode(),
+                $e
+            );
         }
     }
 
     /**
-     * @param array $params
+     * @param array $object
      * @param string $where
-     * @return bool|\Exception|PDOException
+     * @return bool
+     * @throws DatabaseException
      */
-
     public function updateArray(array $object, string $where)
     {
         try {
@@ -230,7 +262,11 @@ abstract class Crud
 
             return false;
         } catch (PDOException $e) {
-            return $e;
+            throw new DatabaseException(
+                "Update array failed: {$e->getMessage()}",
+                $e->getCode(),
+                $e
+            );
         }
     }
 
@@ -238,9 +274,9 @@ abstract class Crud
      * @param array|null $values
      * @param string|null $where
      * @param bool $debug
-     * @return bool|\Exception|PDOException|void
+     * @return bool|void
+     * @throws DatabaseException
      */
-
     public function delete(?array $values = null, ?string $where = null, bool $debug = false)
     {
         try {
@@ -255,9 +291,14 @@ abstract class Crud
             $result = $this->executeSQL($sql, $values);
             return !empty($result);
         } catch (PDOException $e) {
-            return $e;
+            throw new DatabaseException(
+                "Delete failed: {$e->getMessage()}",
+                $e->getCode(),
+                $e,
+                $sql ?? '',
+                $values
+            );
         }
-
     }
 
     /**
@@ -275,5 +316,4 @@ abstract class Crud
     {
         return $this->logSQL ?? "";
     }
-
 }
