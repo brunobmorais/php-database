@@ -54,7 +54,7 @@ abstract class CrudBuilder extends Crud
             return $this;
         } catch (\PDOException $e) {
             throw new DatabaseException(
-                "Select builder failed: {$e->getMessage()}",
+                "Select builder failed - TABLE: [{$this->getTableName()}] MESSAGE: [{$e->getMessage()}]",
                 $e->getCode(),
                 $e
             );
@@ -80,7 +80,7 @@ abstract class CrudBuilder extends Crud
             return $this;
         } catch (\PDOException $e) {
             throw new DatabaseException(
-                "Insert builder failed: {$e->getMessage()}",
+                "Insert builder failed - TABLE: [{$this->getTableName()}] MESSAGE: [{$e->getMessage()}]",
                 $e->getCode(),
                 $e
             );
@@ -108,7 +108,7 @@ abstract class CrudBuilder extends Crud
             return $this;
         } catch (\PDOException $e) {
             throw new DatabaseException(
-                "Update builder failed: {$e->getMessage()}",
+                "Update builder failed - TABLE: [{$this->getTableName()}] MESSAGE: [{$e->getMessage()}]",
                 $e->getCode(),
                 $e
             );
@@ -129,7 +129,7 @@ abstract class CrudBuilder extends Crud
             return $this;
         } catch (\PDOException $e) {
             throw new DatabaseException(
-                "Delete builder failed: {$e->getMessage()}",
+                "Delete builder failed - TABLE: [{$this->getTableName()}] MESSAGE: [{$e->getMessage()}]",
                 $e->getCode(),
                 $e
             );
@@ -149,7 +149,7 @@ abstract class CrudBuilder extends Crud
             return $this;
         } catch (\PDOException $e) {
             throw new DatabaseException(
-                "Query builder failed: {$e->getMessage()}",
+                "Query builder failed - TABLE: [{$this->getTableName()}] MESSAGE: [{$e->getMessage()}]",
                 $e->getCode(),
                 $e
             );
@@ -170,7 +170,7 @@ abstract class CrudBuilder extends Crud
             return $this;
         } catch (\PDOException $e) {
             throw new DatabaseException(
-                "Where clause failed: {$e->getMessage()}",
+                "Where clause failed - TABLE: [{$this->getTableName()}] MESSAGE: [{$e->getMessage()}]",
                 $e->getCode(),
                 $e
             );
@@ -191,7 +191,7 @@ abstract class CrudBuilder extends Crud
             return $this;
         } catch (\PDOException $e) {
             throw new DatabaseException(
-                "And where clause failed: {$e->getMessage()}",
+                "And where clause failed - TABLE: [{$this->getTableName()}] MESSAGE: [{$e->getMessage()}]",
                 $e->getCode(),
                 $e
             );
@@ -212,7 +212,7 @@ abstract class CrudBuilder extends Crud
             return $this;
         } catch (\PDOException $e) {
             throw new DatabaseException(
-                "Or where clause failed: {$e->getMessage()}",
+                "Or where clause failed - TABLE: [{$this->getTableName()}] MESSAGE: [{$e->getMessage()}]",
                 $e->getCode(),
                 $e
             );
@@ -233,7 +233,7 @@ abstract class CrudBuilder extends Crud
             return $this;
         } catch (\PDOException $e) {
             throw new DatabaseException(
-                "Order by clause failed: {$e->getMessage()}",
+                "Order by clause failed - TABLE: [{$this->getTableName()}] MESSAGE: [{$e->getMessage()}]",
                 $e->getCode(),
                 $e
             );
@@ -254,7 +254,7 @@ abstract class CrudBuilder extends Crud
             return $this;
         } catch (\PDOException $e) {
             throw new DatabaseException(
-                "Add order by clause failed: {$e->getMessage()}",
+                "Add order by clause failed - TABLE: [{$this->getTableName()}] MESSAGE: [{$e->getMessage()}]",
                 $e->getCode(),
                 $e
             );
@@ -285,7 +285,7 @@ abstract class CrudBuilder extends Crud
             return $this;
         } catch (\PDOException $e) {
             throw new DatabaseException(
-                "Offset clause failed: {$e->getMessage()}",
+                "Offset clause failed - TABLE: [{$this->getTableName()}] MESSAGE: [{$e->getMessage()}]",
                 $e->getCode(),
                 $e
             );
@@ -305,7 +305,7 @@ abstract class CrudBuilder extends Crud
             return $this;
         } catch (\PDOException $e) {
             throw new DatabaseException(
-                "Group by clause failed: {$e->getMessage()}",
+                "Group by clause failed - TABLE: [{$this->getTableName()}] MESSAGE: [{$e->getMessage()}]",
                 $e->getCode(),
                 $e
             );
@@ -325,7 +325,7 @@ abstract class CrudBuilder extends Crud
             return $this;
         } catch (\PDOException $e) {
             throw new DatabaseException(
-                "Having clause failed: {$e->getMessage()}",
+                "Having clause failed - TABLE: [{$this->getTableName()}] MESSAGE: [{$e->getMessage()}]",
                 $e->getCode(),
                 $e
             );
@@ -345,7 +345,7 @@ abstract class CrudBuilder extends Crud
             return $this;
         } catch (\PDOException $e) {
             throw new DatabaseException(
-                "And having clause failed: {$e->getMessage()}",
+                "And having clause failed - TABLE: [{$this->getTableName()}] MESSAGE: [{$e->getMessage()}]",
                 $e->getCode(),
                 $e
             );
@@ -365,7 +365,7 @@ abstract class CrudBuilder extends Crud
             return $this;
         } catch (\PDOException $e) {
             throw new DatabaseException(
-                "Or having clause failed: {$e->getMessage()}",
+                "Or having clause failed - TABLE: [{$this->getTableName()}] MESSAGE: [{$e->getMessage()}]",
                 $e->getCode(),
                 $e
             );
@@ -387,7 +387,7 @@ abstract class CrudBuilder extends Crud
             return $this;
         } catch (\PDOException $e) {
             throw new DatabaseException(
-                "Inner join failed: {$e->getMessage()}",
+                "Inner join failed - TABLE: [{$this->getTableName()}] MESSAGE: [{$e->getMessage()}]",
                 $e->getCode(),
                 $e
             );
@@ -409,7 +409,7 @@ abstract class CrudBuilder extends Crud
             return $this;
         } catch (\PDOException $e) {
             throw new DatabaseException(
-                "Left join failed: {$e->getMessage()}",
+                "Left join failed - TABLE: [{$this->getTableName()}] MESSAGE: [{$e->getMessage()}]",
                 $e->getCode(),
                 $e
             );
@@ -431,7 +431,7 @@ abstract class CrudBuilder extends Crud
             return $this;
         } catch (\PDOException $e) {
             throw new DatabaseException(
-                "Right join failed: {$e->getMessage()}",
+                "Right join failed - TABLE: [{$this->getTableName()}] MESSAGE: [{$e->getMessage()}]",
                 $e->getCode(),
                 $e
             );
@@ -460,7 +460,7 @@ abstract class CrudBuilder extends Crud
             return $this;
         } catch (\PDOException $e) {
             throw new DatabaseException(
-                "Execute query failed: {$e->getMessage()}",
+                "Execute query failed - TABLE: [{$this->getTableName()}] MESSAGE: [{$e->getMessage()}]",
                 $e->getCode(),
                 $e,
                 $this->getQuery(),
@@ -480,7 +480,7 @@ abstract class CrudBuilder extends Crud
             exit;
         } catch (\PDOException $e) {
             throw new DatabaseException(
-                "Debug failed: {$e->getMessage()}",
+                "Debug failed - TABLE: [{$this->getTableName()}] MESSAGE: [{$e->getMessage()}]",
                 $e->getCode(),
                 $e
             );
@@ -508,7 +508,7 @@ abstract class CrudBuilder extends Crud
                 $this->setParams($params);
         } catch (\PDOException $e) {
             throw new DatabaseException(
-                "Add query part failed: {$e->getMessage()}",
+                "Add query part failed - TABLE: [{$this->getTableName()}] MESSAGE: [{$e->getMessage()}]",
                 $e->getCode(),
                 $e
             );

@@ -91,7 +91,7 @@ trait DatalayerTrait
             return $this->instance;
         } catch (PDOException $e) {
             throw new DatabaseException(
-                "Database connection failed: TABLE: {$this->getTableName()} MESSAGE: {$e->getMessage()}",
+                "Database connection failed - TABLE: [{$this->getTableName()}] MESSAGE: [{$e->getMessage()}]",
                 $e->getCode(),
                 $e
             );
@@ -276,7 +276,7 @@ trait DatalayerTrait
             return $this->getPrepare();
         } catch (PDOException $e) {
             throw new DatabaseException(
-                "SQL execution failed: TABLE: {$this->getTableName()} MESSAGE: {$e->getMessage()}",
+                "SQL execution failed - TABLE: [{$this->getTableName()}] MESSAGE: [{$e->getMessage()}]",
                 $e->getCode(),
                 $e,
                 $query,
@@ -297,7 +297,7 @@ trait DatalayerTrait
             return $prepare->rowCount();
         } catch (PDOException $e) {
             throw new DatabaseException(
-                "Row count failed: TABLE: {$this->getTableName()} MESSAGE: {$e->getMessage()}",
+                "Row count failed - TABLE: [{$this->getTableName()}] MESSAGE: [{$e->getMessage()}]",
                 $e->getCode(),
                 $e
             );
@@ -318,7 +318,7 @@ trait DatalayerTrait
             return $dados;
         } catch (PDOException $e) {
             throw new DatabaseException(
-                "Fetch array assoc failed: TABLE: {$this->getTableName()} MESSAGE: {$e->getMessage()}",
+                "Fetch array assoc failed - TABLE: [{$this->getTableName()}] MESSAGE: [{$e->getMessage()}]",
                 $e->getCode(),
                 $e
             );
@@ -339,7 +339,7 @@ trait DatalayerTrait
             return $dados;
         } catch (PDOException $e) {
             throw new DatabaseException(
-                "Fetch array object failed: TABLE: {$this->getTableName()} MESSAGE: {$e->getMessage()}",
+                "Fetch array object failed - TABLE: [{$this->getTableName()}] MESSAGE: [{$e->getMessage()}]",
                 $e->getCode(),
                 $e
             );
@@ -362,7 +362,7 @@ trait DatalayerTrait
             return $dados;
         } catch (PDOException $e) {
             throw new DatabaseException(
-                "Fetch array class failed: TABLE: {$this->getTableName()} MESSAGE: {$e->getMessage()}",
+                "Fetch array class failed - TABLE: [{$this->getTableName()}] MESSAGE: [{$e->getMessage()}]",
                 $e->getCode(),
                 $e
             );
@@ -381,7 +381,7 @@ trait DatalayerTrait
             return $prepare->fetch(PDO::FETCH_ASSOC);
         } catch (PDOException $e) {
             throw new DatabaseException(
-                "Fetch one assoc failed: TABLE: {$this->getTableName()} MESSAGE: {$e->getMessage()}",
+                "Fetch one assoc failed - TABLE: [{$this->getTableName()}] MESSAGE: [{$e->getMessage()}]",
                 $e->getCode(),
                 $e
             );
@@ -400,7 +400,7 @@ trait DatalayerTrait
             return $prepare->fetch(PDO::FETCH_OBJ);
         } catch (PDOException $e) {
             throw new DatabaseException(
-                "Fetch one object failed: TABLE: {$this->getTableName()} MESSAGE: {$e->getMessage()}",
+                "Fetch one object failed - TABLE: [{$this->getTableName()}] MESSAGE: [{$e->getMessage()}]",
                 $e->getCode(),
                 $e
             );
@@ -421,7 +421,7 @@ trait DatalayerTrait
             return $prepare->fetchObject(CONFIG_DATA_LAYER["directory_models"] . $class);
         } catch (PDOException $e) {
             throw new DatabaseException(
-                "Fetch one class failed: TABLE: {$this->getTableName()} MESSAGE: {$e->getMessage()}",
+                "Fetch one class failed - TABLE: [{$this->getTableName()}] MESSAGE: [{$e->getMessage()}]",
                 $e->getCode(),
                 $e
             );
@@ -439,7 +439,7 @@ trait DatalayerTrait
             return true;
         } catch (PDOException $e) {
             throw new DatabaseException(
-                "Begin transaction failed: TABLE: {$this->getTableName()} MESSAGE: {$e->getMessage()}",
+                "Begin transaction failed - TABLE: [{$this->getTableName()}] MESSAGE: [{$e->getMessage()}]",
                 $e->getCode(),
                 $e
             );
@@ -457,7 +457,7 @@ trait DatalayerTrait
             return true;
         } catch (PDOException $e) {
             throw new DatabaseException(
-                "Commit transaction failed: TABLE: {$this->getTableName()} MESSAGE: {$e->getMessage()}",
+                "Commit transaction failed - TABLE: [{$this->getTableName()}] MESSAGE: [{$e->getMessage()}]",
                 $e->getCode(),
                 $e
             );
@@ -475,7 +475,7 @@ trait DatalayerTrait
             return true;
         } catch (PDOException $e) {
             throw new DatabaseException(
-                "Rollback transaction failed: TABLE: {$this->getTableName()} MESSAGE: {$e->getMessage()}",
+                "Rollback transaction failed - TABLE: [{$this->getTableName()}] MESSAGE: [{$e->getMessage()}]",
                 $e->getCode(),
                 $e
             );
@@ -492,7 +492,7 @@ trait DatalayerTrait
             return $this->getInstance()->lastInsertId();
         } catch (PDOException $e) {
             throw new DatabaseException(
-                "Get last insert ID failed: TABLE: {$this->getTableName()} MESSAGE: {$e->getMessage()}",
+                "Get last insert ID failed - TABLE: [{$this->getTableName()}] MESSAGE: [{$e->getMessage()}]",
                 $e->getCode(),
                 $e
             );
@@ -538,7 +538,7 @@ trait DatalayerTrait
             $this->logSQL = $sql_string;
         } catch (PDOException $e) {
             throw new DatabaseException(
-                "Set SQL failed: TABLE: {$this->getTableName()} MESSAGE: {$e->getMessage()}",
+                "Set SQL failed - TABLE: [{$this->getTableName()}] MESSAGE: [{$e->getMessage()}]",
                 $e->getCode(),
                 $e
             );
@@ -555,7 +555,7 @@ trait DatalayerTrait
             return $this->logSQL ?? "";
         } catch (PDOException $e) {
             throw new DatabaseException(
-                "Get SQL failed: TABLE: {$this->getTableName()} MESSAGE: {$e->getMessage()}",
+                "Get SQL failed - TABLE: [{$this->getTableName()}] MESSAGE: [{$e->getMessage()}]",
                 $e->getCode(),
                 $e
             );
@@ -572,7 +572,7 @@ trait DatalayerTrait
     {
         $this->error = $e;
         throw new DatabaseException(
-            "Database error: TABLE: {$this->getTableName()} MESSAGE: {$e->getMessage()}",
+            "Database error - TABLE: [{$this->getTableName()}] MESSAGE: [{$e->getMessage()}]",
             $e->getCode(),
             $e
         );
