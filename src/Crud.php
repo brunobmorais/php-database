@@ -206,10 +206,11 @@ abstract class Crud
     /**
      * @param object $object
      * @param string $where
+     * @param array $whereValues
      * @return bool|null
      * @throws DatabaseException
      */
-    public function updateObject(object $object, string $where)
+    public function updateObject(object $object, string $where, array $whereValues = [])
     {
         try {
             $args = [];
@@ -220,6 +221,9 @@ abstract class Crud
                     $params[] = $valor;
                 }
             }
+
+            // Adiciona os valores do WHERE no final
+            $params = array_merge($params, $whereValues);
 
             if (!empty($args)) {
                 $args = implode(',', $args);
@@ -239,10 +243,11 @@ abstract class Crud
     /**
      * @param array $object
      * @param string $where
-     * @return bool
+     * @param array $whereValues
+     * * @return bool
      * @throws DatabaseException
      */
-    public function updateArray(array $object, string $where)
+    public function updateArray(array $object, string $where, array $whereValues = [])
     {
         try {
             $args = [];
@@ -254,6 +259,9 @@ abstract class Crud
                     $params[] = $valor;
                 }
             }
+
+            // Adiciona os valores do WHERE no final
+            $params = array_merge($params, $whereValues);
 
             if (!empty($args)) {
                 $args = implode(',', $args);
