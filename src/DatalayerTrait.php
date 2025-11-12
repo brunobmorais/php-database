@@ -435,6 +435,11 @@ trait DatalayerTrait
     protected function beginTransaction(): ?bool
     {
         try {
+            // Verifica se já existe uma transação aberta
+            if ($this->getInstance()->inTransaction()) {
+                return true;
+            }
+
             $this->getInstance()->beginTransaction();
             return true;
         } catch (PDOException $e) {
