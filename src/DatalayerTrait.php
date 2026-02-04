@@ -458,7 +458,11 @@ trait DatalayerTrait
     protected function commitTransaction(): ?bool
     {
         try {
-            $this->getInstance()->commit();
+            // Verifica se já existe uma transação aberta
+            if ($this->getInstance()->inTransaction()) {
+                $this->getInstance()->commit();
+            }
+
             return true;
         } catch (PDOException $e) {
             throw new DatabaseException(
@@ -476,7 +480,12 @@ trait DatalayerTrait
     protected function rollBackTransaction(): ?bool
     {
         try {
-            $this->getInstance()->rollBack();
+
+            // Verifica se já existe uma transação aberta
+            if ($this->getInstance()->inTransaction()) {
+                $this->getInstance()->rollBack();
+            }
+
             return true;
         } catch (PDOException $e) {
             throw new DatabaseException(
