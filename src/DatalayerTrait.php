@@ -114,6 +114,11 @@ trait DatalayerTrait
         }
     }
 
+    public static function closeConnections(): void {
+        self::$instances = [];
+    }
+
+
     /**
      * @param ?PDO $pdo
      * @return Crud
