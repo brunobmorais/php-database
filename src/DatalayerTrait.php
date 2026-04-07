@@ -80,9 +80,15 @@ trait DatalayerTrait
     private function getConnect(): PDO
     {
         try {
-            if (strpos($_SERVER['SERVER_NAME'], mb_strtolower(CONFIG_DATA_LAYER["homologation"])) && !strpos($this->getDatabase(), ucfirst(CONFIG_DATA_LAYER["homologation"]))) {
+            $serverName = $_SERVER['SERVER_NAME'] ?? '';
+            if ($serverName && strpos($serverName, mb_strtolower(CONFIG_DATA_LAYER["homologation"])) !== false && strpos($this->getDatabase(), ucfirst(CONFIG_DATA_LAYER["homologation"])) === false) {
                 $database = $this->getDatabase().ucfirst(CONFIG_DATA_LAYER["homologation"] ?? "");
                 $this->setDatabase($database);
+            }
+
+            // Se uma instância foi injetada externamente via setInstance(), respeitá-la
+            if ($this->instance !== null) {
+                return $this->instance;
             }
 
             $dsn = CONFIG_DATA_LAYER['driver'] . ':host=' . CONFIG_DATA_LAYER['host'] . ';dbname=' . $this->getDatabase() . ';port=' . CONFIG_DATA_LAYER['port'];
@@ -134,7 +140,8 @@ trait DatalayerTrait
      */
     protected function setDatabase(string $database): self
     {
-        if (strpos($_SERVER['SERVER_NAME'], mb_strtolower(CONFIG_DATA_LAYER["homologation"])) && !strpos($database, ucfirst(CONFIG_DATA_LAYER["homologation"]))) {
+        $serverName = $_SERVER['SERVER_NAME'] ?? '';
+        if ($serverName && strpos($serverName, mb_strtolower(CONFIG_DATA_LAYER["homologation"])) !== false && strpos($database, ucfirst(CONFIG_DATA_LAYER["homologation"])) === false) {
             $database = $database.ucfirst(CONFIG_DATA_LAYER["homologation"] ?? "");
         }
 
