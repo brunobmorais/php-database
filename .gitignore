@@ -1,7 +1,21 @@
 .idea
 .vscode
+.claude
 .php-cs-fixer.cache
 .DS_Store
+
+# IA`S
+GEMINI.md
+.github
+CLAUDE.md
+ARCHITECTURE.md
+DEVELOPMENT.md
+CODEX.md
+TESTING.md
+/.planning/*
+.planning/*
+/.kilocode/*
+/plans
 
 /vendor
 

@@ -90,9 +90,9 @@ class Usuario extends Crud
 {
     public function __construct()
     {
-        $this->database = "nomeBD";
-        $this->tableName = "USUARIO";
-        $this->classModel = "AutUserModel";
+         $this->setTableName("EXAMPLE");
+        $this->setClassModel("exampleModel");
+        $this->setDatabase("nomeBD");
     }
 
     /**

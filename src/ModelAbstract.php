@@ -18,6 +18,18 @@ use ReflectionObject;
 #[\AllowDynamicProperties]
 abstract class ModelAbstract
 {
+    /** @var array<string, \ReflectionClass> */
+    private static array $reflectionCache = [];
+
+    private function getReflection(): \ReflectionClass
+    {
+        $class = static::class;
+        if (!isset(self::$reflectionCache[$class])) {
+            self::$reflectionCache[$class] = new \ReflectionClass($this);
+        }
+        return self::$reflectionCache[$class];
+    }
+
     /**
      * @param array|null $params
      */
@@ -64,7 +76,7 @@ abstract class ModelAbstract
      */
     public function fromMapToModel(array $params)
     {
-        $reflection = new \ReflectionClass($this);
+        $reflection = $this->getReflection();
 
         foreach ($params as $key => $item) {
             if ($reflection->hasProperty($key)) {
@@ -111,7 +123,7 @@ abstract class ModelAbstract
      * @return \stdClass
      */
     public function toObject(): \stdClass{
-        $reflection = new \ReflectionClass($this);
+        $reflection = $this->getReflection();
         $objeto = new \stdClass;
 
         foreach ($reflection->getProperties() as $prop) {
@@ -135,7 +147,7 @@ abstract class ModelAbstract
     public function toArray(): array
     {
         $array = [];
-        foreach ((new \ReflectionClass($this))->getProperties() as $prop) {
+        foreach ($this->getReflection()->getProperties() as $prop) {
             $prop->setAccessible(true);
             $method = 'get' . ucfirst($prop->getName());
 
@@ -159,10 +171,11 @@ abstract class ModelAbstract
      */
     public function toString(): string
     {
-        $classname = (new \ReflectionClass($this))->getShortName();
+        $reflection = $this->getReflection();
+        $classname = $reflection->getShortName();
         $properties = array_map(
             fn($prop) => "{$prop->getName()}: '" . ($prop->getValue($this) ?? '') . "'",
-            (new \ReflectionClass($this))->getProperties()
+            $reflection->getProperties()
         );
         return "$classname {" . implode(', ', $properties) . '}';
     }

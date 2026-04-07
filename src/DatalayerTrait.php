@@ -23,6 +23,12 @@ trait DatalayerTrait
      * */
     protected ?PDO $instance = null;
 
+    /** @var array<string, PDO> */
+    private static array $instances = [];
+
+    /** @var string */
+    private string $currentDsn = '';
+
     /** @var string
      *  @deprecated
      */
@@ -68,10 +74,10 @@ trait DatalayerTrait
 
 
     /**
-     * @return PDO|false
+     * @return PDO
      * @throws DatabaseException
      */
-    private function getConnect()
+    private function getConnect(): PDO
     {
         try {
             if (strpos($_SERVER['SERVER_NAME'], mb_strtolower(CONFIG_DATA_LAYER["homologation"])) && !strpos($this->getDatabase(), ucfirst(CONFIG_DATA_LAYER["homologation"]))) {
@@ -79,16 +85,20 @@ trait DatalayerTrait
                 $this->setDatabase($database);
             }
 
-            if (empty($this->instance)) {
-                $this->instance = new PDO(
-                    CONFIG_DATA_LAYER['driver'] . ':host=' . CONFIG_DATA_LAYER['host'] . ';dbname=' . $this->getDatabase() . ';port=' . CONFIG_DATA_LAYER['port'],
+            $dsn = CONFIG_DATA_LAYER['driver'] . ':host=' . CONFIG_DATA_LAYER['host'] . ';dbname=' . $this->getDatabase() . ';port=' . CONFIG_DATA_LAYER['port'];
+            $this->currentDsn = $dsn;
+
+            if (empty(self::$instances[$dsn])) {
+                self::$instances[$dsn] = new PDO(
+                    $dsn,
                     CONFIG_DATA_LAYER['username'],
                     CONFIG_DATA_LAYER['passwd'],
                     CONFIG_DATA_LAYER['options']
                 );
             }
 
-            return $this->instance;
+            $this->setInstance(self::$instances[$dsn]);
+            return $this->getInstance();
         } catch (PDOException $e) {
             throw new DatabaseException(
                 "Database connection failed - TABLE: [{$this->getTableName()}] MESSAGE: [{$e->getMessage()}]",
@@ -264,17 +274,26 @@ trait DatalayerTrait
     /**
      * @param string $query
      * @param array|null $params
+     * @param bool $retry
      * @return PDOStatement
      * @throws DatabaseException
      */
-    protected function executeSQL(string $query, ?array $params = null): PDOStatement
+    protected function executeSQL(string $query, ?array $params = null, bool $retry = true): PDOStatement
     {
         try {
             $this->setPrepare($this->getInstance()->prepare($query));
-            $this->setSQL($query, $params);
+            if (CONFIG_DATA_LAYER['display_errors_details']) {
+                $this->setSQL($query, $params);
+            }
             $this->getPrepare()->execute($params);
             return $this->getPrepare();
         } catch (PDOException $e) {
+            // MySQL server has gone away (2006) ou Lost connection (2013) — reconecta uma vez
+            if ($retry && in_array($e->errorInfo[1] ?? 0, [2006, 2013]) && !empty($this->currentDsn)) {
+                self::$instances[$this->currentDsn] = null;
+                $this->instance = null;
+                return $this->executeSQL($query, $params, false);
+            }
             throw new DatabaseException(
                 "SQL execution failed - TABLE: [{$this->getTableName()}] MESSAGE: [{$e->getMessage()}]",
                 $e->getCode(),
