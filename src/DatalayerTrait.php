@@ -97,8 +97,8 @@ trait DatalayerTrait
                 );
             }
 
-            $this->setInstance(self::$instances[$dsn]);
-            return $this->getInstance();
+            $this->instance = self::$instances[$dsn];
+            return $this->instance;
         } catch (PDOException $e) {
             throw new DatabaseException(
                 "Database connection failed - TABLE: [{$this->getTableName()}] MESSAGE: [{$e->getMessage()}]",
