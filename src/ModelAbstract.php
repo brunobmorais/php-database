@@ -31,6 +31,18 @@ abstract class ModelAbstract
     }
 
     /**
+     * Retorna apenas propriedades de instância (não-estáticas), filtrando propriedades internas.
+     * @return \ReflectionProperty[]
+     */
+    private function getInstanceProperties(): array
+    {
+        return array_filter(
+            $this->getReflection()->getProperties(),
+            fn(\ReflectionProperty $prop) => !$prop->isStatic()
+        );
+    }
+
+    /**
      * @param array|null $params
      */
     public function __construct(?array $params = null)
@@ -76,13 +88,11 @@ abstract class ModelAbstract
      */
     public function fromMapToModel(array $params)
     {
-        $reflection = $this->getReflection();
-
-        foreach ($params as $key => $item) {
-            if ($reflection->hasProperty($key)) {
-                $property = $reflection->getProperty($key);
+        foreach ($this->getInstanceProperties() as $property) {
+            $name = $property->getName();
+            if (array_key_exists($name, $params)) {
                 $property->setAccessible(true);
-                $property->setValue($this, $item);
+                $property->setValue($this, $params[$name]);
             }
         }
 
@@ -123,10 +133,9 @@ abstract class ModelAbstract
      * @return \stdClass
      */
     public function toObject(): \stdClass{
-        $reflection = $this->getReflection();
         $objeto = new \stdClass;
 
-        foreach ($reflection->getProperties() as $prop) {
+        foreach ($this->getInstanceProperties() as $prop) {
             $prop->setAccessible(true);
 
             $method = 'get' . $prop->getName();
@@ -147,7 +156,7 @@ abstract class ModelAbstract
     public function toArray(): array
     {
         $array = [];
-        foreach ($this->getReflection()->getProperties() as $prop) {
+        foreach ($this->getInstanceProperties() as $prop) {
             $prop->setAccessible(true);
             $method = 'get' . ucfirst($prop->getName());
 
@@ -171,11 +180,10 @@ abstract class ModelAbstract
      */
     public function toString(): string
     {
-        $reflection = $this->getReflection();
-        $classname = $reflection->getShortName();
+        $classname = $this->getReflection()->getShortName();
         $properties = array_map(
             fn($prop) => "{$prop->getName()}: '" . ($prop->getValue($this) ?? '') . "'",
-            $reflection->getProperties()
+            $this->getInstanceProperties()
         );
         return "$classname {" . implode(', ', $properties) . '}';
     }
