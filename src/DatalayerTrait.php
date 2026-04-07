@@ -136,14 +136,11 @@ trait DatalayerTrait
     {
         if (strpos($_SERVER['SERVER_NAME'], mb_strtolower(CONFIG_DATA_LAYER["homologation"])) && !strpos($database, ucfirst(CONFIG_DATA_LAYER["homologation"]))) {
             $database = $database.ucfirst(CONFIG_DATA_LAYER["homologation"] ?? "");
-            $this->database = $database;
-        } else {
-            $this->database = $database;
         }
 
-        if (!empty($this->instance)){
-            $this->executeSQL("USE {$this->getDatabase()}");
-        }
+        $this->database = $database;
+        // Nulifica a instância para que getConnect() recalcule o DSN com o novo banco
+        $this->instance = null;
 
         return $this;
     }
