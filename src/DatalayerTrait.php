@@ -406,7 +406,8 @@ trait DatalayerTrait
     {
         try {
             $prepare = empty($prepare) ? $this->getPrepare() : $prepare;
-            return $prepare->fetch(PDO::FETCH_ASSOC);
+            $data = $prepare->fetch(PDO::FETCH_ASSOC);
+            return $data === false ? null : $data;
         } catch (PDOException $e) {
             throw new DatabaseException(
                 "Fetch one assoc failed - TABLE: [{$this->getTableName()}] MESSAGE: [{$e->getMessage()}]",
@@ -425,7 +426,8 @@ trait DatalayerTrait
     {
         try {
             $prepare = empty($prepare) ? $this->getPrepare() : $prepare;
-            return $prepare->fetch(PDO::FETCH_OBJ);
+            $data = $prepare->fetch(PDO::FETCH_OBJ);
+            return $data instanceof stdClass ? $data : null;
         } catch (PDOException $e) {
             throw new DatabaseException(
                 "Fetch one object failed - TABLE: [{$this->getTableName()}] MESSAGE: [{$e->getMessage()}]",
@@ -446,7 +448,8 @@ trait DatalayerTrait
         try {
             $prepare = empty($prepare) ? $this->getPrepare() : $prepare;
             $class = empty($class) ? $this->getClassModel() : $class;
-            return $prepare->fetchObject(CONFIG_DATA_LAYER["directory_models"] . $class);
+            $data = $prepare->fetchObject(CONFIG_DATA_LAYER["directory_models"] . $class);
+            return $data === false ? null : $data;
         } catch (PDOException $e) {
             throw new DatabaseException(
                 "Fetch one class failed - TABLE: [{$this->getTableName()}] MESSAGE: [{$e->getMessage()}]",
