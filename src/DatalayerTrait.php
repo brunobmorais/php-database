@@ -18,12 +18,10 @@ use stdClass;
  */
 trait DatalayerTrait
 {
-    /** @var PDO|null
-     * @deprecated USE $this->setClassModel("NAME");
-     * */
+    /** @var PDO|null conexão em uso pelo DAO (prefira setInstance()/getInstance()) */
     protected ?PDO $instance = null;
 
-    /** @var array<string, PDO> */
+    /** @var array<string, PDO|null> conexões em cache por DSN */
     private static array $instances = [];
 
     /** @var string */
@@ -38,28 +36,19 @@ trait DatalayerTrait
     /** @var string|null banco já verificado quanto ao sufixo de homologação */
     private ?string $homologationCheckedFor = null;
 
-    /** @var string
-     *  @deprecated
-     */
+    /** @var string */
     protected string $fields;
 
-    /** @var PDOStatement|null
-     *   @deprecated */
+    /** @var PDOStatement|null último statement executado (prefira getPrepare()) */
     protected $prepare = null;
 
-    /** @var string
-     *  @deprecated
-     */
+    /** @var string banco do DAO (prefira setDatabase(), que aplica o sufixo de homologação) */
     protected string $database = CONFIG_DATA_LAYER["dbname"];
 
-    /** @var string
-     *  @deprecated USE $this->setInstance(PDO);
-     */
+    /** @var string model usado nos fetch*Class (prefira setClassModel()) */
     protected string $classModel;
 
-    /** @var string
-     * @deprecated USE $this->setTableName("name");
-     */
+    /** @var string tabela do DAO (prefira setTableName(), que também aceita o alias) */
     protected string $tableName;
 
     /** @var string */
@@ -113,18 +102,20 @@ trait DatalayerTrait
             $dsn = $this->buildDsn();
             $this->currentDsn = $dsn;
 
-            if (empty(self::$instances[$dsn])) {
-                self::$instances[$dsn] = new PDO(
+            $pdo = self::$instances[$dsn] ?? null;
+            if (!$pdo instanceof PDO) {
+                $pdo = new PDO(
                     $dsn,
                     CONFIG_DATA_LAYER['username'],
                     CONFIG_DATA_LAYER['passwd'],
                     CONFIG_DATA_LAYER['options']
                 );
+                self::$instances[$dsn] = $pdo;
             }
 
-            $this->instance = self::$instances[$dsn];
+            $this->instance = $pdo;
             $this->instanceGeneration = self::$connectionsGeneration;
-            return $this->instance;
+            return $pdo;
         } catch (PDOException $e) {
             throw new DatabaseException(
                 "Database connection failed - TABLE: [{$this->getTableName()}] MESSAGE: [{$this->connectionErrorSummary($e)}]",
@@ -781,7 +772,8 @@ trait DatalayerTrait
             $statement->execute($params);
             if ($returnModel) {
                 $this->assertClassModel($this->getClassModel());
-                $statement->setFetchMode(PDO::FETCH_CLASS | PDO::FETCH_PROPS_LATE, CONFIG_DATA_LAYER["directory_models"] . $this->getClassModel());
+                // setFetchMode(FETCH_CLASS, string $class) é a forma documentada; o stub do analisador é antigo
+                $statement->setFetchMode(PDO::FETCH_CLASS | PDO::FETCH_PROPS_LATE, /** @scrutinizer ignore-type */ CONFIG_DATA_LAYER["directory_models"] . $this->getClassModel());
             } else {
                 $statement->setFetchMode(PDO::FETCH_OBJ);
             }
