@@ -57,19 +57,11 @@ abstract class CrudBuilder extends Crud
      */
     protected function selectBuilder(string $fields = "*", array $paramns = []): self
     {
-        try {
-            $query = "SELECT {$fields} FROM {$this->getTableName()}";
-            if (!empty($this->getTableAlias()))
-                $query .= " AS {$this->getTableAlias()}";
-            $this->add($query, "main", $paramns);
-            return $this;
-        } catch (\PDOException $e) {
-            throw new DatabaseException(
-                "Select builder failed - TABLE: [{$this->getTableName()}] MESSAGE: [{$e->getMessage()}]",
-                $e->getCode(),
-                $e
-            );
-        }
+        $query = "SELECT {$fields} FROM {$this->getTableName()}";
+        if (!empty($this->getTableAlias()))
+            $query .= " AS {$this->getTableAlias()}";
+        $this->add($query, "main", $paramns);
+        return $this;
     }
 
     /**
@@ -80,23 +72,15 @@ abstract class CrudBuilder extends Crud
      */
     protected function insertBuilder(string $fields, array $paramns): self
     {
-        try {
-            $numparams = '';
-            foreach ($paramns as $item) {
-                $numparams .= ',?';
-            }
-            $numparams = substr($numparams, 1);
-            $fields = implode(',', $this->assertIdentifierList($fields));
-            $query = "INSERT INTO {$this->getTableName()} ({$fields}) VALUES ({$numparams})";
-            $this->add($query, "main", $paramns);
-            return $this;
-        } catch (\PDOException $e) {
-            throw new DatabaseException(
-                "Insert builder failed - TABLE: [{$this->getTableName()}] MESSAGE: [{$e->getMessage()}]",
-                $e->getCode(),
-                $e
-            );
+        $numparams = '';
+        foreach ($paramns as $item) {
+            $numparams .= ',?';
         }
+        $numparams = substr($numparams, 1);
+        $fields = implode(',', $this->assertIdentifierList($fields));
+        $query = "INSERT INTO {$this->getTableName()} ({$fields}) VALUES ({$numparams})";
+        $this->add($query, "main", $paramns);
+        return $this;
     }
 
     /**
@@ -107,24 +91,16 @@ abstract class CrudBuilder extends Crud
      */
     protected function updateBuilder(string $fields, array $paramns): self
     {
-        try {
-            $fields_T = '';
-            $atributos = $this->assertIdentifierList($fields);
+        $fields_T = '';
+        $atributos = $this->assertIdentifierList($fields);
 
-            foreach ($atributos as $item) {
-                $fields_T .= ", {$item} = ?";
-            }
-            $fields_T = substr($fields_T, 2);
-            $query = "UPDATE {$this->getTableName()} SET {$fields_T}";
-            $this->add($query, "main", $paramns);
-            return $this;
-        } catch (\PDOException $e) {
-            throw new DatabaseException(
-                "Update builder failed - TABLE: [{$this->getTableName()}] MESSAGE: [{$e->getMessage()}]",
-                $e->getCode(),
-                $e
-            );
+        foreach ($atributos as $item) {
+            $fields_T .= ", {$item} = ?";
         }
+        $fields_T = substr($fields_T, 2);
+        $query = "UPDATE {$this->getTableName()} SET {$fields_T}";
+        $this->add($query, "main", $paramns);
+        return $this;
     }
 
     /**
@@ -135,17 +111,9 @@ abstract class CrudBuilder extends Crud
      */
     protected function deleteBuilder(): self
     {
-        try {
-            $query = "DELETE FROM {$this->getTableName()}";
-            $this->add($query, "main");
-            return $this;
-        } catch (\PDOException $e) {
-            throw new DatabaseException(
-                "Delete builder failed - TABLE: [{$this->getTableName()}] MESSAGE: [{$e->getMessage()}]",
-                $e->getCode(),
-                $e
-            );
-        }
+        $query = "DELETE FROM {$this->getTableName()}";
+        $this->add($query, "main");
+        return $this;
     }
 
     /**
@@ -156,16 +124,8 @@ abstract class CrudBuilder extends Crud
      */
     protected function query(string $query, array $paramns = []): self
     {
-        try {
-            $this->add($query, "main", $paramns);
-            return $this;
-        } catch (\PDOException $e) {
-            throw new DatabaseException(
-                "Query builder failed - TABLE: [{$this->getTableName()}] MESSAGE: [{$e->getMessage()}]",
-                $e->getCode(),
-                $e
-            );
-        }
+        $this->add($query, "main", $paramns);
+        return $this;
     }
 
     /**
@@ -176,17 +136,9 @@ abstract class CrudBuilder extends Crud
      */
     protected function where(string $texto, array $paramns = []): self
     {
-        try {
-            $query = "WHERE {$texto}";
-            $this->add($query, "where", $paramns);
-            return $this;
-        } catch (\PDOException $e) {
-            throw new DatabaseException(
-                "Where clause failed - TABLE: [{$this->getTableName()}] MESSAGE: [{$e->getMessage()}]",
-                $e->getCode(),
-                $e
-            );
-        }
+        $query = "WHERE {$texto}";
+        $this->add($query, "where", $paramns);
+        return $this;
     }
 
     /**
@@ -197,17 +149,9 @@ abstract class CrudBuilder extends Crud
      */
     protected function andWhere(string $condition, array $paramns = []): self
     {
-        try {
-            $query = "AND {$condition}";
-            $this->add($query, "whereConditions", $paramns);
-            return $this;
-        } catch (\PDOException $e) {
-            throw new DatabaseException(
-                "And where clause failed - TABLE: [{$this->getTableName()}] MESSAGE: [{$e->getMessage()}]",
-                $e->getCode(),
-                $e
-            );
-        }
+        $query = "AND {$condition}";
+        $this->add($query, "whereConditions", $paramns);
+        return $this;
     }
 
     /**
@@ -218,17 +162,9 @@ abstract class CrudBuilder extends Crud
      */
     protected function orWhere(string $condition, array $paramns = []): self
     {
-        try {
-            $query = "OR {$condition}";
-            $this->add($query, "whereConditions", $paramns);
-            return $this;
-        } catch (\PDOException $e) {
-            throw new DatabaseException(
-                "Or where clause failed - TABLE: [{$this->getTableName()}] MESSAGE: [{$e->getMessage()}]",
-                $e->getCode(),
-                $e
-            );
-        }
+        $query = "OR {$condition}";
+        $this->add($query, "whereConditions", $paramns);
+        return $this;
     }
 
     /**
@@ -239,17 +175,9 @@ abstract class CrudBuilder extends Crud
      */
     protected function orderBy(string $parameter, ?string $order = null): self
     {
-        try {
-            $query = $this->assertSafeClause("ORDER BY {$parameter} ".($order ?? 'ASC'));
-            $this->add($query, "orderBy");
-            return $this;
-        } catch (\PDOException $e) {
-            throw new DatabaseException(
-                "Order by clause failed - TABLE: [{$this->getTableName()}] MESSAGE: [{$e->getMessage()}]",
-                $e->getCode(),
-                $e
-            );
-        }
+        $query = $this->assertSafeClause("ORDER BY {$parameter} ".($order ?? 'ASC'));
+        $this->add($query, "orderBy");
+        return $this;
     }
 
     /**
@@ -260,17 +188,9 @@ abstract class CrudBuilder extends Crud
      */
     protected function addOrderBy(string $parameter, ?string $order = null): self
     {
-        try {
-            $query = $this->assertSafeClause(", {$parameter} ".($order ?? 'ASC')." ");
-            $this->add($query, "addOrderBy");
-            return $this;
-        } catch (\PDOException $e) {
-            throw new DatabaseException(
-                "Add order by clause failed - TABLE: [{$this->getTableName()}] MESSAGE: [{$e->getMessage()}]",
-                $e->getCode(),
-                $e
-            );
-        }
+        $query = $this->assertSafeClause(", {$parameter} ".($order ?? 'ASC')." ");
+        $this->add($query, "addOrderBy");
+        return $this;
     }
 
     /**
@@ -292,17 +212,9 @@ abstract class CrudBuilder extends Crud
      */
     protected function offset(string $texto): self
     {
-        try {
-            $query = $this->assertSafeClause("OFFSET {$texto}");
-            $this->add($query,"offset");
-            return $this;
-        } catch (\PDOException $e) {
-            throw new DatabaseException(
-                "Offset clause failed - TABLE: [{$this->getTableName()}] MESSAGE: [{$e->getMessage()}]",
-                $e->getCode(),
-                $e
-            );
-        }
+        $query = $this->assertSafeClause("OFFSET {$texto}");
+        $this->add($query,"offset");
+        return $this;
     }
 
     /**
@@ -312,17 +224,9 @@ abstract class CrudBuilder extends Crud
      */
     protected function groupBy(string $texto): self
     {
-        try {
-            $query = "GROUP BY {$texto}";
-            $this->add($query,"groupBy");
-            return $this;
-        } catch (\PDOException $e) {
-            throw new DatabaseException(
-                "Group by clause failed - TABLE: [{$this->getTableName()}] MESSAGE: [{$e->getMessage()}]",
-                $e->getCode(),
-                $e
-            );
-        }
+        $query = "GROUP BY {$texto}";
+        $this->add($query,"groupBy");
+        return $this;
     }
 
     /**
@@ -332,17 +236,9 @@ abstract class CrudBuilder extends Crud
      */
     protected function having(string $texto): self
     {
-        try {
-            $query = "HAVING {$texto}";
-            $this->add($query,"having");
-            return $this;
-        } catch (\PDOException $e) {
-            throw new DatabaseException(
-                "Having clause failed - TABLE: [{$this->getTableName()}] MESSAGE: [{$e->getMessage()}]",
-                $e->getCode(),
-                $e
-            );
-        }
+        $query = "HAVING {$texto}";
+        $this->add($query,"having");
+        return $this;
     }
 
     /**
@@ -352,17 +248,9 @@ abstract class CrudBuilder extends Crud
      */
     protected function andHaving(string $texto): self
     {
-        try {
-            $query = "AND {$texto}";
-            $this->add($query,"havingConditions");
-            return $this;
-        } catch (\PDOException $e) {
-            throw new DatabaseException(
-                "And having clause failed - TABLE: [{$this->getTableName()}] MESSAGE: [{$e->getMessage()}]",
-                $e->getCode(),
-                $e
-            );
-        }
+        $query = "AND {$texto}";
+        $this->add($query,"havingConditions");
+        return $this;
     }
 
     /**
@@ -372,17 +260,9 @@ abstract class CrudBuilder extends Crud
      */
     protected function orHaving(string $codition): self
     {
-        try {
-            $query = "OR {$codition}";
-            $this->add($query,"havingConditions");
-            return $this;
-        } catch (\PDOException $e) {
-            throw new DatabaseException(
-                "Or having clause failed - TABLE: [{$this->getTableName()}] MESSAGE: [{$e->getMessage()}]",
-                $e->getCode(),
-                $e
-            );
-        }
+        $query = "OR {$codition}";
+        $this->add($query,"havingConditions");
+        return $this;
     }
 
     /**
@@ -394,17 +274,9 @@ abstract class CrudBuilder extends Crud
      */
     protected function innerJoin(string $table, string $alias, string $codition): self
     {
-        try {
-            $query = "INNER JOIN {$table} AS {$alias} ON $codition";
-            $this->add($query,"join");
-            return $this;
-        } catch (\PDOException $e) {
-            throw new DatabaseException(
-                "Inner join failed - TABLE: [{$this->getTableName()}] MESSAGE: [{$e->getMessage()}]",
-                $e->getCode(),
-                $e
-            );
-        }
+        $query = "INNER JOIN {$table} AS {$alias} ON $codition";
+        $this->add($query,"join");
+        return $this;
     }
 
     /**
@@ -416,17 +288,9 @@ abstract class CrudBuilder extends Crud
      */
     protected function leftJoin(string $table, string $alias, string $codition): self
     {
-        try {
-            $query = "LEFT JOIN {$table} AS {$alias} ON {$codition}";
-            $this->add($query,"join");
-            return $this;
-        } catch (\PDOException $e) {
-            throw new DatabaseException(
-                "Left join failed - TABLE: [{$this->getTableName()}] MESSAGE: [{$e->getMessage()}]",
-                $e->getCode(),
-                $e
-            );
-        }
+        $query = "LEFT JOIN {$table} AS {$alias} ON {$codition}";
+        $this->add($query,"join");
+        return $this;
     }
 
     /**
@@ -438,17 +302,9 @@ abstract class CrudBuilder extends Crud
      */
     protected function rightJoin(string $table, string $alias, string $codition): self
     {
-        try {
-            $query = "RIGHT JOIN {$table} AS {$alias} ON $codition";
-            $this->add($query,"join");
-            return $this;
-        } catch (\PDOException $e) {
-            throw new DatabaseException(
-                "Right join failed - TABLE: [{$this->getTableName()}] MESSAGE: [{$e->getMessage()}]",
-                $e->getCode(),
-                $e
-            );
-        }
+        $query = "RIGHT JOIN {$table} AS {$alias} ON $codition";
+        $this->add($query,"join");
+        return $this;
     }
 
     /**
@@ -490,17 +346,9 @@ abstract class CrudBuilder extends Crud
      */
     protected function debug(): void
     {
-        try {
-            [$query, $params] = $this->buildQuery();
-            echo htmlspecialchars($query, ENT_NOQUOTES) . '<pre>' . htmlspecialchars(print_r($params, true), ENT_NOQUOTES) . '</pre>';
-            exit;
-        } catch (\PDOException $e) {
-            throw new DatabaseException(
-                "Debug failed - TABLE: [{$this->getTableName()}] MESSAGE: [{$e->getMessage()}]",
-                $e->getCode(),
-                $e
-            );
-        }
+        [$query, $params] = $this->buildQuery();
+        echo htmlspecialchars($query, ENT_NOQUOTES) . '<pre>' . htmlspecialchars(print_r($params, true), ENT_NOQUOTES) . '</pre>';
+        exit;
     }
 
     /**
@@ -513,18 +361,10 @@ abstract class CrudBuilder extends Crud
     private function add(string $query, string $type, array $params = []): void
     {
         $part = ['sql' => $query . " ", 'params' => $params];
-        try {
-            if (in_array($type, self::SINGLE_PARTS, true)) {
-                $this->sqlPartsSelect[$type] = $part;
-            } else {
-                $this->sqlPartsSelect[$type][] = $part;
-            }
-        } catch (\PDOException $e) {
-            throw new DatabaseException(
-                "Add query part failed - TABLE: [{$this->getTableName()}] MESSAGE: [{$e->getMessage()}]",
-                $e->getCode(),
-                $e
-            );
+        if (in_array($type, self::SINGLE_PARTS, true)) {
+            $this->sqlPartsSelect[$type] = $part;
+        } else {
+            $this->sqlPartsSelect[$type][] = $part;
         }
     }
 
