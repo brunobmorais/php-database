@@ -169,7 +169,12 @@ trait DatalayerTrait
     }
 
     public static function closeConnections(): void {
-        self::$instances = [];
+        // Conexões com transação aberta continuam no cache, para que DAOs criados depois
+        // participem da mesma transação em vez de abrir outra conexão
+        self::$instances = array_filter(
+            self::$instances,
+            fn($pdo) => $pdo instanceof PDO && $pdo->inTransaction()
+        );
         self::$connectionsGeneration++;
     }
 
