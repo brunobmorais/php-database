@@ -1,0 +1,9 @@
+# O phpcs-run padrão do Scrutinizer instala o squizlabs/php_codesniffer 3.7.1, versão
+# bloqueada pelo Composer por um alerta de segurança (PKSA-rdkp-vv9z-mjkg). Como o projeto
+# não define um padrão de código (phpcs.xml), mantemos só a análise do Scrutinizer.
+build:
+  nodes:
+    analysis:
+      tests:
+        override:
+          - php-scrutinizer-run
