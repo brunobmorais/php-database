@@ -240,7 +240,7 @@ abstract class CrudBuilder extends Crud
     protected function orderBy(string $parameter, ?string $order = null): self
     {
         try {
-            $query = $this->assertSafeOrderBy("ORDER BY {$parameter} ".($order ?? 'ASC'));
+            $query = $this->assertSafeClause("ORDER BY {$parameter} ".($order ?? 'ASC'));
             $this->add($query, "orderBy");
             return $this;
         } catch (\PDOException $e) {
@@ -261,7 +261,7 @@ abstract class CrudBuilder extends Crud
     protected function addOrderBy(string $parameter, ?string $order = null): self
     {
         try {
-            $query = $this->assertSafeOrderBy(", {$parameter} ".($order ?? 'ASC')." ");
+            $query = $this->assertSafeClause(", {$parameter} ".($order ?? 'ASC')." ");
             $this->add($query, "addOrderBy");
             return $this;
         } catch (\PDOException $e) {
@@ -280,11 +280,7 @@ abstract class CrudBuilder extends Crud
      */
     protected function limit(string $texto): self
     {
-        $texto = trim($texto);
-        if (preg_match('/^\d+(\s*,\s*\d+)?$/', $texto) !== 1) {
-            throw new DatabaseException("Invalid LIMIT value - TABLE: [{$this->getTableName()}] VALUE: [{$texto}]");
-        }
-        $query = "LIMIT {$texto}";
+        $query = $this->assertSafeClause("LIMIT {$texto}");
         $this->add($query,"limit");
         return $this;
     }
@@ -296,12 +292,8 @@ abstract class CrudBuilder extends Crud
      */
     protected function offset(string $texto): self
     {
-        $texto = trim($texto);
-        if (preg_match('/^\d+$/', $texto) !== 1) {
-            throw new DatabaseException("Invalid OFFSET value - TABLE: [{$this->getTableName()}] VALUE: [{$texto}]");
-        }
         try {
-            $query = "OFFSET {$texto}";
+            $query = $this->assertSafeClause("OFFSET {$texto}");
             $this->add($query,"offset");
             return $this;
         } catch (\PDOException $e) {
@@ -570,17 +562,18 @@ abstract class CrudBuilder extends Crud
     }
 
     /**
-     * Aceita expressões (RAND(), FIELD(...), NULLS LAST...) para não quebrar o uso existente,
-     * mas bloqueia terminador de comando e comentários, usados para encadear ou truncar SQL injetado.
-     * Ainda assim, não repasse valores da requisição direto: prefira uma whitelist de colunas.
+     * Usado em ORDER BY, LIMIT e OFFSET. Aceita expressões (RAND(), FIELD(...), "10 OFFSET 20"...)
+     * para não quebrar o uso existente, mas bloqueia terminador de comando e comentários,
+     * usados para encadear ou truncar SQL injetado.
+     * Ainda assim, não repasse valores da requisição direto: use whitelist de colunas e (int) em limit/offset.
      * @param string $clause
      * @return string
      * @throws DatabaseException
      */
-    private function assertSafeOrderBy(string $clause): string
+    private function assertSafeClause(string $clause): string
     {
         if (preg_match('~;|--|#|/\*|\*/~', $clause) === 1) {
-            throw new DatabaseException("Invalid ORDER BY clause - TABLE: [{$this->getTableName()}] VALUE: [{$clause}]");
+            throw new DatabaseException("Invalid SQL clause - TABLE: [{$this->getTableName()}] VALUE: [{$clause}]");
         }
         return $clause;
     }
