@@ -459,6 +459,10 @@ abstract class CrudBuilder extends Crud
     {
         try {
             [$query, $params] = $this->buildQuery();
+            // updateBuilder()/deleteBuilder() sem where: só registra em log, não bloqueia
+            if (preg_match('/^\s*(UPDATE|DELETE)\b/i', $query, $m) === 1 && preg_match('/\bWHERE\b/i', $query) !== 1) {
+                $this->logFullTableWrite(strtoupper($m[1]));
+            }
             // Parâmetros passados manualmente via setParams() continuam valendo, antes dos do builder
             $params = array_merge(parent::getParams(), $params);
             // Limpa antes de executar para que uma falha não contamine a próxima consulta

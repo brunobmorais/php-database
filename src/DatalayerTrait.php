@@ -456,6 +456,18 @@ trait DatalayerTrait
     }
 
     /**
+     * Registra no log de erros do PHP um UPDATE/DELETE sem WHERE (afeta a tabela inteira).
+     * Usa error_log() em vez de trigger_error() para nunca interromper a execução,
+     * mesmo com handlers que convertem warnings em exceção.
+     * @param string $operation
+     * @return void
+     */
+    protected function logFullTableWrite(string $operation): void
+    {
+        error_log("bmorais/database: {$operation} sem WHERE na tabela [{$this->getTableName()}] afeta todas as linhas");
+    }
+
+    /**
      * @param PDOStatement|null $prepare
      * @return int|null
      * @throws DatabaseException

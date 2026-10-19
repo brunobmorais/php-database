@@ -191,6 +191,9 @@ abstract class Crud
                 echo htmlspecialchars($sql, ENT_NOQUOTES) . '<pre>' . htmlspecialchars(print_r($values, true), ENT_NOQUOTES) . '</pre>';
                 return;
             }
+            if (!isset($where)) {
+                $this->logFullTableWrite('UPDATE');
+            }
             $result = $this->executeSQL($sql, $values);
             return !empty($result);
         } catch (PDOException $e) {
@@ -296,6 +299,9 @@ abstract class Crud
             if ($debug) {
                 echo htmlspecialchars($sql, ENT_NOQUOTES) . '<pre>' . htmlspecialchars(print_r($values, true), ENT_NOQUOTES) . '</pre>';
                 return;
+            }
+            if (empty($where)) {
+                $this->logFullTableWrite('DELETE');
             }
             $result = $this->executeSQL($sql, $values);
             return !empty($result);
