@@ -136,15 +136,7 @@ abstract class ModelAbstract
         $objeto = new \stdClass;
 
         foreach ($this->getInstanceProperties() as $prop) {
-            $prop->setAccessible(true);
-
-            $method = 'get' . $prop->getName();
-
-            if (method_exists($this, $method)) {
-                $objeto->{$prop->getName()} = call_user_func([$this, $method]);
-            } else {
-                $objeto->{$prop->getName()} = $prop->getValue($this);
-            }
+            $objeto->{$prop->getName()} = $this->readProperty($prop);
         }
 
         return $objeto;
@@ -157,12 +149,7 @@ abstract class ModelAbstract
     {
         $array = [];
         foreach ($this->getInstanceProperties() as $prop) {
-            $prop->setAccessible(true);
-            $method = 'get' . ucfirst($prop->getName());
-
-            $array[$prop->getName()] = method_exists($this, $method)
-                ? $this->{$method}()
-                : $prop->getValue($this);
+            $array[$prop->getName()] = $this->readProperty($prop);
         }
         return $array;
     }
@@ -182,10 +169,56 @@ abstract class ModelAbstract
     {
         $classname = $this->getReflection()->getShortName();
         $properties = array_map(
-            fn($prop) => "{$prop->getName()}: '" . ($prop->getValue($this) ?? '') . "'",
+            fn($prop) => "{$prop->getName()}: '" . $this->stringifyValue($this->readProperty($prop, false)) . "'",
             $this->getInstanceProperties()
         );
         return "$classname {" . implode(', ', $properties) . '}';
+    }
+
+    /**
+     * Lê a propriedade (via getter, se existir). Propriedade tipada ainda não inicializada
+     * vira null em vez de lançar "must not be accessed before initialization".
+     * @param \ReflectionProperty $prop
+     * @param bool $useGetter
+     * @return mixed
+     */
+    private function readProperty(\ReflectionProperty $prop, bool $useGetter = true): mixed
+    {
+        $prop->setAccessible(true);
+        $method = 'get' . ucfirst($prop->getName());
+
+        if ($useGetter && method_exists($this, $method)) {
+            try {
+                return $this->{$method}();
+            } catch (\Error $e) {
+                if ($prop->isInitialized($this) || !str_contains($e->getMessage(), 'before initialization')) {
+                    throw $e;
+                }
+                return null;
+            }
+        }
+
+        return $prop->isInitialized($this) ? $prop->getValue($this) : null;
+    }
+
+    /**
+     * Converte para texto como antes ((string) do valor, "Array" para arrays);
+     * objetos sem __toString, que antes lançavam Error, viram JSON.
+     * @param mixed $value
+     * @return string
+     */
+    private function stringifyValue(mixed $value): string
+    {
+        if ($value === null) {
+            return '';
+        }
+        if (is_array($value)) {
+            return 'Array';
+        }
+        if (is_object($value) && !$value instanceof \Stringable) {
+            return json_encode($value, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES) ?: get_class($value);
+        }
+        return (string) $value;
     }
 
 }
