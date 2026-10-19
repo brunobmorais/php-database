@@ -13,7 +13,7 @@ class ExampleDao extends CrudBuilder {
     }
 
     public function findName(): array {
-        $this->selectBuilder()
+        return $this->selectBuilder()
             ->where("NOME=?",["Joao"])
             ->orderBy("NOME")
             ->executeQuery()
