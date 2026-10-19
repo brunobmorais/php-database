@@ -792,8 +792,7 @@ trait DatalayerTrait
         } finally {
             // Fechar a conexão (e não só o cursor) evita ler o restante do resultado
             // quando o laço é interrompido antes do fim
-            $statement = null;
-            $pdo = null;
+            unset($statement, $pdo);
         }
     }
 
@@ -867,12 +866,21 @@ trait DatalayerTrait
     private function isDeadlock(\Throwable $e): bool
     {
         for ($ex = $e; $ex !== null; $ex = $ex->getPrevious()) {
-            if ($ex instanceof PDOException
-                && (in_array((int) ($ex->errorInfo[1] ?? 0), [1213, 1205], true) || ($ex->errorInfo[0] ?? '') === '40001')) {
+            if ($ex instanceof PDOException && $this->isDeadlockError($ex)) {
                 return true;
             }
         }
         return false;
+    }
+
+    /**
+     * @param PDOException $e
+     * @return bool
+     */
+    private function isDeadlockError(PDOException $e): bool
+    {
+        $info = $e->errorInfo ?? [];
+        return in_array((int) ($info[1] ?? 0), [1213, 1205], true) || ($info[0] ?? '') === '40001';
     }
 
     /**
@@ -925,43 +933,66 @@ trait DatalayerTrait
             return $sql;
         }
 
-        // Mesma formatação de antes; null = valor não representável, mantém o placeholder
-        $format = function ($v): ?string {
-            if (is_object($v)) {
-                return $v instanceof \DateTime ? $v->format('Y-m-d H:i:s') : null;
-            }
-            if (is_string($v)) {
-                return "'$v'";
-            }
-            if ($v === null) {
-                return 'NULL';
-            }
-            if (is_array($v)) {
-                return implode(',', $v);
-            }
-            return (string) $v;
-        };
-
-        if (array_keys($params) === range(0, count($params) - 1)) {
-            $i = 0;
-            $result = preg_replace_callback('/\?/', function ($m) use (&$i, $params, $format) {
-                if (!array_key_exists($i, $params)) {
-                    return $m[0];
-                }
-                return $format($params[$i++]) ?? $m[0];
-            }, $sql);
-        } else {
-            $named = [];
-            foreach ($params as $k => $v) {
-                $named[ltrim((string) $k, ':')] = $v;
-            }
-            // (?<!:) evita casts do PostgreSQL como "valor::int"
-            $result = preg_replace_callback('/(?<!:):(\w+)/', function ($m) use ($named, $format) {
-                return array_key_exists($m[1], $named) ? ($format($named[$m[1]]) ?? $m[0]) : $m[0];
-            }, $sql);
-        }
+        $result = array_keys($params) === range(0, count($params) - 1)
+            ? $this->interpolatePositional($sql, $params)
+            : $this->interpolateNamed($sql, $params);
 
         return $result ?? $sql;
+    }
+
+    /**
+     * @param string $sql
+     * @param array $params lista (placeholders "?")
+     * @return string|null
+     */
+    private function interpolatePositional(string $sql, array $params): ?string
+    {
+        $i = 0;
+        return preg_replace_callback('/\?/', function ($m) use (&$i, $params) {
+            if (!array_key_exists($i, $params)) {
+                return $m[0];
+            }
+            return $this->formatLogValue($params[$i++]) ?? $m[0];
+        }, $sql);
+    }
+
+    /**
+     * @param string $sql
+     * @param array $params chaves com ou sem ":" (placeholders ":nome")
+     * @return string|null
+     */
+    private function interpolateNamed(string $sql, array $params): ?string
+    {
+        $named = [];
+        foreach ($params as $k => $v) {
+            $named[ltrim((string) $k, ':')] = $v;
+        }
+        // (?<!:) evita casts do PostgreSQL como "valor::int"
+        return preg_replace_callback('/(?<!:):(\w+)/', function ($m) use ($named) {
+            return array_key_exists($m[1], $named) ? ($this->formatLogValue($named[$m[1]]) ?? $m[0]) : $m[0];
+        }, $sql);
+    }
+
+    /**
+     * Formata um valor para o log (mesma formatação de antes).
+     * @param mixed $value
+     * @return string|null null = valor não representável, mantém o placeholder
+     */
+    private function formatLogValue(mixed $value): ?string
+    {
+        if (is_object($value)) {
+            return $value instanceof \DateTime ? $value->format('Y-m-d H:i:s') : null;
+        }
+        if (is_string($value)) {
+            return "'$value'";
+        }
+        if ($value === null) {
+            return 'NULL';
+        }
+        if (is_array($value)) {
+            return implode(',', $value);
+        }
+        return (string) $value;
     }
 
     /**
