@@ -35,6 +35,9 @@ trait DatalayerTrait
     /** @var int geração da conexão em $instance */
     private int $instanceGeneration = 0;
 
+    /** @var string|null banco já verificado quanto ao sufixo de homologação */
+    private ?string $homologationCheckedFor = null;
+
     /** @var string
      *  @deprecated
      */
@@ -92,8 +95,7 @@ trait DatalayerTrait
     private function getConnect(): PDO
     {
         try {
-            // Atribui direto (sem setDatabase) para não descartar uma instância injetada via setInstance()
-            $this->database = $this->withHomologationSuffix($this->getDatabase());
+            $this->applyHomologationSuffix();
 
             // Após closeConnections(), solta a conexão antiga que este DAO ainda segura para que ela
             // seja de fato fechada — exceto instância injetada e transação em andamento
@@ -192,6 +194,19 @@ trait DatalayerTrait
         $reason = $reasons[$driverCode] ?? 'falha ao conectar';
 
         return "{$prefix} {$reason}";
+    }
+
+    /**
+     * Aplica o sufixo de homologação ao banco, verificando só quando o nome do banco muda.
+     * Atribui direto (sem setDatabase) para não descartar uma instância injetada via setInstance().
+     * @return void
+     */
+    private function applyHomologationSuffix(): void
+    {
+        if ($this->homologationCheckedFor !== $this->getDatabase()) {
+            $this->database = $this->withHomologationSuffix($this->getDatabase());
+            $this->homologationCheckedFor = $this->database;
+        }
     }
 
     /**
@@ -739,7 +754,7 @@ trait DatalayerTrait
      */
     protected function cursor(string $query, ?array $params = null, bool $returnModel = false): \Generator
     {
-        $this->database = $this->withHomologationSuffix($this->getDatabase());
+        $this->applyHomologationSuffix();
 
         $options = (CONFIG_DATA_LAYER['options'] ?? []);
         $options[PDO::ATTR_ERRMODE] = PDO::ERRMODE_EXCEPTION;
@@ -893,6 +908,13 @@ trait DatalayerTrait
      */
     private function setSQL($sql_string, ?array $params = null)
     {
+        // Valores muito grandes (arquivos/blobs) não ficam retidos em memória só para o log
+        foreach ($params ?? [] as $key => $value) {
+            if (is_string($value) && strlen($value) > 65536) {
+                $params[$key] = '[' . strlen($value) . ' bytes]';
+            }
+        }
+
         $this->logQuery = (string) $sql_string;
         $this->logParams = $params;
         $this->logSQL = null;
