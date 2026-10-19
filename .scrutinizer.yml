@@ -8,7 +8,8 @@ build:
         override:
           - php-scrutinizer-run
 
-# Exemplos de uso não fazem parte da biblioteca
+# O DAO de exemplo não faz parte da biblioteca. O example/config.php continua na análise
+# porque é onde a constante CONFIG_DATA_LAYER é definida (sem ele: "constant not found").
 filter:
   excluded_paths:
-    - "example/*"
+    - "example/ExampleDao.php"
