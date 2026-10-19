@@ -710,6 +710,67 @@ trait DatalayerTrait
     }
 
     /**
+     * Executa $callback dentro de uma transação: commit ao final e rollback em qualquer erro
+     * (a exceção é relançada). Com $attempts > 1, repete o bloco inteiro em deadlock (1213)
+     * ou lock wait timeout (1205). Se já houver transação aberta, apenas participa dela:
+     * quem a abriu decide o commit/rollback.
+     *
+     * <code>
+     *   $id = $this->transaction(function () use ($dados) {
+     *       $this->insertArray($dados);
+     *       return $this->lastInsertId();
+     *   }, 3);
+     * </code>
+     *
+     * @param callable $callback recebe o próprio DAO
+     * @param int $attempts tentativas em caso de deadlock/lock wait timeout
+     * @return mixed retorno do $callback
+     * @throws \Throwable
+     */
+    protected function transaction(callable $callback, int $attempts = 1): mixed
+    {
+        if ($this->getInstance()->inTransaction()) {
+            return $callback($this);
+        }
+
+        for ($attempt = 1; ; $attempt++) {
+            $this->beginTransaction();
+            try {
+                $result = $callback($this);
+                $this->commitTransaction();
+                return $result;
+            } catch (\Throwable $e) {
+                try {
+                    $this->rollBackTransaction();
+                } catch (\Throwable) {
+                    // conexão perdida: o servidor já descartou a transação; vale o erro original
+                }
+                if ($attempt < $attempts && $this->isDeadlock($e)) {
+                    usleep(random_int(20, 100) * 1000 * $attempt);
+                    continue;
+                }
+                throw $e;
+            }
+        }
+    }
+
+    /**
+     * Deadlock (1213 / SQLSTATE 40001) ou lock wait timeout (1205), na exceção ou na anterior.
+     * @param \Throwable $e
+     * @return bool
+     */
+    private function isDeadlock(\Throwable $e): bool
+    {
+        for ($ex = $e; $ex !== null; $ex = $ex->getPrevious()) {
+            if ($ex instanceof PDOException
+                && (in_array((int) ($ex->errorInfo[1] ?? 0), [1213, 1205], true) || ($ex->errorInfo[0] ?? '') === '40001')) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    /**
      * @return string|null
      * @throws DatabaseException
      */
