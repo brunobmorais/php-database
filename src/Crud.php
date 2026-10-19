@@ -306,37 +306,63 @@ abstract class Crud
             return 0;
         }
 
+        $keys = $this->insertManyColumns($rows);
+        $batchSize = max(1, min($batchSize, intdiv(65535, count($keys))));
+
+        return $this->transaction(function () use ($rows, $keys, $batchSize) {
+            $total = 0;
+            foreach (array_chunk($rows, $batchSize) as $chunk) {
+                $total += $this->insertManyBatch($chunk, $keys);
+            }
+            return $total;
+        });
+    }
+
+    /**
+     * Colunas de insertMany (chaves da primeira linha), validadas e iguais em todas as linhas.
+     * @param array $rows
+     * @return array
+     * @throws DatabaseException
+     */
+    private function insertManyColumns(array $rows): array
+    {
         $first = reset($rows);
         if (!is_array($first) || empty($first)) {
             throw new DatabaseException("insertMany expects non-empty arrays - TABLE: [{$this->getTableName()}]");
         }
         $keys = array_keys($first);
-        $columns = implode(',', $this->assertIdentifierList(implode(',', $keys)));
+        $this->assertIdentifierList(implode(',', $keys));
 
         foreach ($rows as $index => $row) {
             if (!is_array($row) || count($row) !== count($keys) || array_diff_key($row, $first)) {
                 throw new DatabaseException("insertMany: row [{$index}] has different columns - TABLE: [{$this->getTableName()}]");
             }
         }
+        return $keys;
+    }
 
-        $batchSize = max(1, min($batchSize, intdiv(65535, count($keys))));
-        $rowPlaceholders = '(' . implode(',', array_fill(0, count($keys), '?')) . ')';
-
-        return $this->transaction(function () use ($rows, $keys, $columns, $batchSize, $rowPlaceholders) {
-            $total = 0;
-            foreach (array_chunk($rows, $batchSize) as $chunk) {
-                $params = [];
-                foreach ($chunk as $row) {
-                    foreach ($keys as $key) {
-                        $params[] = $row[$key];
-                    }
-                }
-                $sql = "INSERT INTO {$this->getTableName()} ({$columns}) VALUES "
-                    . implode(',', array_fill(0, count($chunk), $rowPlaceholders));
-                $total += $this->executeSQL($sql, $params)->rowCount();
+    /**
+     * Um INSERT com todas as linhas do lote.
+     * @param array $chunk
+     * @param array $keys
+     * @return int linhas inseridas
+     * @throws DatabaseException
+     */
+    private function insertManyBatch(array $chunk, array $keys): int
+    {
+        $params = [];
+        foreach ($chunk as $row) {
+            foreach ($keys as $key) {
+                $params[] = $row[$key];
             }
-            return $total;
-        });
+        }
+
+        $columns = implode(',', $this->assertIdentifierList(implode(',', $keys)));
+        $rowPlaceholders = '(' . implode(',', array_fill(0, count($keys), '?')) . ')';
+        $sql = "INSERT INTO {$this->getTableName()} ({$columns}) VALUES "
+            . implode(',', array_fill(0, count($chunk), $rowPlaceholders));
+
+        return $this->executeSQL($sql, $params)->rowCount();
     }
 
     /**
