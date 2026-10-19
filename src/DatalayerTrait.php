@@ -710,6 +710,23 @@ trait DatalayerTrait
     }
 
     /**
+     * Placeholders para IN (...), para não concatenar valores no SQL.
+     * Lista vazia vira "NULL" (IN (NULL) não retorna linhas, enquanto IN () é erro de sintaxe).
+     *
+     * <code>
+     *   $sql = "SELECT * FROM PESSOA WHERE CODPESSOA IN (" . $this->placeholders($ids) . ") AND ATIVO = ?";
+     *   $this->executeSQL($sql, [...array_values($ids), 1]);
+     * </code>
+     *
+     * @param array $values
+     * @return string
+     */
+    protected function placeholders(array $values): string
+    {
+        return empty($values) ? 'NULL' : implode(',', array_fill(0, count($values), '?'));
+    }
+
+    /**
      * Executa $callback dentro de uma transação: commit ao final e rollback em qualquer erro
      * (a exceção é relançada). Com $attempts > 1, repete o bloco inteiro em deadlock (1213)
      * ou lock wait timeout (1205). Se já houver transação aberta, apenas participa dela:
