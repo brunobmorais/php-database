@@ -21,6 +21,9 @@ abstract class ModelAbstract
     /** @var array<string, \ReflectionClass> */
     private static array $reflectionCache = [];
 
+    /** @var array<string, \ReflectionProperty[]> */
+    private static array $propertiesCache = [];
+
     private function getReflection(): \ReflectionClass
     {
         $class = static::class;
@@ -36,7 +39,7 @@ abstract class ModelAbstract
      */
     private function getInstanceProperties(): array
     {
-        return array_filter(
+        return self::$propertiesCache[static::class] ??= array_filter(
             $this->getReflection()->getProperties(),
             fn(\ReflectionProperty $prop) => !$prop->isStatic()
         );
