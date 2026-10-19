@@ -250,6 +250,15 @@ trait DatalayerTrait
     }
 
     /**
+     * @return self
+     */
+    protected function clearParams(): self
+    {
+        $this->params = [];
+        return $this;
+    }
+
+    /**
      * @param $params
      * @return array
      */
