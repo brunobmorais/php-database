@@ -160,6 +160,8 @@ trait DatalayerTrait
     protected function setInstance(?PDO $pdo): self
     {
         $this->instance = $pdo;
+        // Instância externa: não pertence ao cache de conexões, então não deve ser reconectada
+        $this->currentDsn = '';
         return $this;
     }
 
@@ -334,11 +336,15 @@ trait DatalayerTrait
             $this->getPrepare()->execute($params);
             return $this->getPrepare();
         } catch (PDOException $e) {
-            // MySQL server has gone away (2006) ou Lost connection (2013) — reconecta uma vez
-            if ($retry && in_array($e->errorInfo[1] ?? 0, [2006, 2013]) && !empty($this->currentDsn)) {
+            // MySQL server has gone away (2006) ou Lost connection (2013)
+            if (in_array($e->errorInfo[1] ?? 0, [2006, 2013], true) && !empty($this->currentDsn)) {
+                $canRetry = $retry && $this->isSafeToRetry($e, $query);
+                // Descarta a conexão morta mesmo sem retry, para não ficar presa no cache
                 self::$instances[$this->currentDsn] = null;
                 $this->instance = null;
-                return $this->executeSQL($query, $params, false);
+                if ($canRetry) {
+                    return $this->executeSQL($query, $params, false);
+                }
             }
             throw new DatabaseException(
                 "SQL execution failed - TABLE: [{$this->getTableName()}] MESSAGE: [{$e->getMessage()}]",
@@ -350,6 +356,32 @@ trait DatalayerTrait
         }
     }
 
+    /**
+     * Só reconecta e repete quando não há risco de duplicar escrita ou perder transação:
+     * - nunca dentro de transação (a nova conexão estaria em autocommit e o commit viraria no-op);
+     * - 2006: o comando não chegou a ser executado;
+     * - 2013: a conexão caiu durante a query, que pode já ter rodado — só repete leituras.
+     * @param PDOException $e
+     * @param string $query
+     * @return bool
+     */
+    private function isSafeToRetry(PDOException $e, string $query): bool
+    {
+        try {
+            if ($this->instance !== null && $this->instance->inTransaction()) {
+                return false;
+            }
+        } catch (PDOException) {
+            return false;
+        }
+
+        $code = $e->errorInfo[1] ?? 0;
+        if ($code === 2006) {
+            return true;
+        }
+
+        return $code === 2013 && preg_match('/^\s*(SELECT|SHOW|DESCRIBE|DESC|EXPLAIN)\b/i', $query) === 1;
+    }
 
     /**
      * Valida um identificador SQL (coluna ou tabela.coluna), opcionalmente entre `crases`, "aspas" ou [colchetes].
