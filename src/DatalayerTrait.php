@@ -35,6 +35,9 @@ trait DatalayerTrait
     /** @var int geração da conexão em $instance */
     private int $instanceGeneration = 0;
 
+    /** @var string|null banco já verificado quanto ao sufixo de homologação */
+    private ?string $homologationCheckedFor = null;
+
     /** @var string
      *  @deprecated
      */
@@ -92,8 +95,7 @@ trait DatalayerTrait
     private function getConnect(): PDO
     {
         try {
-            // Atribui direto (sem setDatabase) para não descartar uma instância injetada via setInstance()
-            $this->database = $this->withHomologationSuffix($this->getDatabase());
+            $this->applyHomologationSuffix();
 
             // Após closeConnections(), solta a conexão antiga que este DAO ainda segura para que ela
             // seja de fato fechada — exceto instância injetada e transação em andamento
@@ -108,7 +110,7 @@ trait DatalayerTrait
                 return $this->instance;
             }
 
-            $dsn = CONFIG_DATA_LAYER['driver'] . ':host=' . CONFIG_DATA_LAYER['host'] . ';dbname=' . $this->getDatabase() . ';port=' . CONFIG_DATA_LAYER['port'];
+            $dsn = $this->buildDsn();
             $this->currentDsn = $dsn;
 
             if (empty(self::$instances[$dsn])) {
@@ -192,6 +194,27 @@ trait DatalayerTrait
         $reason = $reasons[$driverCode] ?? 'falha ao conectar';
 
         return "{$prefix} {$reason}";
+    }
+
+    /**
+     * Aplica o sufixo de homologação ao banco, verificando só quando o nome do banco muda.
+     * Atribui direto (sem setDatabase) para não descartar uma instância injetada via setInstance().
+     * @return void
+     */
+    private function applyHomologationSuffix(): void
+    {
+        if ($this->homologationCheckedFor !== $this->getDatabase()) {
+            $this->database = $this->withHomologationSuffix($this->getDatabase());
+            $this->homologationCheckedFor = $this->database;
+        }
+    }
+
+    /**
+     * @return string
+     */
+    private function buildDsn(): string
+    {
+        return CONFIG_DATA_LAYER['driver'] . ':host=' . CONFIG_DATA_LAYER['host'] . ';dbname=' . $this->getDatabase() . ';port=' . CONFIG_DATA_LAYER['port'];
     }
 
     public static function closeConnections(): void {
@@ -710,6 +733,157 @@ trait DatalayerTrait
     }
 
     /**
+     * Percorre o resultado linha a linha (generator), sem carregar tudo em memória.
+     * Para exportações e relatórios grandes.
+     *
+     * Usa uma conexão própria, fechada ao final; no MySQL ela é unbuffered, então o resultado
+     * não fica inteiro em memória no cliente. Por ser outra conexão, não enxerga dados ainda
+     * não commitados da transação em andamento. A consulta só é executada na primeira iteração.
+     *
+     * <code>
+     *   foreach ($this->cursor("SELECT * FROM PEDIDO WHERE DATA >= ?", [$inicio]) as $pedido) {
+     *       fputcsv($arquivo, (array) $pedido);
+     *   }
+     * </code>
+     *
+     * @param string $query
+     * @param array|null $params
+     * @param bool $returnModel true: instâncias de classModel; false: stdClass
+     * @return \Generator
+     * @throws DatabaseException
+     */
+    protected function cursor(string $query, ?array $params = null, bool $returnModel = false): \Generator
+    {
+        $this->applyHomologationSuffix();
+
+        $options = (CONFIG_DATA_LAYER['options'] ?? []);
+        $options[PDO::ATTR_ERRMODE] = PDO::ERRMODE_EXCEPTION;
+        $options[PDO::ATTR_PERSISTENT] = false;
+        if (CONFIG_DATA_LAYER['driver'] === 'mysql') {
+            $unbuffered = defined('Pdo\\Mysql::ATTR_USE_BUFFERED_QUERY')
+                ? constant('Pdo\\Mysql::ATTR_USE_BUFFERED_QUERY')
+                : PDO::MYSQL_ATTR_USE_BUFFERED_QUERY;
+            $options[$unbuffered] = false;
+        }
+
+        try {
+            $pdo = new PDO($this->buildDsn(), CONFIG_DATA_LAYER['username'], CONFIG_DATA_LAYER['passwd'], $options);
+        } catch (PDOException $e) {
+            throw new DatabaseException(
+                "Database connection failed - TABLE: [{$this->getTableName()}] MESSAGE: [{$this->connectionErrorSummary($e)}]",
+                $e->getCode(),
+                $e
+            );
+        }
+
+        try {
+            $statement = $pdo->prepare($query);
+            $statement->execute($params);
+            if ($returnModel) {
+                $this->assertClassModel($this->getClassModel());
+                $statement->setFetchMode(PDO::FETCH_CLASS | PDO::FETCH_PROPS_LATE, CONFIG_DATA_LAYER["directory_models"] . $this->getClassModel());
+            } else {
+                $statement->setFetchMode(PDO::FETCH_OBJ);
+            }
+
+            while (($row = $statement->fetch()) !== false) {
+                yield $row;
+            }
+        } catch (PDOException $e) {
+            throw new DatabaseException(
+                "Cursor failed - TABLE: [{$this->getTableName()}] MESSAGE: [{$e->getMessage()}]",
+                $e->getCode(),
+                $e,
+                $query,
+                $params
+            );
+        } finally {
+            // Fechar a conexão (e não só o cursor) evita ler o restante do resultado
+            // quando o laço é interrompido antes do fim
+            $statement = null;
+            $pdo = null;
+        }
+    }
+
+    /**
+     * Placeholders para IN (...), para não concatenar valores no SQL.
+     * Lista vazia vira "NULL" (IN (NULL) não retorna linhas, enquanto IN () é erro de sintaxe).
+     *
+     * <code>
+     *   $sql = "SELECT * FROM PESSOA WHERE CODPESSOA IN (" . $this->placeholders($ids) . ") AND ATIVO = ?";
+     *   $this->executeSQL($sql, [...array_values($ids), 1]);
+     * </code>
+     *
+     * @param array $values
+     * @return string
+     */
+    protected function placeholders(array $values): string
+    {
+        return empty($values) ? 'NULL' : implode(',', array_fill(0, count($values), '?'));
+    }
+
+    /**
+     * Executa $callback dentro de uma transação: commit ao final e rollback em qualquer erro
+     * (a exceção é relançada). Com $attempts > 1, repete o bloco inteiro em deadlock (1213)
+     * ou lock wait timeout (1205). Se já houver transação aberta, apenas participa dela:
+     * quem a abriu decide o commit/rollback.
+     *
+     * <code>
+     *   $id = $this->transaction(function () use ($dados) {
+     *       $this->insertArray($dados);
+     *       return $this->lastInsertId();
+     *   }, 3);
+     * </code>
+     *
+     * @param callable $callback recebe o próprio DAO
+     * @param int $attempts tentativas em caso de deadlock/lock wait timeout
+     * @return mixed retorno do $callback
+     * @throws \Throwable
+     */
+    protected function transaction(callable $callback, int $attempts = 1): mixed
+    {
+        if ($this->getInstance()->inTransaction()) {
+            return $callback($this);
+        }
+
+        for ($attempt = 1; ; $attempt++) {
+            $this->beginTransaction();
+            try {
+                $result = $callback($this);
+                $this->commitTransaction();
+                return $result;
+            } catch (\Throwable $e) {
+                try {
+                    $this->rollBackTransaction();
+                } catch (\Throwable) {
+                    // conexão perdida: o servidor já descartou a transação; vale o erro original
+                }
+                if ($attempt < $attempts && $this->isDeadlock($e)) {
+                    usleep(random_int(20, 100) * 1000 * $attempt);
+                    continue;
+                }
+                throw $e;
+            }
+        }
+    }
+
+    /**
+     * Deadlock (1213 / SQLSTATE 40001) ou lock wait timeout (1205), na exceção ou na anterior.
+     * @param \Throwable $e
+     * @return bool
+     */
+    private function isDeadlock(\Throwable $e): bool
+    {
+        for ($ex = $e; $ex !== null; $ex = $ex->getPrevious()) {
+            if ($ex instanceof PDOException
+                && (in_array((int) ($ex->errorInfo[1] ?? 0), [1213, 1205], true) || ($ex->errorInfo[0] ?? '') === '40001')) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    /**
      * @return string|null
      * @throws DatabaseException
      */
@@ -734,6 +908,13 @@ trait DatalayerTrait
      */
     private function setSQL($sql_string, ?array $params = null)
     {
+        // Valores muito grandes (arquivos/blobs) não ficam retidos em memória só para o log
+        foreach ($params ?? [] as $key => $value) {
+            if (is_string($value) && strlen($value) > 65536) {
+                $params[$key] = '[' . strlen($value) . ' bytes]';
+            }
+        }
+
         $this->logQuery = (string) $sql_string;
         $this->logParams = $params;
         $this->logSQL = null;

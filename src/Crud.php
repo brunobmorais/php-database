@@ -283,6 +283,63 @@ abstract class Crud
     }
 
     /**
+     * Insere várias linhas com INSERT de múltiplas linhas, em lotes (uma ida ao banco por lote).
+     * Todas as linhas devem ter as mesmas colunas (chaves); null é gravado como NULL.
+     * Sem transação aberta, todos os lotes são gravados numa transação (tudo ou nada).
+     * Para models, passe $model->toArray().
+     *
+     * <code>
+     *   $this->insertMany([
+     *       ["NOME" => "Ana", "EMAIL" => "a@x.com"],
+     *       ["NOME" => "Bia", "EMAIL" => "b@x.com"],
+     *   ]);
+     * </code>
+     *
+     * @param array[] $rows
+     * @param int $batchSize linhas por INSERT (limitado a 65535 placeholders por comando)
+     * @return int linhas inseridas
+     * @throws DatabaseException
+     */
+    public function insertMany(array $rows, int $batchSize = 500): int
+    {
+        if (empty($rows)) {
+            return 0;
+        }
+
+        $first = reset($rows);
+        if (!is_array($first) || empty($first)) {
+            throw new DatabaseException("insertMany expects non-empty arrays - TABLE: [{$this->getTableName()}]");
+        }
+        $keys = array_keys($first);
+        $columns = implode(',', $this->assertIdentifierList(implode(',', $keys)));
+
+        foreach ($rows as $index => $row) {
+            if (!is_array($row) || count($row) !== count($keys) || array_diff_key($row, $first)) {
+                throw new DatabaseException("insertMany: row [{$index}] has different columns - TABLE: [{$this->getTableName()}]");
+            }
+        }
+
+        $batchSize = max(1, min($batchSize, intdiv(65535, count($keys))));
+        $rowPlaceholders = '(' . implode(',', array_fill(0, count($keys), '?')) . ')';
+
+        return $this->transaction(function () use ($rows, $keys, $columns, $batchSize, $rowPlaceholders) {
+            $total = 0;
+            foreach (array_chunk($rows, $batchSize) as $chunk) {
+                $params = [];
+                foreach ($chunk as $row) {
+                    foreach ($keys as $key) {
+                        $params[] = $row[$key];
+                    }
+                }
+                $sql = "INSERT INTO {$this->getTableName()} ({$columns}) VALUES "
+                    . implode(',', array_fill(0, count($chunk), $rowPlaceholders));
+                $total += $this->executeSQL($sql, $params)->rowCount();
+            }
+            return $total;
+        });
+    }
+
+    /**
      * Insere a partir de um model, inclusive propriedades protected/private.
      * Para ModelAbstract equivale a insertArray($model->toArray()). Valores null são ignorados.
      * @param object $model
