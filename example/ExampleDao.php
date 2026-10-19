@@ -296,9 +296,30 @@ class ExampleDao extends CrudBuilder
      * ===================================================================== */
 
     /**
-     * begin/commit/rollBack ignoram chamadas repetidas (begin com transação aberta
-     * não abre outra). DAOs da mesma base compartilham a conexão, então operações de
+     * Forma recomendada: transaction() faz o commit ao final e o rollback em QUALQUER erro
+     * (a exceção é relançada). O segundo parâmetro repete o bloco em deadlock ou
+     * lock wait timeout. Dentro de uma transação já aberta, apenas participa dela.
+     */
+    public function inserirComHistoricoTransaction(string $nome, string $email): string
+    {
+        return $this->transaction(function () use ($nome, $email) {
+            $this->insert("NOME, EMAIL, ATIVO", [$nome, $email, 1]);
+            $id = $this->lastInsertId();
+
+            $this->query("INSERT INTO EXAMPLE_HISTORICO (EXAMPLE_ID, ACAO) VALUES (?, ?)", [$id, "CRIADO"])
+                ->executeQuery();
+
+            return $id;
+        }, 3);
+    }
+
+    /**
+     * Forma manual. begin/commit/rollBack ignoram chamadas repetidas (begin com transação
+     * aberta não abre outra). DAOs da mesma base compartilham a conexão, então operações de
      * DAOs diferentes entre o begin e o commit fazem parte da mesma transação.
+     *
+     * Capture \Throwable (ou Exception): DatabaseException NÃO é Error, então
+     * catch (Error $e) não faz o rollback quando uma consulta falha.
      */
     public function inserirComHistorico(string $nome, string $email): string
     {
@@ -313,7 +334,7 @@ class ExampleDao extends CrudBuilder
 
             $this->commitTransaction();
             return $id;
-        } catch (DatabaseException $e) {
+        } catch (\Throwable $e) {
             $this->rollBackTransaction();
             throw $e;
         }
@@ -338,9 +359,72 @@ class ExampleDao extends CrudBuilder
 
             $this->commitTransaction();
             return $id;
-        } catch (DatabaseException $e) {
+        } catch (\Throwable $e) {
             $this->rollBackTransaction();
             throw $e;
+        }
+    }
+
+    /* =====================================================================
+     * GRANDES VOLUMES
+     * ===================================================================== */
+
+    /**
+     * insertMany: um INSERT com várias linhas por lote (bem mais rápido que insertArray em laço).
+     * Todas as linhas com as mesmas colunas; roda numa transação (tudo ou nada).
+     * Retorna o total de linhas inseridas.
+     */
+    public function importar(array $registros): int
+    {
+        $linhas = [];
+        foreach ($registros as $registro) {
+            $linhas[] = [
+                "NOME"  => $registro["nome"],
+                "EMAIL" => $registro["email"],
+                "ATIVO" => 1,
+            ];
+        }
+        return $this->insertMany($linhas, 1000);
+    }
+
+    /**
+     * placeholders: monta o IN (...) com "?" em vez de concatenar os valores.
+     * Lista vazia vira IN (NULL), que não retorna linhas.
+     */
+    public function buscarPorIds(array $ids, int $ativo = 1): array
+    {
+        $sql = "SELECT * FROM EXAMPLE WHERE ID IN (" . $this->placeholders($ids) . ") AND ATIVO = ?";
+        $this->executeSQL($sql, [...array_values($ids), $ativo]);
+        return $this->fetchArrayObj();
+    }
+
+    /**
+     * cursor: percorre o resultado linha a linha, sem carregar tudo em memória
+     * (ex.: 300 mil linhas com 0,1 MB em vez de ~250 MB com fetchArrayObj).
+     * Usa uma conexão própria: não enxerga dados ainda não commitados da transação atual.
+     */
+    public function exportarCsv(string $arquivo): int
+    {
+        $saida = fopen($arquivo, "w");
+        fputcsv($saida, ["ID", "NOME", "EMAIL"], ",", "\"", "");
+
+        $total = 0;
+        foreach ($this->cursor("SELECT ID, NOME, EMAIL FROM EXAMPLE WHERE ATIVO = ? ORDER BY ID", [1]) as $linha) {
+            fputcsv($saida, [$linha->ID, $linha->NOME, $linha->EMAIL], ",", "\"", "");
+            $total++;
+        }
+
+        fclose($saida);
+        return $total;
+    }
+
+    /**
+     * cursor com returnModel = true: cada linha vem como instância de classModel.
+     */
+    public function processarModels(callable $processar): void
+    {
+        foreach ($this->cursor("SELECT * FROM EXAMPLE", null, true) as $model) {
+            $processar($model);
         }
     }
 
