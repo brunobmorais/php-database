@@ -8,6 +8,10 @@ const CONFIG_DATA_LAYER = [
     "username" => "",
     "passwd" => "",
     "options" => [
+        // Charset: prefira UTF8MB4 em "SET NAMES" ("UTF8" no MySQL é utf8mb3 e não grava emoji).
+        // PDO::ATTR_EMULATE_PREPARES => false usa prepares nativos do servidor (mais seguro e com tipos
+        // reais), mas não permite repetir o mesmo :nome na consulta e pode mudar tipos retornados
+        // quando ATTR_STRINGIFY_FETCHES não estiver ativo — teste a aplicação antes de ativar.
         PDO::MYSQL_ATTR_INIT_COMMAND => "SET NAMES UTF8, lc_time_names = 'pt_BR'",
         PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION,
         PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_OBJ,
