@@ -216,7 +216,7 @@ trait DatalayerTrait
      */
     protected function getFields():string
     {
-        return $this->fields;
+        return $this->fields ?? "";
     }
 
     /**
@@ -257,7 +257,7 @@ trait DatalayerTrait
 
     protected function getClassModel(): string
     {
-        return $this->classModel;
+        return $this->classModel ?? "";
     }
 
     /**
@@ -272,6 +272,9 @@ trait DatalayerTrait
 
     protected function getPrepare(): PDOStatement
     {
+        if ($this->prepare === null) {
+            throw new DatabaseException("No statement executed - TABLE: [{$this->getTableName()}]");
+        }
         return $this->prepare;
     }
 
@@ -417,6 +420,18 @@ trait DatalayerTrait
     }
 
     /**
+     * @param string $classModel
+     * @return void
+     * @throws DatabaseException
+     */
+    private function assertClassModel(string $classModel): void
+    {
+        if ($classModel === '') {
+            throw new DatabaseException("Class model not set, use setClassModel() - TABLE: [{$this->getTableName()}]");
+        }
+    }
+
+    /**
      * @param PDOStatement|null $prepare
      * @return int|null
      * @throws DatabaseException
@@ -488,6 +503,7 @@ trait DatalayerTrait
         try {
             $prepare = empty($prepare) ? $this->getPrepare() : $prepare;
             $classModel = empty($classModel) ? $this->getClassModel() : $classModel;
+            $this->assertClassModel($classModel);
             $dados = $prepare->fetchAll(PDO::FETCH_CLASS | PDO::FETCH_PROPS_LATE, CONFIG_DATA_LAYER["directory_models"] . $classModel);
             $this->setData($dados);
             return $dados;
@@ -551,6 +567,7 @@ trait DatalayerTrait
         try {
             $prepare = empty($prepare) ? $this->getPrepare() : $prepare;
             $class = empty($class) ? $this->getClassModel() : $class;
+            $this->assertClassModel($class);
             $data = $prepare->fetchObject(CONFIG_DATA_LAYER["directory_models"] . $class);
             return $data === false ? null : $data;
         } catch (PDOException $e) {
