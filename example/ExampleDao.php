@@ -127,7 +127,21 @@ class ExampleDao extends CrudBuilder
     }
 
     /**
-     * delete(valores, where). Sem where, apaga a tabela inteira: sempre informe o where.
+     * insertModel/updateModel leem também as propriedades protected/private do model
+     * (para ModelAbstract, o mesmo que insertArray($model->toArray())).
+     * updateModel grava NULL nas colunas do último parâmetro; as demais com null são ignoradas.
+     */
+    public function salvarModel(object $model, ?int $id = null): bool
+    {
+        if ($id === null) {
+            return $this->insertModel($model);
+        }
+        return $this->updateModel($model, "ID = ?", [$id], ["EMAIL"]);
+    }
+
+    /**
+     * delete(valores, where). Sem where, apaga a tabela inteira (e registra um aviso no log):
+     * sempre informe o where.
      */
     public function remover(int $id): bool
     {

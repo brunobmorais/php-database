@@ -191,6 +191,9 @@ abstract class Crud
                 echo htmlspecialchars($sql, ENT_NOQUOTES) . '<pre>' . htmlspecialchars(print_r($values, true), ENT_NOQUOTES) . '</pre>';
                 return;
             }
+            if (!isset($where)) {
+                $this->logFullTableWrite('UPDATE');
+            }
             $result = $this->executeSQL($sql, $values);
             return !empty($result);
         } catch (PDOException $e) {
@@ -280,6 +283,77 @@ abstract class Crud
     }
 
     /**
+     * Insere a partir de um model, inclusive propriedades protected/private.
+     * Para ModelAbstract equivale a insertArray($model->toArray()). Valores null são ignorados.
+     * @param object $model
+     * @return bool
+     * @throws DatabaseException
+     */
+    public function insertModel(object $model): bool
+    {
+        return $this->insertArray($this->modelValues($model));
+    }
+
+    /**
+     * Atualiza a partir de um model, inclusive propriedades protected/private.
+     * Valores null são ignorados, exceto as colunas em $nullColumns, gravadas como NULL.
+     * Para um array, passe (object) $array.
+     * @param object $model
+     * @param string $where
+     * @param array $whereValues
+     * @param string[] $nullColumns
+     * @return bool
+     * @throws DatabaseException
+     */
+    public function updateModel(object $model, string $where, array $whereValues = [], array $nullColumns = []): bool
+    {
+        $columns = [];
+        $values = [];
+        foreach ($this->modelValues($model) as $column => $value) {
+            if ($value !== null || in_array($column, $nullColumns, true)) {
+                $columns[] = $column;
+                $values[] = $value;
+            }
+        }
+        // Colunas pedidas como NULL que não existem no model
+        foreach ($nullColumns as $column) {
+            if (!in_array($column, $columns, true)) {
+                $columns[] = $column;
+                $values[] = null;
+            }
+        }
+
+        if (empty($columns)) {
+            return false;
+        }
+
+        return $this->update(implode(',', $columns), array_merge($values, $whereValues), $where);
+    }
+
+    /**
+     * Valores do model por coluna: toArray() para ModelAbstract (usa os getters, como toObject());
+     * para outros objetos, todas as propriedades de instância (não inicializadas viram null).
+     * @param object $model
+     * @return array
+     */
+    private function modelValues(object $model): array
+    {
+        if ($model instanceof ModelAbstract) {
+            return $model->toArray();
+        }
+
+        $values = [];
+        foreach ((new \ReflectionObject($model))->getProperties() as $prop) {
+            if ($prop->isStatic()) {
+                continue;
+            }
+            $prop->setAccessible(true);
+            $values[$prop->getName()] = $prop->isInitialized($model) ? $prop->getValue($model) : null;
+        }
+        return $values;
+    }
+
+    /**
      * @param array|null $values
      * @param string|null $where
      * @param bool $debug
@@ -296,6 +370,9 @@ abstract class Crud
             if ($debug) {
                 echo htmlspecialchars($sql, ENT_NOQUOTES) . '<pre>' . htmlspecialchars(print_r($values, true), ENT_NOQUOTES) . '</pre>';
                 return;
+            }
+            if (empty($where)) {
+                $this->logFullTableWrite('DELETE');
             }
             $result = $this->executeSQL($sql, $values);
             return !empty($result);

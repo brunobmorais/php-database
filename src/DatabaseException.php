@@ -54,7 +54,9 @@ class DatabaseException extends Exception
             'query' => $this->query,
             'parameters' => $this->parameters,
             'file' => $this->getFile(),
-            'line' => $this->getLine()
+            'line' => $this->getLine(),
+            // Mensagem original do driver (pode conter usuário/host): só para log
+            'previous' => $this->getPrevious()?->getMessage(),
         ];
     }
 

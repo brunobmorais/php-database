@@ -125,7 +125,7 @@ trait DatalayerTrait
             return $this->instance;
         } catch (PDOException $e) {
             throw new DatabaseException(
-                "Database connection failed - TABLE: [{$this->getTableName()}] MESSAGE: [{$e->getMessage()}]",
+                "Database connection failed - TABLE: [{$this->getTableName()}] MESSAGE: [{$this->connectionErrorSummary($e)}]",
                 $e->getCode(),
                 $e
             );
@@ -166,6 +166,32 @@ trait DatalayerTrait
             return $database;
         }
         return $database . $suffix;
+    }
+
+    /**
+     * Resumo da falha de conexão sem usuário, host ou banco (a mensagem do PDO costuma trazê-los
+     * e acaba exibida ao usuário). A mensagem original continua em getPrevious().
+     * @param PDOException $e
+     * @return string
+     */
+    private function connectionErrorSummary(PDOException $e): string
+    {
+        $message = $e->getMessage();
+        $prefix = preg_match('/^SQLSTATE\[[^\]]*\](?:\s*\[\d+\])?/', $message, $m) === 1 ? $m[0] : 'CODE ' . $e->getCode();
+
+        $reasons = [
+            1044 => 'acesso negado ao banco',
+            1045 => 'acesso negado',
+            1049 => 'banco inexistente',
+            2002 => 'servidor inacessível',
+            2005 => 'servidor inacessível',
+            2006 => 'conexão perdida',
+            2013 => 'conexão perdida',
+        ];
+        $driverCode = preg_match('/\[(\d+)\]/', $prefix, $c) === 1 ? (int) $c[1] : (int) $e->getCode();
+        $reason = $reasons[$driverCode] ?? 'falha ao conectar';
+
+        return "{$prefix} {$reason}";
     }
 
     public static function closeConnections(): void {
@@ -453,6 +479,18 @@ trait DatalayerTrait
         if ($classModel === '') {
             throw new DatabaseException("Class model not set, use setClassModel() - TABLE: [{$this->getTableName()}]");
         }
+    }
+
+    /**
+     * Registra no log de erros do PHP um UPDATE/DELETE sem WHERE (afeta a tabela inteira).
+     * Usa error_log() em vez de trigger_error() para nunca interromper a execução,
+     * mesmo com handlers que convertem warnings em exceção.
+     * @param string $operation
+     * @return void
+     */
+    protected function logFullTableWrite(string $operation): void
+    {
+        error_log("bmorais/database: {$operation} sem WHERE na tabela [{$this->getTableName()}] afeta todas as linhas");
     }
 
     /**
