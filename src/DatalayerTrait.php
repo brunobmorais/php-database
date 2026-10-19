@@ -80,11 +80,8 @@ trait DatalayerTrait
     private function getConnect(): PDO
     {
         try {
-            $serverName = $_SERVER['SERVER_NAME'] ?? '';
-            if ($serverName && strpos($serverName, mb_strtolower(CONFIG_DATA_LAYER["homologation"])) !== false && strpos($this->getDatabase(), ucfirst(CONFIG_DATA_LAYER["homologation"])) === false) {
-                $database = $this->getDatabase().ucfirst(CONFIG_DATA_LAYER["homologation"] ?? "");
-                $this->setDatabase($database);
-            }
+            // Atribui direto (sem setDatabase) para não descartar uma instância injetada via setInstance()
+            $this->database = $this->withHomologationSuffix($this->getDatabase());
 
             // Se uma instância foi injetada externamente via setInstance(), respeitá-la
             if ($this->instance !== null) {
@@ -112,6 +109,42 @@ trait DatalayerTrait
                 $e
             );
         }
+    }
+
+    /**
+     * Indica se o ambiente é de homologação.
+     * Prioridade: CONFIG_DATA_LAYER['homologation_active'] → env DB_HOMOLOGATION → SERVER_NAME (legado).
+     * @return bool
+     */
+    private function isHomologation(): bool
+    {
+        if (array_key_exists('homologation_active', CONFIG_DATA_LAYER)) {
+            return (bool) CONFIG_DATA_LAYER['homologation_active'];
+        }
+
+        $env = getenv('DB_HOMOLOGATION');
+        if ($env !== false && $env !== '') {
+            return filter_var($env, FILTER_VALIDATE_BOOLEAN);
+        }
+
+        // Fallback legado: SERVER_NAME pode vir do header Host (Apache com UseCanonicalName Off),
+        // ou seja, é controlável pelo cliente. Defina 'homologation_active' para não depender dele.
+        $homologation = CONFIG_DATA_LAYER['homologation'] ?? '';
+        $serverName = $_SERVER['SERVER_NAME'] ?? '';
+        return $homologation !== '' && $serverName !== '' && str_contains($serverName, mb_strtolower($homologation));
+    }
+
+    /**
+     * @param string $database
+     * @return string
+     */
+    private function withHomologationSuffix(string $database): string
+    {
+        $suffix = ucfirst(CONFIG_DATA_LAYER['homologation'] ?? '');
+        if ($suffix === '' || str_contains($database, $suffix) || !$this->isHomologation()) {
+            return $database;
+        }
+        return $database . $suffix;
     }
 
     public static function closeConnections(): void {
@@ -145,12 +178,7 @@ trait DatalayerTrait
      */
     protected function setDatabase(string $database): self
     {
-        $serverName = $_SERVER['SERVER_NAME'] ?? '';
-        if ($serverName && strpos($serverName, mb_strtolower(CONFIG_DATA_LAYER["homologation"])) !== false && strpos($database, ucfirst(CONFIG_DATA_LAYER["homologation"])) === false) {
-            $database = $database.ucfirst(CONFIG_DATA_LAYER["homologation"] ?? "");
-        }
-
-        $this->database = $database;
+        $this->database = $this->withHomologationSuffix($database);
         // Nulifica a instância para que getConnect() recalcule o DSN com o novo banco
         $this->instance = null;
 
