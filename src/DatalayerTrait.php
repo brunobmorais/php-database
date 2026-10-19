@@ -354,6 +354,9 @@ trait DatalayerTrait
     protected function executeSQL(string $query, ?array $params = null, bool $retry = true): PDOStatement
     {
         try {
+            // Libera o resultado e o statement anteriores antes da nova consulta, reduzindo o pico de memória
+            $this->data = [];
+            $this->prepare = null;
             $this->setPrepare($this->getInstance()->prepare($query));
             if (CONFIG_DATA_LAYER['display_errors_details']) {
                 $this->setSQL($query, $params);
