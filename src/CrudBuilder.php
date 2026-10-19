@@ -240,7 +240,7 @@ abstract class CrudBuilder extends Crud
     protected function orderBy(string $parameter, ?string $order = null): self
     {
         try {
-            $query = "ORDER BY " . $this->orderByList($parameter, $order);
+            $query = $this->assertSafeOrderBy("ORDER BY {$parameter} ".($order ?? 'ASC'));
             $this->add($query, "orderBy");
             return $this;
         } catch (\PDOException $e) {
@@ -261,7 +261,7 @@ abstract class CrudBuilder extends Crud
     protected function addOrderBy(string $parameter, ?string $order = null): self
     {
         try {
-            $query = ", " . $this->orderByList($parameter, $order);
+            $query = $this->assertSafeOrderBy(", {$parameter} ".($order ?? 'ASC')." ");
             $this->add($query, "addOrderBy");
             return $this;
         } catch (\PDOException $e) {
@@ -570,32 +570,18 @@ abstract class CrudBuilder extends Crud
     }
 
     /**
-     * Valida "COL", "t.COL DESC, COL2" etc. Expressões (RAND(), FIELD()...) não são aceitas — use query().
-     * @param string $parameter
-     * @param string|null $order direção aplicada ao último item quando ele não tiver a sua
+     * Aceita expressões (RAND(), FIELD(...), NULLS LAST...) para não quebrar o uso existente,
+     * mas bloqueia terminador de comando e comentários, usados para encadear ou truncar SQL injetado.
+     * Ainda assim, não repasse valores da requisição direto: prefira uma whitelist de colunas.
+     * @param string $clause
      * @return string
      * @throws DatabaseException
      */
-    private function orderByList(string $parameter, ?string $order): string
+    private function assertSafeOrderBy(string $clause): string
     {
-        $direction = strtoupper(trim($order ?? 'ASC'));
-        if (!in_array($direction, ['ASC', 'DESC'], true)) {
-            throw new DatabaseException("Invalid ORDER BY direction - TABLE: [{$this->getTableName()}] VALUE: [{$order}]");
+        if (preg_match('~;|--|#|/\*|\*/~', $clause) === 1) {
+            throw new DatabaseException("Invalid ORDER BY clause - TABLE: [{$this->getTableName()}] VALUE: [{$clause}]");
         }
-
-        $items = [];
-        foreach (explode(',', $parameter) as $item) {
-            if (preg_match('/^(.+?)\s+(ASC|DESC)$/i', trim($item), $m) === 1) {
-                $items[] = $this->assertIdentifier($m[1]) . ' ' . strtoupper($m[2]);
-            } else {
-                $items[] = $this->assertIdentifier($item);
-            }
-        }
-
-        $last = count($items) - 1;
-        if (preg_match('/\s(ASC|DESC)$/', $items[$last]) !== 1) {
-            $items[$last] .= " {$direction}";
-        }
-        return implode(', ', $items);
+        return $clause;
     }
 }
