@@ -43,7 +43,7 @@ abstract class Crud
             $sql .= $add;
 
             if ($debug) {
-                echo $sql;
+                echo htmlspecialchars($sql, ENT_NOQUOTES);
                 return;
             }
             $this->executeSQL($sql, $values);
@@ -81,7 +81,7 @@ abstract class Crud
             $fields = implode(',', $this->assertIdentifierList($fields));
             $sql = "INSERT INTO {$this->getTableName()} ({$fields}) VALUES ({$numparams})";
             if ($debug) {
-                echo $sql . '<pre>' . print_r($values) . '</pre>';
+                echo htmlspecialchars($sql, ENT_NOQUOTES) . '<pre>' . htmlspecialchars(print_r($values, true), ENT_NOQUOTES) . '</pre>';
                 return;
             }
             $result = $this->executeSQL($sql, $values);
@@ -188,7 +188,7 @@ abstract class Crud
                 $sql .= " WHERE $where";
             }
             if ($debug) {
-                echo $sql . '<pre>' . print_r($values) . '</pre>';
+                echo htmlspecialchars($sql, ENT_NOQUOTES) . '<pre>' . htmlspecialchars(print_r($values, true), ENT_NOQUOTES) . '</pre>';
                 return;
             }
             $result = $this->executeSQL($sql, $values);
@@ -294,7 +294,7 @@ abstract class Crud
                 $sql .= " WHERE $where";
             }
             if ($debug) {
-                echo $sql . '<pre>' . print_r($values) . '</pre>';
+                echo htmlspecialchars($sql, ENT_NOQUOTES) . '<pre>' . htmlspecialchars(print_r($values, true), ENT_NOQUOTES) . '</pre>';
                 return;
             }
             $result = $this->executeSQL($sql, $values);

@@ -488,7 +488,7 @@ abstract class CrudBuilder extends Crud
     {
         try {
             [$query, $params] = $this->buildQuery();
-            echo $query . '<pre>' . print_r($params, true) . '</pre>';
+            echo htmlspecialchars($query, ENT_NOQUOTES) . '<pre>' . htmlspecialchars(print_r($params, true), ENT_NOQUOTES) . '</pre>';
             exit;
         } catch (\PDOException $e) {
             throw new DatabaseException(
