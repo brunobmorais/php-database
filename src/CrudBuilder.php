@@ -86,6 +86,7 @@ abstract class CrudBuilder extends Crud
                 $numparams .= ',?';
             }
             $numparams = substr($numparams, 1);
+            $fields = implode(',', $this->assertIdentifierList($fields));
             $query = "INSERT INTO {$this->getTableName()} ({$fields}) VALUES ({$numparams})";
             $this->add($query, "main", $paramns);
             return $this;
@@ -108,7 +109,7 @@ abstract class CrudBuilder extends Crud
     {
         try {
             $fields_T = '';
-            $atributos = explode(',', $fields);
+            $atributos = $this->assertIdentifierList($fields);
 
             foreach ($atributos as $item) {
                 $fields_T .= ", {$item} = ?";
@@ -239,7 +240,7 @@ abstract class CrudBuilder extends Crud
     protected function orderBy(string $parameter, ?string $order = null): self
     {
         try {
-            $query = "ORDER BY {$parameter} ".($order ?? 'ASC');
+            $query = "ORDER BY " . $this->orderByList($parameter, $order);
             $this->add($query, "orderBy");
             return $this;
         } catch (\PDOException $e) {
@@ -260,7 +261,7 @@ abstract class CrudBuilder extends Crud
     protected function addOrderBy(string $parameter, ?string $order = null): self
     {
         try {
-            $query = ", {$parameter} ".($order ?? 'ASC')." ";
+            $query = ", " . $this->orderByList($parameter, $order);
             $this->add($query, "addOrderBy");
             return $this;
         } catch (\PDOException $e) {
@@ -273,11 +274,16 @@ abstract class CrudBuilder extends Crud
     }
 
     /**
-     * @param string $texto
+     * @param string $texto "10" ou "offset, quantidade" (ex.: "20, 10")
      * @return $this
+     * @throws DatabaseException
      */
     protected function limit(string $texto): self
     {
+        $texto = trim($texto);
+        if (preg_match('/^\d+(\s*,\s*\d+)?$/', $texto) !== 1) {
+            throw new DatabaseException("Invalid LIMIT value - TABLE: [{$this->getTableName()}] VALUE: [{$texto}]");
+        }
         $query = "LIMIT {$texto}";
         $this->add($query,"limit");
         return $this;
@@ -290,6 +296,10 @@ abstract class CrudBuilder extends Crud
      */
     protected function offset(string $texto): self
     {
+        $texto = trim($texto);
+        if (preg_match('/^\d+$/', $texto) !== 1) {
+            throw new DatabaseException("Invalid OFFSET value - TABLE: [{$this->getTableName()}] VALUE: [{$texto}]");
+        }
         try {
             $query = "OFFSET {$texto}";
             $this->add($query,"offset");
@@ -557,5 +567,35 @@ abstract class CrudBuilder extends Crud
             }
         }
         return [$sql, $params];
+    }
+
+    /**
+     * Valida "COL", "t.COL DESC, COL2" etc. Expressões (RAND(), FIELD()...) não são aceitas — use query().
+     * @param string $parameter
+     * @param string|null $order direção aplicada ao último item quando ele não tiver a sua
+     * @return string
+     * @throws DatabaseException
+     */
+    private function orderByList(string $parameter, ?string $order): string
+    {
+        $direction = strtoupper(trim($order ?? 'ASC'));
+        if (!in_array($direction, ['ASC', 'DESC'], true)) {
+            throw new DatabaseException("Invalid ORDER BY direction - TABLE: [{$this->getTableName()}] VALUE: [{$order}]");
+        }
+
+        $items = [];
+        foreach (explode(',', $parameter) as $item) {
+            if (preg_match('/^(.+?)\s+(ASC|DESC)$/i', trim($item), $m) === 1) {
+                $items[] = $this->assertIdentifier($m[1]) . ' ' . strtoupper($m[2]);
+            } else {
+                $items[] = $this->assertIdentifier($item);
+            }
+        }
+
+        $last = count($items) - 1;
+        if (preg_match('/\s(ASC|DESC)$/', $items[$last]) !== 1) {
+            $items[$last] .= " {$direction}";
+        }
+        return implode(', ', $items);
     }
 }

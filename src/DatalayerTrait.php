@@ -322,6 +322,34 @@ trait DatalayerTrait
         }
     }
 
+
+    /**
+     * Valida um identificador SQL (coluna ou tabela.coluna), opcionalmente entre `crases`, "aspas" ou [colchetes].
+     * @param string $identifier
+     * @return string identificador sem espaços nas pontas
+     * @throws DatabaseException
+     */
+    protected function assertIdentifier(string $identifier): string
+    {
+        $part = '(?:[\p{L}_][\p{L}\p{N}_$]*|`[^`]+`|"[^"]+"|\[[^\]]+\])';
+        $identifier = trim($identifier);
+        if (preg_match('/^' . $part . '(?:\.' . $part . ')?$/u', $identifier) !== 1) {
+            throw new DatabaseException("Invalid SQL identifier - TABLE: [{$this->getTableName()}] IDENTIFIER: [{$identifier}]");
+        }
+        return $identifier;
+    }
+
+    /**
+     * Valida uma lista de colunas separadas por vírgula.
+     * @param string $fields
+     * @return string[]
+     * @throws DatabaseException
+     */
+    protected function assertIdentifierList(string $fields): array
+    {
+        return array_map(fn(string $field) => $this->assertIdentifier($field), explode(',', $fields));
+    }
+
     /**
      * @param PDOStatement|null $prepare
      * @return int|null

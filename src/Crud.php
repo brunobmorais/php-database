@@ -78,6 +78,7 @@ abstract class Crud
                 $numparams .= ',?';
             }
             $numparams = substr($numparams, 1);
+            $fields = implode(',', $this->assertIdentifierList($fields));
             $sql = "INSERT INTO {$this->getTableName()} ({$fields}) VALUES ({$numparams})";
             if ($debug) {
                 echo $sql . '<pre>' . print_r($values) . '</pre>';
@@ -176,7 +177,7 @@ abstract class Crud
     {
         try {
             $fields_T = '';
-            $atributos = explode(',', $fields);
+            $atributos = $this->assertIdentifierList($fields);
 
             foreach ($atributos as $item) {
                 $fields_T .= ", {$item} = ?";
