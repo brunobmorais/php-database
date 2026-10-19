@@ -64,6 +64,19 @@ class ExampleDao extends CrudBuilder
     }
 
     /**
+     * O complemento do select também pode trazer JOINs. Sem alias em setTableName,
+     * o alias pode vir no início do complemento: select("A.*", "A WHERE A.ID = ?", [$id]).
+     */
+    public function listarComPessoas(int $id): array
+    {
+        return $this->select(
+            "E.NOME, P.TELEFONE",
+            "LEFT JOIN PESSOA P ON P.EXAMPLE_ID = E.ID WHERE E.ID = ? ORDER BY P.NOME",
+            [$id]
+        );
+    }
+
+    /**
      * insert(colunas, valores). Retorna true; em caso de erro lança DatabaseException.
      */
     public function inserir(string $nome, string $email): ?string
@@ -292,6 +305,31 @@ class ExampleDao extends CrudBuilder
         }
     }
 
+    /**
+     * Transação envolvendo vários DAOs: passe a mesma conexão com setInstance()
+     * antes do beginTransaction, para que todos participem da transação.
+     */
+    public function inserirComPessoa(string $nome, string $email, string $telefone): string
+    {
+        $pessoaDao = new PessoaDao();
+        $pessoaDao->setInstance($this->getInstance());
+
+        try {
+            $this->beginTransaction();
+
+            $this->insertArray(["NOME" => $nome, "EMAIL" => $email, "ATIVO" => 1]);
+            $id = $this->lastInsertId();
+
+            $pessoaDao->insertArray(["NOME" => $nome, "TELEFONE" => $telefone, "EXAMPLE_ID" => $id]);
+
+            $this->commitTransaction();
+            return $id;
+        } catch (DatabaseException $e) {
+            $this->rollBackTransaction();
+            throw $e;
+        }
+    }
+
     /* =====================================================================
      * DEBUG, LOG E ERROS
      * ===================================================================== */
@@ -339,5 +377,16 @@ class ExampleDao extends CrudBuilder
     public static function liberarConexoes(): void
     {
         self::closeConnections();
+    }
+}
+
+/**
+ * DAO auxiliar usado no exemplo de transação com vários DAOs.
+ */
+class PessoaDao extends \BMorais\Database\Crud
+{
+    public function __construct()
+    {
+        $this->setTableName("PESSOA");
     }
 }
