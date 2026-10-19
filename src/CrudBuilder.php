@@ -14,24 +14,35 @@ namespace BMorais\Database;
  */
 abstract class CrudBuilder extends Crud
 {
+    /** Partes que aceitam uma única ocorrência (a última chamada substitui a anterior) */
+    private const SINGLE_PARTS = ['where', 'having', 'orderBy', 'limit', 'offset'];
+
+    /**
+     * Ordem de montagem do SQL. Cada parte guarda ['sql' => string, 'params' => array],
+     * assim os parâmetros são ligados na mesma ordem em que aparecem no SQL.
+     * AND/OR de where e having ficam numa única lista para preservar a ordem das chamadas.
+     */
+    private const EMPTY_PARTS = [
+        'main'             => [],
+        'join'             => [],
+        'where'            => null,
+        'whereConditions'  => [],
+        'groupBy'          => [],
+        'having'           => null,
+        'havingConditions' => [],
+        'orderBy'          => null,
+        'addOrderBy'       => [],
+        'limit'            => null,
+        'offset'           => null,
+    ];
+
     /**
      * @var array
      */
-    private array $sqlPartsSelect = [
-        'main'      => [],
-        'join'      => [],
-        'where'     => "",
-        'andWhere'  => [],
-        'orWhere'   => [],
-        'groupBy'   => [],
-        'having'    => [],
-        'andHaving' => [],
-        'orHaving'  => [],
-        'orderBy'   => "",
-        'addOrderBy'=> [],
-        'limit'     => "",
-        'offset'    => "",
-    ];
+    private array $sqlPartsSelect = self::EMPTY_PARTS;
+
+    /** Parâmetros da última consulta executada por executeQuery() */
+    private array $executedParams = [];
 
     /**
      *
@@ -75,6 +86,7 @@ abstract class CrudBuilder extends Crud
                 $numparams .= ',?';
             }
             $numparams = substr($numparams, 1);
+            $fields = implode(',', $this->assertIdentifierList($fields));
             $query = "INSERT INTO {$this->getTableName()} ({$fields}) VALUES ({$numparams})";
             $this->add($query, "main", $paramns);
             return $this;
@@ -97,7 +109,7 @@ abstract class CrudBuilder extends Crud
     {
         try {
             $fields_T = '';
-            $atributos = explode(',', $fields);
+            $atributos = $this->assertIdentifierList($fields);
 
             foreach ($atributos as $item) {
                 $fields_T .= ", {$item} = ?";
@@ -187,7 +199,7 @@ abstract class CrudBuilder extends Crud
     {
         try {
             $query = "AND {$condition}";
-            $this->add($query, "andWhere", $paramns);
+            $this->add($query, "whereConditions", $paramns);
             return $this;
         } catch (\PDOException $e) {
             throw new DatabaseException(
@@ -208,7 +220,7 @@ abstract class CrudBuilder extends Crud
     {
         try {
             $query = "OR {$condition}";
-            $this->add($query, "orWhere", $paramns);
+            $this->add($query, "whereConditions", $paramns);
             return $this;
         } catch (\PDOException $e) {
             throw new DatabaseException(
@@ -228,7 +240,7 @@ abstract class CrudBuilder extends Crud
     protected function orderBy(string $parameter, ?string $order = null): self
     {
         try {
-            $query = "ORDER BY {$parameter} ".($order ?? 'ASC');
+            $query = $this->assertSafeClause("ORDER BY {$parameter} ".($order ?? 'ASC'));
             $this->add($query, "orderBy");
             return $this;
         } catch (\PDOException $e) {
@@ -249,7 +261,7 @@ abstract class CrudBuilder extends Crud
     protected function addOrderBy(string $parameter, ?string $order = null): self
     {
         try {
-            $query = ", {$parameter} ".($order ?? 'ASC')." ";
+            $query = $this->assertSafeClause(", {$parameter} ".($order ?? 'ASC')." ");
             $this->add($query, "addOrderBy");
             return $this;
         } catch (\PDOException $e) {
@@ -262,12 +274,13 @@ abstract class CrudBuilder extends Crud
     }
 
     /**
-     * @param string $texto
+     * @param string $texto "10" ou "offset, quantidade" (ex.: "20, 10")
      * @return $this
+     * @throws DatabaseException
      */
     protected function limit(string $texto): self
     {
-        $query = "LIMIT {$texto}";
+        $query = $this->assertSafeClause("LIMIT {$texto}");
         $this->add($query,"limit");
         return $this;
     }
@@ -280,7 +293,7 @@ abstract class CrudBuilder extends Crud
     protected function offset(string $texto): self
     {
         try {
-            $query = "OFFSET {$texto}";
+            $query = $this->assertSafeClause("OFFSET {$texto}");
             $this->add($query,"offset");
             return $this;
         } catch (\PDOException $e) {
@@ -341,7 +354,7 @@ abstract class CrudBuilder extends Crud
     {
         try {
             $query = "AND {$texto}";
-            $this->add($query,"andHaving");
+            $this->add($query,"havingConditions");
             return $this;
         } catch (\PDOException $e) {
             throw new DatabaseException(
@@ -361,7 +374,7 @@ abstract class CrudBuilder extends Crud
     {
         try {
             $query = "OR {$codition}";
-            $this->add($query,"orHaving");
+            $this->add($query,"havingConditions");
             return $this;
         } catch (\PDOException $e) {
             throw new DatabaseException(
@@ -445,18 +458,16 @@ abstract class CrudBuilder extends Crud
     protected function executeQuery(): self
     {
         try {
-            foreach ($this->sqlPartsSelect as $key => $part){
-                if (is_array($part)) {
-                    foreach ($part as $item){
-                        $this->setQuery($this->getQuery().$item);
-                    }
-                } else {
-                    $this->setQuery($this->getQuery().$part);
-                }
+            [$query, $params] = $this->buildQuery();
+            // Parâmetros passados manualmente via setParams() continuam valendo, antes dos do builder
+            $params = array_merge(parent::getParams(), $params);
+            // Limpa antes de executar para que uma falha não contamine a próxima consulta
+            $this->resetQueryParts();
+            $this->clearParams();
+            $this->executedParams = $params;
+            $this->setQuery($query);
 
-            }
-
-            $this->executeSQL($this->getQuery(), $this->getParams());
+            $this->executeSQL($query, $params);
             return $this;
         } catch (\PDOException $e) {
             throw new DatabaseException(
@@ -476,7 +487,8 @@ abstract class CrudBuilder extends Crud
     protected function debug(): void
     {
         try {
-            echo $this->getQuery() . '<pre>' . print_r($this->getParams()) . '</pre>';
+            [$query, $params] = $this->buildQuery();
+            echo htmlspecialchars($query, ENT_NOQUOTES) . '<pre>' . htmlspecialchars(print_r($params, true), ENT_NOQUOTES) . '</pre>';
             exit;
         } catch (\PDOException $e) {
             throw new DatabaseException(
@@ -496,16 +508,13 @@ abstract class CrudBuilder extends Crud
      */
     private function add(string $query, string $type, array $params = []): void
     {
-        $query = $query." ";
+        $part = ['sql' => $query . " ", 'params' => $params];
         try {
-            if (is_array($this->sqlPartsSelect[$type])) {
-                $this->sqlPartsSelect[$type][] = $query;
+            if (in_array($type, self::SINGLE_PARTS, true)) {
+                $this->sqlPartsSelect[$type] = $part;
             } else {
-                $this->sqlPartsSelect[$type] = $query;
+                $this->sqlPartsSelect[$type][] = $part;
             }
-
-            if (!empty($params))
-                $this->setParams($params);
         } catch (\PDOException $e) {
             throw new DatabaseException(
                 "Add query part failed - TABLE: [{$this->getTableName()}] MESSAGE: [{$e->getMessage()}]",
@@ -513,5 +522,59 @@ abstract class CrudBuilder extends Crud
                 $e
             );
         }
+    }
+
+    /**
+     * Parâmetros pendentes (setParams) ou, se não houver, os da última consulta executada.
+     * @return array
+     */
+    protected function getParams(): array
+    {
+        return parent::getParams() ?: $this->executedParams;
+    }
+
+    /**
+     * Descarta a consulta em construção.
+     * @return $this
+     */
+    protected function resetQueryParts(): self
+    {
+        $this->sqlPartsSelect = self::EMPTY_PARTS;
+        return $this;
+    }
+
+    /**
+     * Monta o SQL e os parâmetros na ordem de EMPTY_PARTS.
+     * @return array{0: string, 1: array}
+     */
+    private function buildQuery(): array
+    {
+        $sql = '';
+        $params = [];
+        foreach ($this->sqlPartsSelect as $type => $part) {
+            $items = in_array($type, self::SINGLE_PARTS, true) ? array_filter([$part]) : $part;
+            foreach ($items as $item) {
+                $sql .= $item['sql'];
+                $params = array_merge($params, $item['params']);
+            }
+        }
+        return [$sql, $params];
+    }
+
+    /**
+     * Usado em ORDER BY, LIMIT e OFFSET. Aceita expressões (RAND(), FIELD(...), "10 OFFSET 20"...)
+     * para não quebrar o uso existente, mas bloqueia terminador de comando e comentários,
+     * usados para encadear ou truncar SQL injetado.
+     * Ainda assim, não repasse valores da requisição direto: use whitelist de colunas e (int) em limit/offset.
+     * @param string $clause
+     * @return string
+     * @throws DatabaseException
+     */
+    private function assertSafeClause(string $clause): string
+    {
+        if (preg_match('~;|--|#|/\*|\*/~', $clause) === 1) {
+            throw new DatabaseException("Invalid SQL clause - TABLE: [{$this->getTableName()}] VALUE: [{$clause}]");
+        }
+        return $clause;
     }
 }

@@ -29,6 +29,12 @@ trait DatalayerTrait
     /** @var string */
     private string $currentDsn = '';
 
+    /** @var int incrementado por closeConnections() para invalidar conexões ainda seguradas pelos DAOs */
+    private static int $connectionsGeneration = 0;
+
+    /** @var int geração da conexão em $instance */
+    private int $instanceGeneration = 0;
+
     /** @var string
      *  @deprecated
      */
@@ -60,8 +66,14 @@ trait DatalayerTrait
      */
     private array $data = [];
 
+    /** @var string|null SQL interpolado, montado sob demanda por getSQL() */
+    private ?string $logSQL = null;
+
     /** @var string */
-    private string $logSQL;
+    private string $logQuery = '';
+
+    /** @var array|null */
+    private ?array $logParams = null;
 
     /** @var PDOException */
     private $error;
@@ -80,10 +92,15 @@ trait DatalayerTrait
     private function getConnect(): PDO
     {
         try {
-            $serverName = $_SERVER['SERVER_NAME'] ?? '';
-            if ($serverName && strpos($serverName, mb_strtolower(CONFIG_DATA_LAYER["homologation"])) !== false && strpos($this->getDatabase(), ucfirst(CONFIG_DATA_LAYER["homologation"])) === false) {
-                $database = $this->getDatabase().ucfirst(CONFIG_DATA_LAYER["homologation"] ?? "");
-                $this->setDatabase($database);
+            // Atribui direto (sem setDatabase) para não descartar uma instância injetada via setInstance()
+            $this->database = $this->withHomologationSuffix($this->getDatabase());
+
+            // Após closeConnections(), solta a conexão antiga que este DAO ainda segura para que ela
+            // seja de fato fechada — exceto instância injetada e transação em andamento
+            if ($this->instance !== null && $this->currentDsn !== ''
+                && $this->instanceGeneration !== self::$connectionsGeneration
+                && !$this->instance->inTransaction()) {
+                $this->instance = null;
             }
 
             // Se uma instância foi injetada externamente via setInstance(), respeitá-la
@@ -104,6 +121,7 @@ trait DatalayerTrait
             }
 
             $this->instance = self::$instances[$dsn];
+            $this->instanceGeneration = self::$connectionsGeneration;
             return $this->instance;
         } catch (PDOException $e) {
             throw new DatabaseException(
@@ -114,8 +132,50 @@ trait DatalayerTrait
         }
     }
 
+    /**
+     * Indica se o ambiente é de homologação.
+     * Prioridade: CONFIG_DATA_LAYER['homologation_active'] → env DB_HOMOLOGATION → SERVER_NAME (legado).
+     * @return bool
+     */
+    private function isHomologation(): bool
+    {
+        if (array_key_exists('homologation_active', CONFIG_DATA_LAYER)) {
+            return (bool) CONFIG_DATA_LAYER['homologation_active'];
+        }
+
+        $env = getenv('DB_HOMOLOGATION');
+        if ($env !== false && $env !== '') {
+            return filter_var($env, FILTER_VALIDATE_BOOLEAN);
+        }
+
+        // Fallback legado: SERVER_NAME pode vir do header Host (Apache com UseCanonicalName Off),
+        // ou seja, é controlável pelo cliente. Defina 'homologation_active' para não depender dele.
+        $homologation = CONFIG_DATA_LAYER['homologation'] ?? '';
+        $serverName = $_SERVER['SERVER_NAME'] ?? '';
+        return $homologation !== '' && $serverName !== '' && str_contains($serverName, mb_strtolower($homologation));
+    }
+
+    /**
+     * @param string $database
+     * @return string
+     */
+    private function withHomologationSuffix(string $database): string
+    {
+        $suffix = ucfirst(CONFIG_DATA_LAYER['homologation'] ?? '');
+        if ($suffix === '' || str_contains($database, $suffix) || !$this->isHomologation()) {
+            return $database;
+        }
+        return $database . $suffix;
+    }
+
     public static function closeConnections(): void {
-        self::$instances = [];
+        // Conexões com transação aberta continuam no cache, para que DAOs criados depois
+        // participem da mesma transação em vez de abrir outra conexão
+        self::$instances = array_filter(
+            self::$instances,
+            fn($pdo) => $pdo instanceof PDO && $pdo->inTransaction()
+        );
+        self::$connectionsGeneration++;
     }
 
 
@@ -127,6 +187,8 @@ trait DatalayerTrait
     protected function setInstance(?PDO $pdo): self
     {
         $this->instance = $pdo;
+        // Instância externa: não pertence ao cache de conexões, então não deve ser reconectada
+        $this->currentDsn = '';
         return $this;
     }
 
@@ -145,12 +207,7 @@ trait DatalayerTrait
      */
     protected function setDatabase(string $database): self
     {
-        $serverName = $_SERVER['SERVER_NAME'] ?? '';
-        if ($serverName && strpos($serverName, mb_strtolower(CONFIG_DATA_LAYER["homologation"])) !== false && strpos($database, ucfirst(CONFIG_DATA_LAYER["homologation"])) === false) {
-            $database = $database.ucfirst(CONFIG_DATA_LAYER["homologation"] ?? "");
-        }
-
-        $this->database = $database;
+        $this->database = $this->withHomologationSuffix($database);
         // Nulifica a instância para que getConnect() recalcule o DSN com o novo banco
         $this->instance = null;
 
@@ -180,7 +237,7 @@ trait DatalayerTrait
      */
     protected function getFields():string
     {
-        return $this->fields;
+        return $this->fields ?? "";
     }
 
     /**
@@ -221,7 +278,7 @@ trait DatalayerTrait
 
     protected function getClassModel(): string
     {
-        return $this->classModel;
+        return $this->classModel ?? "";
     }
 
     /**
@@ -236,6 +293,9 @@ trait DatalayerTrait
 
     protected function getPrepare(): PDOStatement
     {
+        if ($this->prepare === null) {
+            throw new DatabaseException("No statement executed - TABLE: [{$this->getTableName()}]");
+        }
         return $this->prepare;
     }
 
@@ -246,6 +306,15 @@ trait DatalayerTrait
     protected function setParams($params): self
     {
         $this->params = array_merge($this->params, $params);
+        return $this;
+    }
+
+    /**
+     * @return self
+     */
+    protected function clearParams(): self
+    {
+        $this->params = [];
         return $this;
     }
 
@@ -290,6 +359,9 @@ trait DatalayerTrait
     protected function executeSQL(string $query, ?array $params = null, bool $retry = true): PDOStatement
     {
         try {
+            // Libera o resultado e o statement anteriores antes da nova consulta, reduzindo o pico de memória
+            $this->data = [];
+            $this->prepare = null;
             $this->setPrepare($this->getInstance()->prepare($query));
             if (CONFIG_DATA_LAYER['display_errors_details']) {
                 $this->setSQL($query, $params);
@@ -297,11 +369,15 @@ trait DatalayerTrait
             $this->getPrepare()->execute($params);
             return $this->getPrepare();
         } catch (PDOException $e) {
-            // MySQL server has gone away (2006) ou Lost connection (2013) — reconecta uma vez
-            if ($retry && in_array($e->errorInfo[1] ?? 0, [2006, 2013]) && !empty($this->currentDsn)) {
+            // MySQL server has gone away (2006) ou Lost connection (2013)
+            if (in_array($e->errorInfo[1] ?? 0, [2006, 2013], true) && !empty($this->currentDsn)) {
+                $canRetry = $retry && $this->isSafeToRetry($e, $query);
+                // Descarta a conexão morta mesmo sem retry, para não ficar presa no cache
                 self::$instances[$this->currentDsn] = null;
                 $this->instance = null;
-                return $this->executeSQL($query, $params, false);
+                if ($canRetry) {
+                    return $this->executeSQL($query, $params, false);
+                }
             }
             throw new DatabaseException(
                 "SQL execution failed - TABLE: [{$this->getTableName()}] MESSAGE: [{$e->getMessage()}]",
@@ -310,6 +386,72 @@ trait DatalayerTrait
                 $query,
                 $params
             );
+        }
+    }
+
+    /**
+     * Só reconecta e repete quando não há risco de duplicar escrita ou perder transação:
+     * - nunca dentro de transação (a nova conexão estaria em autocommit e o commit viraria no-op);
+     * - 2006: o comando não chegou a ser executado;
+     * - 2013: a conexão caiu durante a query, que pode já ter rodado — só repete leituras.
+     * @param PDOException $e
+     * @param string $query
+     * @return bool
+     */
+    private function isSafeToRetry(PDOException $e, string $query): bool
+    {
+        try {
+            if ($this->instance !== null && $this->instance->inTransaction()) {
+                return false;
+            }
+        } catch (PDOException) {
+            return false;
+        }
+
+        $code = $e->errorInfo[1] ?? 0;
+        if ($code === 2006) {
+            return true;
+        }
+
+        return $code === 2013 && preg_match('/^\s*(SELECT|SHOW|DESCRIBE|DESC|EXPLAIN)\b/i', $query) === 1;
+    }
+
+    /**
+     * Valida um identificador SQL (coluna ou tabela.coluna), opcionalmente entre `crases`, "aspas" ou [colchetes].
+     * @param string $identifier
+     * @return string identificador sem espaços nas pontas
+     * @throws DatabaseException
+     */
+    protected function assertIdentifier(string $identifier): string
+    {
+        $part = '(?:[\p{L}_][\p{L}\p{N}_$]*|`[^`]+`|"[^"]+"|\[[^\]]+\])';
+        $identifier = trim($identifier);
+        if (preg_match('/^' . $part . '(?:\.' . $part . ')?$/u', $identifier) !== 1) {
+            throw new DatabaseException("Invalid SQL identifier - TABLE: [{$this->getTableName()}] IDENTIFIER: [{$identifier}]");
+        }
+        return $identifier;
+    }
+
+    /**
+     * Valida uma lista de colunas separadas por vírgula.
+     * @param string $fields
+     * @return string[]
+     * @throws DatabaseException
+     */
+    protected function assertIdentifierList(string $fields): array
+    {
+        return array_map(fn(string $field) => $this->assertIdentifier($field), explode(',', $fields));
+    }
+
+    /**
+     * @param string $classModel
+     * @return void
+     * @throws DatabaseException
+     */
+    private function assertClassModel(string $classModel): void
+    {
+        if ($classModel === '') {
+            throw new DatabaseException("Class model not set, use setClassModel() - TABLE: [{$this->getTableName()}]");
         }
     }
 
@@ -385,6 +527,7 @@ trait DatalayerTrait
         try {
             $prepare = empty($prepare) ? $this->getPrepare() : $prepare;
             $classModel = empty($classModel) ? $this->getClassModel() : $classModel;
+            $this->assertClassModel($classModel);
             $dados = $prepare->fetchAll(PDO::FETCH_CLASS | PDO::FETCH_PROPS_LATE, CONFIG_DATA_LAYER["directory_models"] . $classModel);
             $this->setData($dados);
             return $dados;
@@ -448,6 +591,7 @@ trait DatalayerTrait
         try {
             $prepare = empty($prepare) ? $this->getPrepare() : $prepare;
             $class = empty($class) ? $this->getClassModel() : $class;
+            $this->assertClassModel($class);
             $data = $prepare->fetchObject(CONFIG_DATA_LAYER["directory_models"] . $class);
             return $data === false ? null : $data;
         } catch (PDOException $e) {
@@ -545,66 +689,79 @@ trait DatalayerTrait
     }
 
     /**
+     * Guarda a query e os parâmetros; a interpolação só é feita quando getSQL()/getLogSQL() é chamado.
      * @param $sql_string
      * @param array|null $params
      * @return void
-     * @throws DatabaseException
      */
     private function setSQL($sql_string, ?array $params = null)
     {
-        try {
-            if (!empty($params)) {
-                $indexed = $params == array_values($params);
-                foreach ($params as $k => $v) {
-                    if (is_object($v)) {
-                        if ($v instanceof \DateTime) {
-                            $v = $v->format('Y-m-d H:i:s');
-                        } else {
-                            continue;
-                        }
-                    } elseif (is_string($v)) {
-                        $v = "'$v'";
-                    } elseif ($v === null) {
-                        $v = 'NULL';
-                    } elseif (is_array($v)) {
-                        $v = implode(',', $v);
-                    }
+        $this->logQuery = (string) $sql_string;
+        $this->logParams = $params;
+        $this->logSQL = null;
+    }
 
-                    if ($indexed) {
-                        $sql_string = preg_replace('/\?/', $v, $sql_string, 1);
-                    } else {
-                        if ($k[0] != ':') {
-                            $k = ':' . $k;
-                        } //add leading colon if it was left out
-                        $sql_string = str_replace($k, $v, $sql_string);
-                    }
-                }
-            }
-            $this->logSQL = $sql_string;
-        } catch (PDOException $e) {
-            throw new DatabaseException(
-                "Set SQL failed - TABLE: [{$this->getTableName()}] MESSAGE: [{$e->getMessage()}]",
-                $e->getCode(),
-                $e
-            );
+    /**
+     * Monta o SQL com os valores no lugar dos placeholders. Só para log/debug — nunca executar.
+     * Substitui em uma única passada, então valores contendo "?", ":nome" ou "$1" não afetam o resultado.
+     * @param string $sql
+     * @param array|null $params
+     * @return string
+     */
+    private function interpolateSQL(string $sql, ?array $params): string
+    {
+        if (empty($params)) {
+            return $sql;
         }
+
+        // Mesma formatação de antes; null = valor não representável, mantém o placeholder
+        $format = function ($v): ?string {
+            if (is_object($v)) {
+                return $v instanceof \DateTime ? $v->format('Y-m-d H:i:s') : null;
+            }
+            if (is_string($v)) {
+                return "'$v'";
+            }
+            if ($v === null) {
+                return 'NULL';
+            }
+            if (is_array($v)) {
+                return implode(',', $v);
+            }
+            return (string) $v;
+        };
+
+        if (array_keys($params) === range(0, count($params) - 1)) {
+            $i = 0;
+            $result = preg_replace_callback('/\?/', function ($m) use (&$i, $params, $format) {
+                if (!array_key_exists($i, $params)) {
+                    return $m[0];
+                }
+                return $format($params[$i++]) ?? $m[0];
+            }, $sql);
+        } else {
+            $named = [];
+            foreach ($params as $k => $v) {
+                $named[ltrim((string) $k, ':')] = $v;
+            }
+            // (?<!:) evita casts do PostgreSQL como "valor::int"
+            $result = preg_replace_callback('/(?<!:):(\w+)/', function ($m) use ($named, $format) {
+                return array_key_exists($m[1], $named) ? ($format($named[$m[1]]) ?? $m[0]) : $m[0];
+            }, $sql);
+        }
+
+        return $result ?? $sql;
     }
 
     /**
      * @return string|null
-     * @throws DatabaseException
      */
     protected function getSQL(): ?string
     {
-        try {
-            return $this->logSQL ?? "";
-        } catch (PDOException $e) {
-            throw new DatabaseException(
-                "Get SQL failed - TABLE: [{$this->getTableName()}] MESSAGE: [{$e->getMessage()}]",
-                $e->getCode(),
-                $e
-            );
+        if ($this->logSQL === null) {
+            $this->logSQL = $this->interpolateSQL($this->logQuery, $this->logParams);
         }
+        return $this->logSQL;
     }
 
     /**

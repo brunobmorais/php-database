@@ -16,6 +16,9 @@ const CONFIG_DATA_LAYER = [
         PDO::ATTR_STRINGIFY_FETCHES => true
     ],
     "homologation" => "homologacao",
+    // true/false define explicitamente o ambiente (ou use a env DB_HOMOLOGATION=1).
+    // Sem esta chave, cai na detecção legada por $_SERVER['SERVER_NAME'], que pode vir do header Host.
+    "homologation_active" => false,
     "directory_models" => "App\\Models\\",
     "display_errors_details" => true,
 ];

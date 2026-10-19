@@ -43,7 +43,7 @@ abstract class Crud
             $sql .= $add;
 
             if ($debug) {
-                echo $sql;
+                echo htmlspecialchars($sql, ENT_NOQUOTES);
                 return;
             }
             $this->executeSQL($sql, $values);
@@ -78,9 +78,10 @@ abstract class Crud
                 $numparams .= ',?';
             }
             $numparams = substr($numparams, 1);
+            $fields = implode(',', $this->assertIdentifierList($fields));
             $sql = "INSERT INTO {$this->getTableName()} ({$fields}) VALUES ({$numparams})";
             if ($debug) {
-                echo $sql . '<pre>' . print_r($values) . '</pre>';
+                echo htmlspecialchars($sql, ENT_NOQUOTES) . '<pre>' . htmlspecialchars(print_r($values, true), ENT_NOQUOTES) . '</pre>';
                 return;
             }
             $result = $this->executeSQL($sql, $values);
@@ -125,7 +126,7 @@ abstract class Crud
             return false;
         } catch (PDOException $e) {
             throw new DatabaseException(
-                "Insert object failed - TABLE: [{$this->getTableName()}] MESSAGE: [{$e->getMessage()}] COLUMNS: [{$columns}]",
+                "Insert object failed - TABLE: [{$this->getTableName()}] MESSAGE: [{$e->getMessage()}] COLUMNS: [" . implode(',', $args) . "]",
                 $e->getCode(),
                 $e
             );
@@ -157,7 +158,7 @@ abstract class Crud
             return false;
         } catch (PDOException $e) {
             throw new DatabaseException(
-                "Insert array failed - TABLE: [{$this->getTableName()}] MESSAGE: [{$e->getMessage()}] COLUMNS: [{$args}]",
+                "Insert array failed - TABLE: [{$this->getTableName()}] MESSAGE: [{$e->getMessage()}] COLUMNS: [" . implode(',', (array) $args) . "]",
                 $e->getCode(),
                 $e
             );
@@ -176,7 +177,7 @@ abstract class Crud
     {
         try {
             $fields_T = '';
-            $atributos = explode(',', $fields);
+            $atributos = $this->assertIdentifierList($fields);
 
             foreach ($atributos as $item) {
                 $fields_T .= ", {$item} = ?";
@@ -187,7 +188,7 @@ abstract class Crud
                 $sql .= " WHERE $where";
             }
             if ($debug) {
-                echo $sql . '<pre>' . print_r($values) . '</pre>';
+                echo htmlspecialchars($sql, ENT_NOQUOTES) . '<pre>' . htmlspecialchars(print_r($values, true), ENT_NOQUOTES) . '</pre>';
                 return;
             }
             $result = $this->executeSQL($sql, $values);
@@ -233,7 +234,7 @@ abstract class Crud
             return false;
         } catch (PDOException $e) {
             throw new DatabaseException(
-                "Update object failed - TABLE: [{$this->getTableName()}] MESSAGE: [{$e->getMessage()}] COLUMNS: [{$args}]",
+                "Update object failed - TABLE: [{$this->getTableName()}] MESSAGE: [{$e->getMessage()}] COLUMNS: [" . implode(',', (array) $args) . "]",
                 $e->getCode(),
                 $e
             );
@@ -271,7 +272,7 @@ abstract class Crud
             return false;
         } catch (PDOException $e) {
             throw new DatabaseException(
-                "Update array failed - TABLE: [{$this->getTableName()}] MESSAGE: [{$e->getMessage()}] COLUMNS: [{$args}]",
+                "Update array failed - TABLE: [{$this->getTableName()}] MESSAGE: [{$e->getMessage()}] COLUMNS: [" . implode(',', (array) $args) . "]",
                 $e->getCode(),
                 $e
             );
@@ -293,7 +294,7 @@ abstract class Crud
                 $sql .= " WHERE $where";
             }
             if ($debug) {
-                echo $sql . '<pre>' . print_r($values) . '</pre>';
+                echo htmlspecialchars($sql, ENT_NOQUOTES) . '<pre>' . htmlspecialchars(print_r($values, true), ENT_NOQUOTES) . '</pre>';
                 return;
             }
             $result = $this->executeSQL($sql, $values);
@@ -322,6 +323,6 @@ abstract class Crud
      */
     public function getLogSQL(): ?string
     {
-        return $this->logSQL ?? "";
+        return $this->getSQL();
     }
 }
