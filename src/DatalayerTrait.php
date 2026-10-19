@@ -792,8 +792,7 @@ trait DatalayerTrait
         } finally {
             // Fechar a conexão (e não só o cursor) evita ler o restante do resultado
             // quando o laço é interrompido antes do fim
-            $statement = null;
-            $pdo = null;
+            unset($statement, $pdo);
         }
     }
 
@@ -867,12 +866,21 @@ trait DatalayerTrait
     private function isDeadlock(\Throwable $e): bool
     {
         for ($ex = $e; $ex !== null; $ex = $ex->getPrevious()) {
-            if ($ex instanceof PDOException
-                && (in_array((int) ($ex->errorInfo[1] ?? 0), [1213, 1205], true) || ($ex->errorInfo[0] ?? '') === '40001')) {
+            if ($ex instanceof PDOException && $this->isDeadlockError($ex)) {
                 return true;
             }
         }
         return false;
+    }
+
+    /**
+     * @param PDOException $e
+     * @return bool
+     */
+    private function isDeadlockError(PDOException $e): bool
+    {
+        $info = $e->errorInfo ?? [];
+        return in_array((int) ($info[1] ?? 0), [1213, 1205], true) || ($info[0] ?? '') === '40001';
     }
 
     /**

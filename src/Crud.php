@@ -25,7 +25,7 @@ abstract class Crud
      * @param array|null $values
      * @param bool $returnModel
      * @param bool $debug
-     * @return array|false|void|null
+     * @return array|null|void lista de resultados (void quando $debug = true)
      * @throws DatabaseException
      */
     public function select(string $fields = '*', string $add = '', ?array $values = null, bool $returnModel = false, bool $debug = false)
@@ -81,7 +81,7 @@ abstract class Crud
             $fields = implode(',', $this->assertIdentifierList($fields));
             $sql = "INSERT INTO {$this->getTableName()} ({$fields}) VALUES ({$numparams})";
             if ($debug) {
-                echo htmlspecialchars($sql, ENT_NOQUOTES) . '<pre>' . htmlspecialchars(print_r($values, true), ENT_NOQUOTES) . '</pre>';
+                echo htmlspecialchars($sql, ENT_NOQUOTES) . '<pre>' . htmlspecialchars((string) print_r($values, true), ENT_NOQUOTES) . '</pre>';
                 return;
             }
             $result = $this->executeSQL($sql, $values);
@@ -188,7 +188,7 @@ abstract class Crud
                 $sql .= " WHERE $where";
             }
             if ($debug) {
-                echo htmlspecialchars($sql, ENT_NOQUOTES) . '<pre>' . htmlspecialchars(print_r($values, true), ENT_NOQUOTES) . '</pre>';
+                echo htmlspecialchars($sql, ENT_NOQUOTES) . '<pre>' . htmlspecialchars((string) print_r($values, true), ENT_NOQUOTES) . '</pre>';
                 return;
             }
             if (!isset($where)) {
@@ -451,7 +451,7 @@ abstract class Crud
                 $sql .= " WHERE $where";
             }
             if ($debug) {
-                echo htmlspecialchars($sql, ENT_NOQUOTES) . '<pre>' . htmlspecialchars(print_r($values, true), ENT_NOQUOTES) . '</pre>';
+                echo htmlspecialchars($sql, ENT_NOQUOTES) . '<pre>' . htmlspecialchars((string) print_r($values, true), ENT_NOQUOTES) . '</pre>';
                 return;
             }
             if (empty($where)) {

@@ -87,7 +87,7 @@ abstract class ModelAbstract
 
     /**
      * @param array $params
-     * @return void
+     * @return $this
      */
     public function fromMapToModel(array $params)
     {
@@ -104,7 +104,7 @@ abstract class ModelAbstract
 
     /**
      * @param string $json
-     * @return void
+     * @return $this
      */
     public function fromJsonToModel(string $json)
     {

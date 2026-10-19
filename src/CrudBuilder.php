@@ -347,7 +347,7 @@ abstract class CrudBuilder extends Crud
     protected function debug(): void
     {
         [$query, $params] = $this->buildQuery();
-        echo htmlspecialchars($query, ENT_NOQUOTES) . '<pre>' . htmlspecialchars(print_r($params, true), ENT_NOQUOTES) . '</pre>';
+        echo htmlspecialchars($query, ENT_NOQUOTES) . '<pre>' . htmlspecialchars((string) print_r($params, true), ENT_NOQUOTES) . '</pre>';
         exit;
     }
 

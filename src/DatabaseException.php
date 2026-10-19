@@ -65,7 +65,6 @@ class DatabaseException extends Exception
      */
     public function getOriginalCode(): int|string
     {
-        $previous = $this->getPrevious();
-        return $previous ? $previous->getCode() : $this->getCode();
+        return $this->getPrevious()?->getCode() ?? $this->getCode();
     }
 }
