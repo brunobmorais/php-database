@@ -7,3 +7,8 @@ build:
       tests:
         override:
           - php-scrutinizer-run
+
+# Exemplos de uso não fazem parte da biblioteca
+filter:
+  excluded_paths:
+    - "example/*"
