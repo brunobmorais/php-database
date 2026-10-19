@@ -126,7 +126,7 @@ abstract class Crud
             return false;
         } catch (PDOException $e) {
             throw new DatabaseException(
-                "Insert object failed - TABLE: [{$this->getTableName()}] MESSAGE: [{$e->getMessage()}] COLUMNS: [{$columns}]",
+                "Insert object failed - TABLE: [{$this->getTableName()}] MESSAGE: [{$e->getMessage()}] COLUMNS: [" . implode(',', $args) . "]",
                 $e->getCode(),
                 $e
             );
@@ -158,7 +158,7 @@ abstract class Crud
             return false;
         } catch (PDOException $e) {
             throw new DatabaseException(
-                "Insert array failed - TABLE: [{$this->getTableName()}] MESSAGE: [{$e->getMessage()}] COLUMNS: [{$args}]",
+                "Insert array failed - TABLE: [{$this->getTableName()}] MESSAGE: [{$e->getMessage()}] COLUMNS: [" . implode(',', (array) $args) . "]",
                 $e->getCode(),
                 $e
             );
@@ -234,7 +234,7 @@ abstract class Crud
             return false;
         } catch (PDOException $e) {
             throw new DatabaseException(
-                "Update object failed - TABLE: [{$this->getTableName()}] MESSAGE: [{$e->getMessage()}] COLUMNS: [{$args}]",
+                "Update object failed - TABLE: [{$this->getTableName()}] MESSAGE: [{$e->getMessage()}] COLUMNS: [" . implode(',', (array) $args) . "]",
                 $e->getCode(),
                 $e
             );
@@ -272,7 +272,7 @@ abstract class Crud
             return false;
         } catch (PDOException $e) {
             throw new DatabaseException(
-                "Update array failed - TABLE: [{$this->getTableName()}] MESSAGE: [{$e->getMessage()}] COLUMNS: [{$args}]",
+                "Update array failed - TABLE: [{$this->getTableName()}] MESSAGE: [{$e->getMessage()}] COLUMNS: [" . implode(',', (array) $args) . "]",
                 $e->getCode(),
                 $e
             );
