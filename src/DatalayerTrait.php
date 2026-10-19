@@ -60,8 +60,14 @@ trait DatalayerTrait
      */
     private array $data = [];
 
+    /** @var string|null SQL interpolado, montado sob demanda por getSQL() */
+    private ?string $logSQL = null;
+
     /** @var string */
-    private string $logSQL;
+    private string $logQuery = '';
+
+    /** @var array|null */
+    private ?array $logParams = null;
 
     /** @var PDOException */
     private $error;
@@ -642,66 +648,79 @@ trait DatalayerTrait
     }
 
     /**
+     * Guarda a query e os parâmetros; a interpolação só é feita quando getSQL()/getLogSQL() é chamado.
      * @param $sql_string
      * @param array|null $params
      * @return void
-     * @throws DatabaseException
      */
     private function setSQL($sql_string, ?array $params = null)
     {
-        try {
-            if (!empty($params)) {
-                $indexed = $params == array_values($params);
-                foreach ($params as $k => $v) {
-                    if (is_object($v)) {
-                        if ($v instanceof \DateTime) {
-                            $v = $v->format('Y-m-d H:i:s');
-                        } else {
-                            continue;
-                        }
-                    } elseif (is_string($v)) {
-                        $v = "'$v'";
-                    } elseif ($v === null) {
-                        $v = 'NULL';
-                    } elseif (is_array($v)) {
-                        $v = implode(',', $v);
-                    }
+        $this->logQuery = (string) $sql_string;
+        $this->logParams = $params;
+        $this->logSQL = null;
+    }
 
-                    if ($indexed) {
-                        $sql_string = preg_replace('/\?/', $v, $sql_string, 1);
-                    } else {
-                        if ($k[0] != ':') {
-                            $k = ':' . $k;
-                        } //add leading colon if it was left out
-                        $sql_string = str_replace($k, $v, $sql_string);
-                    }
-                }
-            }
-            $this->logSQL = $sql_string;
-        } catch (PDOException $e) {
-            throw new DatabaseException(
-                "Set SQL failed - TABLE: [{$this->getTableName()}] MESSAGE: [{$e->getMessage()}]",
-                $e->getCode(),
-                $e
-            );
+    /**
+     * Monta o SQL com os valores no lugar dos placeholders. Só para log/debug — nunca executar.
+     * Substitui em uma única passada, então valores contendo "?", ":nome" ou "$1" não afetam o resultado.
+     * @param string $sql
+     * @param array|null $params
+     * @return string
+     */
+    private function interpolateSQL(string $sql, ?array $params): string
+    {
+        if (empty($params)) {
+            return $sql;
         }
+
+        // Mesma formatação de antes; null = valor não representável, mantém o placeholder
+        $format = function ($v): ?string {
+            if (is_object($v)) {
+                return $v instanceof \DateTime ? $v->format('Y-m-d H:i:s') : null;
+            }
+            if (is_string($v)) {
+                return "'$v'";
+            }
+            if ($v === null) {
+                return 'NULL';
+            }
+            if (is_array($v)) {
+                return implode(',', $v);
+            }
+            return (string) $v;
+        };
+
+        if (array_keys($params) === range(0, count($params) - 1)) {
+            $i = 0;
+            $result = preg_replace_callback('/\?/', function ($m) use (&$i, $params, $format) {
+                if (!array_key_exists($i, $params)) {
+                    return $m[0];
+                }
+                return $format($params[$i++]) ?? $m[0];
+            }, $sql);
+        } else {
+            $named = [];
+            foreach ($params as $k => $v) {
+                $named[ltrim((string) $k, ':')] = $v;
+            }
+            // (?<!:) evita casts do PostgreSQL como "valor::int"
+            $result = preg_replace_callback('/(?<!:):(\w+)/', function ($m) use ($named, $format) {
+                return array_key_exists($m[1], $named) ? ($format($named[$m[1]]) ?? $m[0]) : $m[0];
+            }, $sql);
+        }
+
+        return $result ?? $sql;
     }
 
     /**
      * @return string|null
-     * @throws DatabaseException
      */
     protected function getSQL(): ?string
     {
-        try {
-            return $this->logSQL ?? "";
-        } catch (PDOException $e) {
-            throw new DatabaseException(
-                "Get SQL failed - TABLE: [{$this->getTableName()}] MESSAGE: [{$e->getMessage()}]",
-                $e->getCode(),
-                $e
-            );
+        if ($this->logSQL === null) {
+            $this->logSQL = $this->interpolateSQL($this->logQuery, $this->logParams);
         }
+        return $this->logSQL;
     }
 
     /**
