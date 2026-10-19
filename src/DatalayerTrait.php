@@ -108,7 +108,7 @@ trait DatalayerTrait
                 return $this->instance;
             }
 
-            $dsn = CONFIG_DATA_LAYER['driver'] . ':host=' . CONFIG_DATA_LAYER['host'] . ';dbname=' . $this->getDatabase() . ';port=' . CONFIG_DATA_LAYER['port'];
+            $dsn = $this->buildDsn();
             $this->currentDsn = $dsn;
 
             if (empty(self::$instances[$dsn])) {
@@ -192,6 +192,14 @@ trait DatalayerTrait
         $reason = $reasons[$driverCode] ?? 'falha ao conectar';
 
         return "{$prefix} {$reason}";
+    }
+
+    /**
+     * @return string
+     */
+    private function buildDsn(): string
+    {
+        return CONFIG_DATA_LAYER['driver'] . ':host=' . CONFIG_DATA_LAYER['host'] . ';dbname=' . $this->getDatabase() . ';port=' . CONFIG_DATA_LAYER['port'];
     }
 
     public static function closeConnections(): void {
@@ -706,6 +714,79 @@ trait DatalayerTrait
                 $e->getCode(),
                 $e
             );
+        }
+    }
+
+    /**
+     * Percorre o resultado linha a linha (generator), sem carregar tudo em memória.
+     * Para exportações e relatórios grandes.
+     *
+     * Usa uma conexão própria, fechada ao final; no MySQL ela é unbuffered, então o resultado
+     * não fica inteiro em memória no cliente. Por ser outra conexão, não enxerga dados ainda
+     * não commitados da transação em andamento. A consulta só é executada na primeira iteração.
+     *
+     * <code>
+     *   foreach ($this->cursor("SELECT * FROM PEDIDO WHERE DATA >= ?", [$inicio]) as $pedido) {
+     *       fputcsv($arquivo, (array) $pedido);
+     *   }
+     * </code>
+     *
+     * @param string $query
+     * @param array|null $params
+     * @param bool $returnModel true: instâncias de classModel; false: stdClass
+     * @return \Generator
+     * @throws DatabaseException
+     */
+    protected function cursor(string $query, ?array $params = null, bool $returnModel = false): \Generator
+    {
+        $this->database = $this->withHomologationSuffix($this->getDatabase());
+
+        $options = (CONFIG_DATA_LAYER['options'] ?? []);
+        $options[PDO::ATTR_ERRMODE] = PDO::ERRMODE_EXCEPTION;
+        $options[PDO::ATTR_PERSISTENT] = false;
+        if (CONFIG_DATA_LAYER['driver'] === 'mysql') {
+            $unbuffered = defined('Pdo\\Mysql::ATTR_USE_BUFFERED_QUERY')
+                ? constant('Pdo\\Mysql::ATTR_USE_BUFFERED_QUERY')
+                : PDO::MYSQL_ATTR_USE_BUFFERED_QUERY;
+            $options[$unbuffered] = false;
+        }
+
+        try {
+            $pdo = new PDO($this->buildDsn(), CONFIG_DATA_LAYER['username'], CONFIG_DATA_LAYER['passwd'], $options);
+        } catch (PDOException $e) {
+            throw new DatabaseException(
+                "Database connection failed - TABLE: [{$this->getTableName()}] MESSAGE: [{$this->connectionErrorSummary($e)}]",
+                $e->getCode(),
+                $e
+            );
+        }
+
+        try {
+            $statement = $pdo->prepare($query);
+            $statement->execute($params);
+            if ($returnModel) {
+                $this->assertClassModel($this->getClassModel());
+                $statement->setFetchMode(PDO::FETCH_CLASS | PDO::FETCH_PROPS_LATE, CONFIG_DATA_LAYER["directory_models"] . $this->getClassModel());
+            } else {
+                $statement->setFetchMode(PDO::FETCH_OBJ);
+            }
+
+            while (($row = $statement->fetch()) !== false) {
+                yield $row;
+            }
+        } catch (PDOException $e) {
+            throw new DatabaseException(
+                "Cursor failed - TABLE: [{$this->getTableName()}] MESSAGE: [{$e->getMessage()}]",
+                $e->getCode(),
+                $e,
+                $query,
+                $params
+            );
+        } finally {
+            // Fechar a conexão (e não só o cursor) evita ler o restante do resultado
+            // quando o laço é interrompido antes do fim
+            $statement = null;
+            $pdo = null;
         }
     }
 
