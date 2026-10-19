@@ -29,6 +29,12 @@ trait DatalayerTrait
     /** @var string */
     private string $currentDsn = '';
 
+    /** @var int incrementado por closeConnections() para invalidar conexões ainda seguradas pelos DAOs */
+    private static int $connectionsGeneration = 0;
+
+    /** @var int geração da conexão em $instance */
+    private int $instanceGeneration = 0;
+
     /** @var string
      *  @deprecated
      */
@@ -89,6 +95,14 @@ trait DatalayerTrait
             // Atribui direto (sem setDatabase) para não descartar uma instância injetada via setInstance()
             $this->database = $this->withHomologationSuffix($this->getDatabase());
 
+            // Após closeConnections(), solta a conexão antiga que este DAO ainda segura para que ela
+            // seja de fato fechada — exceto instância injetada e transação em andamento
+            if ($this->instance !== null && $this->currentDsn !== ''
+                && $this->instanceGeneration !== self::$connectionsGeneration
+                && !$this->instance->inTransaction()) {
+                $this->instance = null;
+            }
+
             // Se uma instância foi injetada externamente via setInstance(), respeitá-la
             if ($this->instance !== null) {
                 return $this->instance;
@@ -107,6 +121,7 @@ trait DatalayerTrait
             }
 
             $this->instance = self::$instances[$dsn];
+            $this->instanceGeneration = self::$connectionsGeneration;
             return $this->instance;
         } catch (PDOException $e) {
             throw new DatabaseException(
@@ -155,6 +170,7 @@ trait DatalayerTrait
 
     public static function closeConnections(): void {
         self::$instances = [];
+        self::$connectionsGeneration++;
     }
 
 
